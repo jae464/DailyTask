@@ -1,6 +1,22 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
 # Gradle files
 .gradle/
 build/
+
+# Generated files
+bin/
+gen/
+out/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -12,7 +28,6 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
-*.apk
 output.json
 
 # IntelliJ
@@ -31,3 +46,4 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
