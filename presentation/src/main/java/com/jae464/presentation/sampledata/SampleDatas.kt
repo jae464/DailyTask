@@ -1,12 +1,9 @@
 package com.jae464.presentation.sampledata
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.jae464.presentation.model.TaskType
 import com.jae464.presentation.model.TaskUIModel
 import com.jae464.presentation.model.DayOfWeek
 
-@RequiresApi(Build.VERSION_CODES.O)
 val taskUiModels = mutableListOf(
     TaskUIModel(
         id = "1",
