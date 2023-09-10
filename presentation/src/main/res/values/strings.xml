@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">presentation</string>
+
+    <string name="progress_time">%2d시간 %02d분</string>
 </resources>

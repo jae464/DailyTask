@@ -20,8 +20,6 @@ fun SettingScreen() {
         ),
         color = MaterialTheme.colorScheme.primary
     ) {
-        Box {
-            Text(text = "SETTING")
-        }
+        Text(text = "SETTING")
     }
 }

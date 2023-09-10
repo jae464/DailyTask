@@ -20,8 +20,6 @@ fun StatisticScreen() {
         ),
         color = MaterialTheme.colorScheme.primary
     ) {
-        Box {
-            Text(text = "STATISTIC")
-        }
+        Text(text = "STATISTIC")
     }
 }
