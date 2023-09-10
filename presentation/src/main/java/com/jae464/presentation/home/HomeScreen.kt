@@ -19,10 +19,7 @@ fun HomeScreen() {
         modifier = Modifier.windowInsetsPadding(
             WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
         ).fillMaxSize(),
-        color = MaterialTheme.colorScheme.primary
     ) {
-        Box {
-          Text(text = "HOME")
-        }
+        Text(text = "HOME")
     }
 }

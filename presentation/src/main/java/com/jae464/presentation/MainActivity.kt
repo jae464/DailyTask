@@ -85,7 +85,6 @@ fun BottomNavBar(navController: NavHostController) {
             )
         }
     }
-
 }
 
 @Composable
