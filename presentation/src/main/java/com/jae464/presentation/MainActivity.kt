@@ -97,9 +97,11 @@ fun NavigationGraph(navController: NavHostController) {
             HomeScreen()
         }
         composable(Routes.TaskList.route) {
-            TaskListScreen(onClickAddTask = {
-                navController.navigate(addTaskScreenRoute, null)
-            })
+            TaskListScreen(
+                    onClickAddTask = {
+                    navController.navigate(addTaskScreenRoute, null)
+                }
+            )
         }
         composable(Routes.Statistic.route) {
             StatisticScreen()
