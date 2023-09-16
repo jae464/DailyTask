@@ -114,12 +114,17 @@ fun AddTaskTopAppBar() {
 fun AddTaskBody(
     modifier: Modifier = Modifier
 ) {
-    var text by remember { mutableStateOf("") }
-    var progressHour by remember { mutableStateOf(1) } // 진행할 시간
+    var title by remember { mutableStateOf("") }
+    var progressHour by remember { mutableStateOf(1) }
     var progressMinute by remember { mutableStateOf(0) }
 
     Column(modifier = modifier.padding(8.dp)) {
-        TitleTextField(modifier = modifier)
+        TitleTextField(
+            title = title,
+            onTitleChanged = {
+                title = it
+            }
+        )
         Spacer(modifier = Modifier.height(16.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -143,18 +148,19 @@ fun AddTaskBody(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TitleTextField(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String,
+    onTitleChanged: (String) -> Unit
 ) {
 
-    var text by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
 
     OutlinedTextField(
         modifier = modifier
             .fillMaxWidth(),
-        value = text,
+        value = title,
         onValueChange = { newText ->
-            text = newText
+            onTitleChanged(newText)
         },
         placeholder = {
             Text(
