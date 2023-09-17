@@ -31,6 +31,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +39,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -58,6 +60,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jae464.presentation.extension.addFocusCleaner
+import com.jae464.presentation.model.DayOfWeek
+import com.jae464.presentation.model.TaskType
 
 const val addTaskScreenRoute = "add_task"
 private const val TAG = "AddTaskScreen"
@@ -117,11 +121,17 @@ fun AddTaskTopAppBar() {
 fun AddTaskBody(
     modifier: Modifier = Modifier
 ) {
+    // variables
+    val taskOptions = listOf(TaskType.Regular, TaskType.Irregular)
+    val dayOfWeeks = DayOfWeek.values()
+    val focusManager = LocalFocusManager.current
+
+    // states
     var title by remember { mutableStateOf("") }
     var progressHour by remember { mutableStateOf(1) }
     var progressMinute by remember { mutableStateOf(0) }
-//    var isTextFieldFocused by remember { mutableStateOf(false) }
-    val focusManager = LocalFocusManager.current
+    val (selectedTaskType, onSelectedTaskType) = remember { mutableStateOf(taskOptions[0])}
+    var selectedDayOfWeekState by remember { mutableStateOf(DayOfWeekState(listOf())) }
 
     Log.d("AddTaskBody", "Rendered")
 
@@ -157,6 +167,43 @@ fun AddTaskBody(
             )
             Text(text = "분")
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            taskOptions.forEach {
+                TaskTypeRadioButton(
+                    text = it.taskName,
+                    selected = it == selectedTaskType,
+                    onOptionSelected = onSelectedTaskType,
+                    item = it
+                )
+            }
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            dayOfWeeks.forEach {
+                RoundedCheckBox(
+                    checked = selectedDayOfWeekState.selectedDayOfWeek.contains(it),
+                    onCheckedChanged = { checked ->
+                        val before = selectedDayOfWeekState.selectedDayOfWeek
+                        selectedDayOfWeekState = if (checked) {
+                            selectedDayOfWeekState.copy(
+                                selectedDayOfWeek = before + listOf(it)
+                            )
+                        } else {
+                            selectedDayOfWeekState.copy(
+                                selectedDayOfWeek = before.filter { day -> day != it }
+                            )
+                        }
+                    }
+                )
+            }
+        }
+
     }
 }
 
@@ -265,5 +312,44 @@ fun <T> Spinner(
         }
     }
 }
+
+@Composable
+fun <T>TaskTypeRadioButton(
+    text: String,
+    selected: Boolean,
+    onOptionSelected: (T) -> Unit,
+    item: T
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = text)
+        Spacer(modifier = Modifier.width(4.dp))
+        RadioButton(selected = selected,
+            onClick = {
+                onOptionSelected(item)
+            }
+        )
+    }
+}
+
+@Composable
+fun RoundedCheckBox(checked: Boolean, onCheckedChanged: (Boolean) -> Unit) {
+//    var checkedState by remember { mutableStateOf(checked) }
+    Checkbox(
+        modifier = Modifier.background(Color.LightGray, CircleShape),
+        checked = checked,
+        onCheckedChange = { isChecked ->
+            Log.d("AddTaskBody", isChecked.toString())
+//            checkedState = isChecked
+            onCheckedChanged(isChecked)
+        }
+    )
+
+}
+
+data class DayOfWeekState(
+    val selectedDayOfWeek : List<DayOfWeek>
+)
 
 
