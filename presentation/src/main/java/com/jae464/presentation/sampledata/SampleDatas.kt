@@ -1,5 +1,6 @@
 package com.jae464.presentation.sampledata
 
+import com.jae464.presentation.model.Category
 import com.jae464.presentation.model.TaskType
 import com.jae464.presentation.model.TaskUIModel
 import com.jae464.presentation.model.DayOfWeek
@@ -27,4 +28,9 @@ val taskUiModels = mutableListOf(
         alarmHour = 8,
         alarmMinute = 0,
     ),
+)
+
+val categories = mutableListOf(
+    Category("학습"),
+    Category("운동")
 )
