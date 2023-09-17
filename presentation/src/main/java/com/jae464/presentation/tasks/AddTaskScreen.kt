@@ -1,8 +1,11 @@
 package com.jae464.presentation.tasks
 
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,25 +19,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +45,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -64,22 +65,30 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jae464.presentation.extension.addFocusCleaner
+import com.jae464.presentation.model.Category
 import com.jae464.presentation.model.DayOfWeek
 import com.jae464.presentation.model.TaskType
+import com.jae464.presentation.sampledata.categories
+import com.jae464.presentation.ui.theme.Pink80
+import com.jae464.presentation.ui.theme.Purple80
+import com.jae464.presentation.ui.theme.PurpleGrey80
 
 const val addTaskScreenRoute = "add_task"
 private const val TAG = "AddTaskScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTaskScreen(modifier: Modifier = Modifier) {
+fun AddTaskScreen(
+    modifier: Modifier = Modifier,
+    onBackClick: () -> Unit
+) {
     Scaffold(
         modifier = Modifier
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             ),
         topBar = {
-            AddTaskTopAppBar()
+            AddTaskTopAppBar(onBackClick)
         }
     ) { padding ->
         Box(
@@ -94,13 +103,18 @@ fun AddTaskScreen(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTaskTopAppBar() {
+fun AddTaskTopAppBar(
+    onBackClick: () -> Unit
+) {
+    val context = LocalContext.current
     CenterAlignedTopAppBar(
         title = {
             Text(text = "일정 추가")
         },
         navigationIcon = {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = {
+                onBackClick()
+            }) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "back",
@@ -108,7 +122,9 @@ fun AddTaskTopAppBar() {
             }
         },
         actions = {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = {
+                Toast.makeText(context, "저장 버튼 클릭", Toast.LENGTH_SHORT).show()
+            }) {
                 Icon(
                     imageVector = Icons.Default.Save,
                     contentDescription = "save_task"
@@ -131,18 +147,25 @@ fun AddTaskBody(
     val focusManager = LocalFocusManager.current
 
     // states
+    val scrollState = rememberScrollState()
     var title by remember { mutableStateOf("") }
     var progressHour by remember { mutableStateOf(1) }
     var progressMinute by remember { mutableStateOf(0) }
-    val (selectedTaskType, onSelectedTaskType) = remember { mutableStateOf(taskOptions[0])}
+    val (selectedTaskType, onSelectedTaskType) = remember { mutableStateOf(taskOptions[0]) }
     var selectedDayOfWeekState by remember { mutableStateOf(DayOfWeekState(listOf())) }
+    var selectedCategory by remember { mutableStateOf(categories[0]) }
+    var alarmHour by remember { mutableStateOf(12) }
+    var alarmMinute by remember { mutableStateOf(0) }
+    var content by remember { mutableStateOf("") }
 
     Log.d("AddTaskBody", "Rendered")
 
-    Column(modifier = modifier
-        .fillMaxSize()
-        .padding(8.dp)
-        .addFocusCleaner(focusManager)
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .addFocusCleaner(focusManager)
+            .verticalScroll(scrollState)
     ) {
         TitleTextField(
             title = title,
@@ -165,7 +188,7 @@ fun AddTaskBody(
                 onItemSelected = { item -> progressHour = item }
             )
             Text(text = "시간")
-            RoundedNumberSpinner(items = List(24) { i -> i + 1 },
+            RoundedNumberSpinner(items = List(60) { i -> i + 1 },
                 selectedItem = progressMinute,
                 onItemSelected = { item -> progressMinute = item }
             )
@@ -208,7 +231,44 @@ fun AddTaskBody(
                 )
             }
         }
-
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(text = "카테고리", fontWeight = FontWeight.Bold)
+            RoundedCategorySpinner(items = categories,
+                selectedItem = selectedCategory,
+                onItemSelected = { category -> selectedCategory = category })
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(text = "알림", fontWeight = FontWeight.Bold)
+            RoundedNumberSpinner(items = List(24) { i -> i + 1 },
+                selectedItem = alarmHour,
+                onItemSelected = { item -> alarmHour = item }
+            )
+            Text(text = "시")
+            RoundedNumberSpinner(items = List(60) { i -> i + 1 },
+                selectedItem = alarmMinute,
+                onItemSelected = { item -> alarmMinute = item }
+            )
+            Text(text = "분")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Column {
+            Text(text = "메모", fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+            ContentTextField(
+                content = content,
+                onContentChanged = {
+                    content = it
+                })
+        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
@@ -281,6 +341,35 @@ fun RoundedNumberSpinner(
 }
 
 @Composable
+fun RoundedCategorySpinner(
+    items: List<Category>,
+    selectedItem: Category,
+    onItemSelected: (Category) -> Unit
+) {
+    Spinner(
+        modifier = Modifier.wrapContentSize(),
+        items = items,
+        selectedItem = selectedItem,
+        onItemSelected = onItemSelected,
+        selectedItemFactory = { modifier, item ->
+            Row(
+                modifier = modifier.wrapContentSize(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                )
+            }
+        },
+        dropDownItemFactory = { item, _ ->
+            Text(text = item.name)
+        }
+    )
+}
+
+@Composable
 fun <T> Spinner(
     modifier: Modifier,
     dropDownModifier: Modifier = Modifier,
@@ -295,7 +384,7 @@ fun <T> Spinner(
     Box(modifier = modifier.wrapContentSize(Alignment.TopStart)) {
         selectedItemFactory(
             Modifier
-                .background(Color.LightGray, CircleShape)
+                .background(color = MaterialTheme.colorScheme.secondaryContainer, CircleShape)
                 .clickable { expanded = true },
             selectedItem
         )
@@ -319,7 +408,7 @@ fun <T> Spinner(
 }
 
 @Composable
-fun <T>TaskTypeRadioButton(
+fun <T> TaskTypeRadioButton(
     text: String,
     selected: Boolean,
     onOptionSelected: (T) -> Unit,
@@ -340,16 +429,18 @@ fun <T>TaskTypeRadioButton(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RoundedFilterChip(text: String,
-                      checked: Boolean,
-                      onCheckedChanged: (Boolean) -> Unit) {
+fun RoundedFilterChip(
+    text: String,
+    checked: Boolean,
+    onCheckedChanged: (Boolean) -> Unit
+) {
     FilterChip(
         modifier = Modifier.wrapContentSize(),
         selected = checked,
         onClick = {
-              onCheckedChanged(!checked)
+            onCheckedChanged(!checked)
         },
-        label = { 
+        label = {
             Text(text = text, style = MaterialTheme.typography.labelSmall)
         },
         shape = CircleShape
@@ -357,8 +448,26 @@ fun RoundedFilterChip(text: String,
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ContentTextField(
+    modifier: Modifier = Modifier,
+    content: String,
+    onContentChanged: (String) -> Unit
+) {
+    TextField(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(200.dp),
+        value = content,
+        onValueChange = {
+            onContentChanged(it)
+        },
+    )
+}
+
 data class DayOfWeekState(
-    val selectedDayOfWeek : List<DayOfWeek>
+    val selectedDayOfWeek: List<DayOfWeek>
 )
 
 

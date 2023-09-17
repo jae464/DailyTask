@@ -110,7 +110,11 @@ fun NavigationGraph(navController: NavHostController) {
             SettingScreen()
         }
         composable(addTaskScreenRoute) {
-            AddTaskScreen()
+            AddTaskScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
