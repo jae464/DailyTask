@@ -16,10 +16,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -35,6 +38,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -172,31 +176,32 @@ fun AddTaskBody(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            taskOptions.forEach {
+            taskOptions.forEach { taskType ->
                 TaskTypeRadioButton(
-                    text = it.taskName,
-                    selected = it == selectedTaskType,
+                    text = taskType.taskName,
+                    selected = taskType == selectedTaskType,
                     onOptionSelected = onSelectedTaskType,
-                    item = it
+                    item = taskType
                 )
             }
         }
-        Row(
+        LazyRow(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            dayOfWeeks.forEach {
-                RoundedCheckBox(
-                    checked = selectedDayOfWeekState.selectedDayOfWeek.contains(it),
+            items(dayOfWeeks) { dayOfWeek ->
+                RoundedFilterChip(
+                    text = dayOfWeek.day,
+                    checked = selectedDayOfWeekState.selectedDayOfWeek.contains(dayOfWeek),
                     onCheckedChanged = { checked ->
                         val before = selectedDayOfWeekState.selectedDayOfWeek
                         selectedDayOfWeekState = if (checked) {
                             selectedDayOfWeekState.copy(
-                                selectedDayOfWeek = before + listOf(it)
+                                selectedDayOfWeek = before + listOf(dayOfWeek)
                             )
                         } else {
                             selectedDayOfWeekState.copy(
-                                selectedDayOfWeek = before.filter { day -> day != it }
+                                selectedDayOfWeek = before.filter { day -> day != dayOfWeek }
                             )
                         }
                     }
@@ -333,17 +338,21 @@ fun <T>TaskTypeRadioButton(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RoundedCheckBox(checked: Boolean, onCheckedChanged: (Boolean) -> Unit) {
-//    var checkedState by remember { mutableStateOf(checked) }
-    Checkbox(
-        modifier = Modifier.background(Color.LightGray, CircleShape),
-        checked = checked,
-        onCheckedChange = { isChecked ->
-            Log.d("AddTaskBody", isChecked.toString())
-//            checkedState = isChecked
-            onCheckedChanged(isChecked)
-        }
+fun RoundedFilterChip(text: String,
+                      checked: Boolean,
+                      onCheckedChanged: (Boolean) -> Unit) {
+    FilterChip(
+        modifier = Modifier.wrapContentSize(),
+        selected = checked,
+        onClick = {
+              onCheckedChanged(!checked)
+        },
+        label = { 
+            Text(text = text, style = MaterialTheme.typography.labelSmall)
+        },
+        shape = CircleShape
     )
 
 }
