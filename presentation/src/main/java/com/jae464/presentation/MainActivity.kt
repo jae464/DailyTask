@@ -1,6 +1,7 @@
 package com.jae464.presentation
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -24,11 +25,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navOptions
 import com.jae464.presentation.home.HomeScreen
 import com.jae464.presentation.setting.SettingScreen
 import com.jae464.presentation.statistic.StatisticScreen
@@ -71,13 +74,14 @@ fun BottomNavBar(navController: NavHostController) {
             NavigationBarItem(
                 selected = currentRoute == item.route,
                 onClick = {
-                          navController.navigate(item.route) {
-                              navController.graph.startDestinationRoute?.let {
-                                  popUpTo(it) { saveState = true }
-                              }
-                              launchSingleTop = true
-                              restoreState = true
-                          }
+                    navController.navigate(item.route) {
+                        navController.graph.startDestinationRoute?.let {
+                            Log.d("MainActivity", it)
+                            popUpTo(it) { saveState = true }
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 icon = {
                     Icon(
