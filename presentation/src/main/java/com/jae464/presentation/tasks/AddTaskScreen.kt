@@ -2,10 +2,8 @@ package com.jae464.presentation.tasks
 
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +30,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -66,8 +63,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.presentation.model.Category
-import com.jae464.presentation.model.DayOfWeek
-import com.jae464.presentation.model.TaskType
+import com.jae464.domain.model.DayOfWeek
+import com.jae464.domain.model.TaskType
 import com.jae464.presentation.sampledata.categories
 import com.jae464.presentation.ui.theme.Pink80
 import com.jae464.presentation.ui.theme.Purple80

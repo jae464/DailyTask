@@ -1,4 +1,4 @@
-package com.jae464.presentation.model
+package com.jae464.domain.model
 
 enum class DayOfWeek(val day: String) {
     MONDAY("월"),
