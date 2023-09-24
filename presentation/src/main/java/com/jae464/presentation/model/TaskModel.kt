@@ -1,5 +1,8 @@
 package com.jae464.presentation.model
 
+import com.jae464.domain.model.DayOfWeek
+import com.jae464.domain.model.TaskType
+
 data class TaskUIModel(
     val id: String,
     val title: String,

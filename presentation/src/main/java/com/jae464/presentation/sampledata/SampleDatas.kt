@@ -1,9 +1,9 @@
 package com.jae464.presentation.sampledata
 
 import com.jae464.presentation.model.Category
-import com.jae464.presentation.model.TaskType
+import com.jae464.domain.model.TaskType
 import com.jae464.presentation.model.TaskUIModel
-import com.jae464.presentation.model.DayOfWeek
+import com.jae464.domain.model.DayOfWeek
 
 val taskUiModels = mutableListOf(
     TaskUIModel(
