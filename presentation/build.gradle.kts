@@ -32,13 +32,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = libs.versions.kotlin.compose.compiler.get()
     }
     packaging {
         resources {
