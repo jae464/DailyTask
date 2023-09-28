@@ -51,7 +51,6 @@ class DayOfWeekConverter {
     }
 }
 
-// TODO List로 되어있는거 수정하기
 class LocalDateTimeConverter {
     @TypeConverter
     fun localDateTimesToString(localDateTime: LocalDateTime?): String? {
