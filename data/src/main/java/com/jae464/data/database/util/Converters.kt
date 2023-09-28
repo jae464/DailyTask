@@ -51,18 +51,15 @@ class DayOfWeekConverter {
     }
 }
 
+// TODO List로 되어있는거 수정하기
 class LocalDateTimeConverter {
     @TypeConverter
-    fun localDateTimesToString(localDateTimes: List<LocalDateTime>?): String? {
-        return localDateTimes?.joinToString(separator = ",") {
-            it.toString()
-        }
+    fun localDateTimesToString(localDateTime: LocalDateTime?): String? {
+        return localDateTime.toString()
     }
 
     @TypeConverter
-    fun stringToLocalDateTimes(value: String?): List<LocalDateTime>? {
-        return value?.split(",")?.map {
-            LocalDateTime.parse(it)
-        }
+    fun stringToLocalDateTimes(value: String?): LocalDateTime? {
+        return LocalDateTime.parse(value)
     }
 }
