@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.jae464.data.database.DailyTaskDataBase
+import com.jae464.data.database.DailyTaskDataBase.Companion.callback
 import com.jae464.data.database.entity.CategoryEntity
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.HourMinute
@@ -29,7 +30,10 @@ class TaskDaoTest {
         db = Room.inMemoryDatabaseBuilder(
             context,
             DailyTaskDataBase::class.java
-        ).build()
+        ).addCallback(
+            callback
+        )
+            .build()
         taskDao = db.taskDao()
         categoryDao = db.categoryDao()
     }
