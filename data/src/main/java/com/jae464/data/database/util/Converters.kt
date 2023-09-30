@@ -2,6 +2,7 @@ package com.jae464.data.database.util
 
 import androidx.core.text.isDigitsOnly
 import androidx.room.TypeConverter
+import androidx.room.util.joinIntoString
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.HourMinute
 import com.jae464.domain.model.TaskType
@@ -11,14 +12,15 @@ class HourMinuteConverter {
     @TypeConverter
     fun hourMinuteToString(hourMinute: HourMinute?): String? {
         return hourMinute?.let {
-            "%2d:%2d".format(it.hour, it.minute)
+            "${it.hour}:${it.minute}"
         }
     }
 
     @TypeConverter
     fun stringToHourMinute(value: String?): HourMinute? {
         val data = value?.split(":") ?: return null
-        if (data.size == 2 && data.all { it.isDigitsOnly() }) {
+        println(data)
+        if (data.size == 2) {
             return HourMinute(data[0].toInt(), data[1].toInt())
         }
         return null
@@ -40,13 +42,18 @@ class TaskTypeConverter {
 
 class DayOfWeekConverter {
     @TypeConverter
-    fun dayOfWeekToString(dayOfWeek: DayOfWeek?): String? =
-        dayOfWeek?.let(DayOfWeek::day)
+    fun dayOfWeeksToString(dayOfWeeks: List<DayOfWeek>?): String? {
+       return dayOfWeeks?.joinToString(separator = ",") {
+           it.day
+       }
+    }
 
     @TypeConverter
-    fun stringToDayOfWeek(value: String?): DayOfWeek? {
-        return DayOfWeek.values().firstOrNull {
-            it.day == value
+    fun stringToDayOfWeek(value: String?): List<DayOfWeek>? {
+        return value?.split(",")?.map { day ->
+            DayOfWeek.values().first {
+                day == it.day
+            }
         }
     }
 }
