@@ -56,19 +56,15 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jae464.presentation.extension.addFocusCleaner
-import com.jae464.presentation.model.Category
+import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.TaskType
 import com.jae464.presentation.sampledata.categories
-import com.jae464.presentation.ui.theme.Pink80
-import com.jae464.presentation.ui.theme.Purple80
-import com.jae464.presentation.ui.theme.PurpleGrey80
 
 const val addTaskScreenRoute = "add_task"
 private const val TAG = "AddTaskScreen"
