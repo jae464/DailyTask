@@ -1,7 +1,11 @@
+import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
+
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt)
+    kotlin("kapt")
 }
 
 android {
@@ -31,11 +35,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
     buildFeatures {
         compose = true
@@ -68,4 +72,7 @@ dependencies {
 
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+
 }
