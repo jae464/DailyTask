@@ -22,6 +22,9 @@ kotlin-coroutine = "1.6.4"
 # Room
 room = "2.5.0"
 
+# Hilt
+hilt = "2.44"
+
 
 [libraries]
 #androidx
@@ -40,6 +43,8 @@ androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-mani
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room"}
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room"}
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room"}
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt"}
+hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt"}
 
 #kotlin
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutine" }
@@ -59,3 +64,5 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin"}
 android-library = { id = "com.android.library",  version.ref="androidGradlePlugin"}
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp"}
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt"}
+
