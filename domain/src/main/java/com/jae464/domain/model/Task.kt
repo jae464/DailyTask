@@ -8,5 +8,7 @@ data class Task(
     val progressTime: HourMinute,
     val taskType: TaskType,
     val dayOfWeeks: List<DayOfWeek>,
-    val alarmTime: LocalDateTime
+    val alarmTime: LocalDateTime,
+    val categoryId: Long
 )
+

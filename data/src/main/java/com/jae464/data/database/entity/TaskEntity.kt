@@ -4,10 +4,13 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.HourMinute
+import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Entity(
     tableName = "tasks",
@@ -31,3 +34,28 @@ data class TaskEntity(
     @ColumnInfo(name = "alarm_time") val alarmTime: LocalDateTime,
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime
 )
+
+fun TaskEntity.toDomain(): Task {
+    return Task(
+        id = id,
+        title = title,
+        progressTime = progressTime,
+        taskType = taskType,
+        dayOfWeeks = dayOfWeeks,
+        alarmTime = alarmTime,
+        categoryId = categoryId
+    )
+}
+
+fun Task.toEntity(): TaskEntity {
+    return TaskEntity(
+        id = UUID.randomUUID().toString(),
+        title = title,
+        progressTime = progressTime,
+        taskType = taskType,
+        dayOfWeeks = dayOfWeeks,
+        categoryId = categoryId,
+        alarmTime = alarmTime,
+        createdAt = LocalDateTime.now()
+    )
+}

@@ -22,6 +22,6 @@ interface CategoryDao {
             WHERE id = :categoryId
         """
     )
-    suspend fun deleteTask(categoryId: Long)
+    suspend fun deleteCategory(categoryId: Long)
 
 }
