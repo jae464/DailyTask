@@ -1,4 +1,4 @@
-package com.jae464.data.database.di
+package com.jae464.data.di
 
 import com.jae464.data.database.DailyTaskDataBase
 import com.jae464.data.database.dao.CategoryDao

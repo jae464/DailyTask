@@ -1,4 +1,4 @@
-package com.jae464.data.database.di
+package com.jae464.data.di
 
 import android.content.Context
 import androidx.room.Room
