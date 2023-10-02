@@ -42,7 +42,10 @@ import com.jae464.presentation.model.TaskUIModel
 import com.jae464.presentation.sampledata.taskUiModels
 
 @Composable
-fun TaskListScreen(modifier: Modifier = Modifier, onClickAddTask: () -> Unit) {
+fun TaskListScreen(
+    modifier: Modifier = Modifier,
+    onClickAddTask: () -> Unit
+) {
     Surface(
         modifier = Modifier
             .windowInsetsPadding(
