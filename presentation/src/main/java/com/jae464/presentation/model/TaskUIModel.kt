@@ -1,6 +1,7 @@
 package com.jae464.presentation.model
 
 import com.jae464.domain.model.DayOfWeek
+import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 
 data class TaskUIModel(
@@ -18,3 +19,5 @@ data class TaskUIModel(
     val progressTime = "%2d시간 %02d분".format(timeHour, timeMinute)
     val alarmTime = "%2d시 %02d분".format(alarmHour, alarmMinute)
 }
+
+

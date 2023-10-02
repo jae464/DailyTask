@@ -60,6 +60,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
@@ -73,8 +75,13 @@ private const val TAG = "AddTaskScreen"
 @Composable
 fun AddTaskScreen(
     modifier: Modifier = Modifier,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    viewModel: AddTaskViewModel = hiltViewModel()
 ) {
+
+    val addTaskUiModel by viewModel.task.collectAsStateWithLifecycle()
+
+
     Scaffold(
         modifier = Modifier
             .windowInsetsPadding(
