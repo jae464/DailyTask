@@ -15,6 +15,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks")
     fun getAllTasks(): Flow<List<TaskEntity>>
 
+    @Query("SELECT * FROM tasks WHERE id = :taskId")
+    fun getTask(taskId: String): Flow<TaskEntity>
+
     @Query(
         value = """
             DELETE FROM tasks

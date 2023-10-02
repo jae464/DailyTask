@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 data class Task(
     val id: String,
     val title: String,
+    val memo: String,
     val progressTime: HourMinute,
     val taskType: TaskType,
     val dayOfWeeks: List<DayOfWeek>,

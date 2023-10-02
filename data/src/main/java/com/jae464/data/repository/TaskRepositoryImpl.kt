@@ -21,6 +21,12 @@ class TaskRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getTask(taskId: String): Flow<Task> {
+        return taskLocalDataSource.getTask(taskId).map {taskEntity ->
+            taskEntity.toDomain()
+        }
+    }
+
     override suspend fun saveTask(task: Task) {
         taskLocalDataSource.insertTask(task.toEntity())
     }

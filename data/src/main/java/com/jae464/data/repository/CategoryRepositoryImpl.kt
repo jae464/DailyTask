@@ -7,8 +7,9 @@ import com.jae464.domain.model.Category
 import com.jae464.domain.repository.CategoryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class CategoryRepositoryImpl(
+class CategoryRepositoryImpl @Inject constructor(
     private val categoryLocalDataSource: CategoryLocalDataSource
 ) : CategoryRepository {
     override fun getAllCategories(): Flow<List<Category>> {
@@ -16,6 +17,12 @@ class CategoryRepositoryImpl(
             categoryEntities.map {
                 it.toDomain()
             }
+        }
+    }
+
+    override fun getCategory(categoryId: Long): Flow<Category> {
+        return categoryLocalDataSource.getCategory(categoryId).map { categoryEntity ->
+            categoryEntity.toDomain()
         }
     }
 

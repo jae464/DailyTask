@@ -27,6 +27,7 @@ data class TaskEntity(
     @ColumnInfo(name = "id")
     val id: String,
     @ColumnInfo(name = "title") val title: String,
+    @ColumnInfo(name = "memo") val memo: String,
     @ColumnInfo(name = "progress_time") val progressTime: HourMinute,
     @ColumnInfo(name = "task_type") val taskType: TaskType,
     @ColumnInfo(name = "day_of_week") val dayOfWeeks: List<DayOfWeek>,
@@ -39,6 +40,7 @@ fun TaskEntity.toDomain(): Task {
     return Task(
         id = id,
         title = title,
+        memo = memo,
         progressTime = progressTime,
         taskType = taskType,
         dayOfWeeks = dayOfWeeks,
@@ -51,6 +53,7 @@ fun Task.toEntity(): TaskEntity {
     return TaskEntity(
         id = UUID.randomUUID().toString(),
         title = title,
+        memo = memo,
         progressTime = progressTime,
         taskType = taskType,
         dayOfWeeks = dayOfWeeks,
