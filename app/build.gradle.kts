@@ -70,7 +70,6 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
 
-    // Navigation Compose
     implementation(libs.androidx.navigation.compose)
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
