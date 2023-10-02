@@ -12,6 +12,10 @@ class CategoryLocalDataSourceImpl @Inject constructor(
         return categoryDao.getAllCategories()
     }
 
+    override fun getCategory(categoryId: Long): Flow<CategoryEntity> {
+        return categoryDao.getCategory(categoryId)
+    }
+
     override suspend fun insertCategory(categoryEntity: CategoryEntity) {
         categoryDao.insertCategory(categoryEntity)
     }
