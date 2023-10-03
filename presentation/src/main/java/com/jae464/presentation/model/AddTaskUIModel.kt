@@ -13,7 +13,8 @@ data class AddTaskUIModel(
     val taskType: TaskType,
     val dayOfWeeks: List<DayOfWeek>,
     val alarmTime: LocalDateTime,
-    val memo: String
+    val memo: String,
+    val categoryId: Long
 )
 
 fun Task.toAddTaskUiModel(): AddTaskUIModel {
@@ -23,6 +24,20 @@ fun Task.toAddTaskUiModel(): AddTaskUIModel {
         taskType = taskType,
         dayOfWeeks = dayOfWeeks,
         alarmTime = alarmTime,
-        memo = memo
+        memo = memo,
+        categoryId = categoryId
+    )
+}
+
+fun AddTaskUIModel.toTask(): Task {
+    return Task(
+        id = "",
+        title = title,
+        memo = memo,
+        progressTime = progressTime,
+        taskType = taskType,
+        dayOfWeeks = dayOfWeeks,
+        alarmTime = alarmTime,
+        categoryId = categoryId
     )
 }
