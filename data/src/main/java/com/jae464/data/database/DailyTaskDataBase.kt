@@ -37,6 +37,7 @@ abstract class DailyTaskDataBase : RoomDatabase() {
                 super.onCreate(db)
                 Executors.newSingleThreadExecutor().execute {
                     db.execSQL("INSERT INTO categories (category_name) VALUES ('기타')")
+                    db.execSQL("INSERT INTO categories (category_name) VALUES ('학습')")
                 }
             }
         }
