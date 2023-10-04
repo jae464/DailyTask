@@ -52,7 +52,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -65,7 +64,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
+import com.jae464.domain.model.HourMinute
 import com.jae464.domain.model.TaskType
+import com.jae464.presentation.model.AddTaskUIModel
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 const val addTaskScreenRoute = "add_task"
 private const val TAG = "AddTaskScreen"
@@ -81,13 +84,29 @@ fun AddTaskScreen(
     val addTaskState by viewModel.task.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
 
-    var selectedCategory: Category? by remember {
-        mutableStateOf(null)
-    }
+    var title by remember { mutableStateOf("") }
+    var progressTime by remember { mutableStateOf(HourMinute(1, 0)) }
+    val (selectedTaskType, onSelectedTaskType) = remember { mutableStateOf(TaskType.Regular) }
+    var selectedDayOfWeeks by remember { mutableStateOf(emptyList<DayOfWeek>()) }
+    var alarmTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var memo by remember { mutableStateOf("") }
+    var selectedCategory: Category? by remember { mutableStateOf(null) }
+
     if (categories.isNotEmpty()) {
         selectedCategory = categories[0]
-
     }
+
+    if (addTaskState is AddTaskState.Success) {
+        val savedTaskModel = (addTaskState as AddTaskState.Success).addTaskUiModel
+        title = savedTaskModel.title
+        progressTime = savedTaskModel.progressTime
+        onSelectedTaskType(savedTaskModel.taskType)
+        selectedDayOfWeeks = savedTaskModel.dayOfWeeks
+        alarmTime = savedTaskModel.alarmTime
+        memo = savedTaskModel.memo
+        selectedCategory = categories.firstOrNull { it.id == savedTaskModel.categoryId }
+    }
+
     Log.d(TAG, "AddTaskScreen Rendered()")
     Scaffold(
         modifier = Modifier
@@ -95,7 +114,23 @@ fun AddTaskScreen(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             ),
         topBar = {
-            AddTaskTopAppBar(onBackClick)
+            AddTaskTopAppBar(
+                onBackClick = onBackClick,
+                onSaveClick = {
+                    if (selectedCategory == null) return@AddTaskTopAppBar
+                    viewModel.saveTask(
+                        AddTaskUIModel(
+                            title = title,
+                            progressTime = progressTime,
+                            taskType = selectedTaskType,
+                            dayOfWeeks = selectedDayOfWeeks,
+                            alarmTime = alarmTime,
+                            memo = memo,
+                            categoryId = selectedCategory!!.id
+                        )
+                    )
+                }
+            )
         }
     ) { padding ->
         Box(
@@ -105,9 +140,21 @@ fun AddTaskScreen(
         ) {
             AddTaskBody(
                 modifier = modifier,
+                title = title,
+                progressTime = progressTime,
+                selectedTaskType = selectedTaskType,
+                selectedDayOfWeeks = selectedDayOfWeeks,
+                alarmTime = alarmTime,
+                memo = memo,
                 categories = categories,
                 selectedCategory = selectedCategory,
-                onCategoryChanged = { category -> selectedCategory = category}
+                onTitleChanged = { newTitle -> title = newTitle },
+                onProgressTimeChanged = { newProgressTime -> progressTime = newProgressTime },
+                onSelectedTaskType = onSelectedTaskType,
+                onDayOfWeeksChanged = { dayOfWeeks -> selectedDayOfWeeks = dayOfWeeks },
+                onAlarmTimeChanged = { newAlarmTime -> alarmTime = newAlarmTime },
+                onMemoChanged = { newMemo -> memo = newMemo },
+                onCategoryChanged = { category -> selectedCategory = category }
             )
         }
     }
@@ -116,7 +163,8 @@ fun AddTaskScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskTopAppBar(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onSaveClick: () -> Unit
 ) {
     val context = LocalContext.current
     CenterAlignedTopAppBar(
@@ -136,6 +184,8 @@ fun AddTaskTopAppBar(
         actions = {
             IconButton(onClick = {
                 Toast.makeText(context, "저장 버튼 클릭", Toast.LENGTH_SHORT).show()
+                onSaveClick()
+
             }) {
                 Icon(
                     imageVector = Icons.Default.Save,
@@ -152,8 +202,20 @@ fun AddTaskTopAppBar(
 @Composable
 fun AddTaskBody(
     modifier: Modifier = Modifier,
+    title: String,
+    progressTime: HourMinute,
+    selectedTaskType: TaskType,
+    selectedDayOfWeeks: List<DayOfWeek>,
+    alarmTime: LocalDateTime,
+    memo: String,
     categories: List<Category>,
     selectedCategory: Category?,
+    onTitleChanged: (String) -> Unit,
+    onProgressTimeChanged: (HourMinute) -> Unit,
+    onSelectedTaskType: (TaskType) -> Unit,
+    onDayOfWeeksChanged: (List<DayOfWeek>) -> Unit,
+    onAlarmTimeChanged: (LocalDateTime) -> Unit,
+    onMemoChanged: (String) -> Unit,
     onCategoryChanged: (Category) -> Unit
 ) {
     // variables
@@ -163,14 +225,6 @@ fun AddTaskBody(
 
     // states
     val scrollState = rememberScrollState()
-    var title by remember { mutableStateOf("") }
-    var progressHour by remember { mutableStateOf(1) }
-    var progressMinute by remember { mutableStateOf(0) }
-    val (selectedTaskType, onSelectedTaskType) = remember { mutableStateOf(taskOptions[0]) }
-    var selectedDayOfWeekState by remember { mutableStateOf(DayOfWeekState(listOf())) }
-    var alarmHour by remember { mutableStateOf(12) }
-    var alarmMinute by remember { mutableStateOf(0) }
-    var content by remember { mutableStateOf("") }
 
     Log.d(TAG, "AddTaskBody Rendered()")
 
@@ -183,12 +237,7 @@ fun AddTaskBody(
     ) {
         TitleTextField(
             title = title,
-            onTitleChanged = {
-                title = it
-            },
-            onFocusChanged = {
-//                isTextFieldFocused = it
-            },
+            onTitleChanged = onTitleChanged,
             focusManager = focusManager
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -198,13 +247,27 @@ fun AddTaskBody(
         ) {
             Text(text = "진행시간", fontWeight = FontWeight.Bold)
             RoundedNumberSpinner(items = List(24) { i -> i + 1 },
-                selectedItem = progressHour,
-                onItemSelected = { item -> progressHour = item }
+                selectedItem = progressTime.hour,
+                onItemSelected = { hour ->
+                    onProgressTimeChanged(
+                        HourMinute(
+                            hour,
+                            progressTime.minute
+                        )
+                    )
+                }
             )
             Text(text = "시간")
             RoundedNumberSpinner(items = List(60) { i -> i + 1 },
-                selectedItem = progressMinute,
-                onItemSelected = { item -> progressMinute = item }
+                selectedItem = progressTime.minute,
+                onItemSelected = { minute ->
+                    onProgressTimeChanged(
+                        HourMinute(
+                            progressTime.hour,
+                            minute
+                        )
+                    )
+                }
             )
             Text(text = "분")
         }
@@ -229,17 +292,12 @@ fun AddTaskBody(
             items(dayOfWeeks) { dayOfWeek ->
                 RoundedFilterChip(
                     text = dayOfWeek.day,
-                    checked = selectedDayOfWeekState.selectedDayOfWeek.contains(dayOfWeek),
+                    checked = selectedDayOfWeeks.contains(dayOfWeek),
                     onCheckedChanged = { checked ->
-                        val before = selectedDayOfWeekState.selectedDayOfWeek
-                        selectedDayOfWeekState = if (checked) {
-                            selectedDayOfWeekState.copy(
-                                selectedDayOfWeek = before + listOf(dayOfWeek)
-                            )
+                        if (checked) {
+                            onDayOfWeeksChanged(selectedDayOfWeeks + listOf(dayOfWeek))
                         } else {
-                            selectedDayOfWeekState.copy(
-                                selectedDayOfWeek = before.filter { day -> day != dayOfWeek }
-                            )
+                            onDayOfWeeksChanged(selectedDayOfWeeks.filter { day -> day != dayOfWeek })
                         }
                     }
                 )
@@ -252,9 +310,11 @@ fun AddTaskBody(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(text = "카테고리", fontWeight = FontWeight.Bold)
-                RoundedCategorySpinner(items = categories,
+                RoundedCategorySpinner(
+                    items = categories,
                     selectedItem = selectedCategory,
-                    onItemSelected = onCategoryChanged)
+                    onItemSelected = onCategoryChanged
+                )
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -264,13 +324,21 @@ fun AddTaskBody(
         ) {
             Text(text = "알림", fontWeight = FontWeight.Bold)
             RoundedNumberSpinner(items = List(24) { i -> i + 1 },
-                selectedItem = alarmHour,
-                onItemSelected = { item -> alarmHour = item }
+                selectedItem = alarmTime.hour,
+                onItemSelected = {
+                    val localDateTime = LocalDateTime.now()
+                    val localTime = LocalTime.of(it, alarmTime.minute)
+                    onAlarmTimeChanged(localDateTime.with(localTime))
+                }
             )
             Text(text = "시")
             RoundedNumberSpinner(items = List(60) { i -> i + 1 },
-                selectedItem = alarmMinute,
-                onItemSelected = { item -> alarmMinute = item }
+                selectedItem = alarmTime.minute,
+                onItemSelected = {
+                    val localDateTime = LocalDateTime.now()
+                    val localTime = LocalTime.of(alarmTime.hour, it)
+                    onAlarmTimeChanged(localDateTime.with(localTime))
+                }
             )
             Text(text = "분")
         }
@@ -279,10 +347,9 @@ fun AddTaskBody(
             Text(text = "메모", fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
             ContentTextField(
-                content = content,
-                onContentChanged = {
-                    content = it
-                })
+                content = memo,
+                onContentChanged = onMemoChanged
+            )
         }
         Spacer(modifier = Modifier.height(16.dp))
     }
@@ -294,15 +361,11 @@ fun TitleTextField(
     modifier: Modifier = Modifier,
     title: String,
     onTitleChanged: (String) -> Unit,
-    onFocusChanged: (Boolean) -> Unit,
     focusManager: FocusManager
 ) {
     OutlinedTextField(
         modifier = modifier
-            .fillMaxWidth()
-            .onFocusChanged {
-//                onFocusChanged(it.isFocused)
-            },
+            .fillMaxWidth(),
         value = title,
         onValueChange = { newText ->
             onTitleChanged(newText)
