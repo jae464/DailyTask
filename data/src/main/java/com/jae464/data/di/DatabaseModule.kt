@@ -21,5 +21,7 @@ object DatabaseModule {
         context,
         DailyTaskDataBase::class.java,
         "daily-task-database"
-    ).build()
+    )
+        .addCallback(callback = DailyTaskDataBase.callback)
+        .build()
 }

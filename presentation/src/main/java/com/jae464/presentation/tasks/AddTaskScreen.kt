@@ -66,7 +66,6 @@ import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.TaskType
-import com.jae464.presentation.sampledata.categories
 
 const val addTaskScreenRoute = "add_task"
 private const val TAG = "AddTaskScreen"
@@ -79,9 +78,17 @@ fun AddTaskScreen(
     viewModel: AddTaskViewModel = hiltViewModel()
 ) {
 
-    val addTaskUiModel by viewModel.task.collectAsStateWithLifecycle()
+    val addTaskState by viewModel.task.collectAsStateWithLifecycle()
+    val categories by viewModel.categories.collectAsStateWithLifecycle()
 
+    var selectedCategory: Category? by remember {
+        mutableStateOf(null)
+    }
+    if (categories.isNotEmpty()) {
+        selectedCategory = categories[0]
 
+    }
+    Log.d(TAG, "AddTaskScreen Rendered()")
     Scaffold(
         modifier = Modifier
             .windowInsetsPadding(
@@ -96,7 +103,12 @@ fun AddTaskScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            AddTaskBody(modifier = modifier)
+            AddTaskBody(
+                modifier = modifier,
+                categories = categories,
+                selectedCategory = selectedCategory,
+                onCategoryChanged = { category -> selectedCategory = category}
+            )
         }
     }
 }
@@ -139,7 +151,10 @@ fun AddTaskTopAppBar(
 
 @Composable
 fun AddTaskBody(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    categories: List<Category>,
+    selectedCategory: Category?,
+    onCategoryChanged: (Category) -> Unit
 ) {
     // variables
     val taskOptions = listOf(TaskType.Regular, TaskType.Irregular)
@@ -153,12 +168,11 @@ fun AddTaskBody(
     var progressMinute by remember { mutableStateOf(0) }
     val (selectedTaskType, onSelectedTaskType) = remember { mutableStateOf(taskOptions[0]) }
     var selectedDayOfWeekState by remember { mutableStateOf(DayOfWeekState(listOf())) }
-    var selectedCategory by remember { mutableStateOf(categories[0]) }
     var alarmHour by remember { mutableStateOf(12) }
     var alarmMinute by remember { mutableStateOf(0) }
     var content by remember { mutableStateOf("") }
 
-    Log.d("AddTaskBody", "Rendered")
+    Log.d(TAG, "AddTaskBody Rendered()")
 
     Column(
         modifier = modifier
@@ -232,14 +246,16 @@ fun AddTaskBody(
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(text = "카테고리", fontWeight = FontWeight.Bold)
-            RoundedCategorySpinner(items = categories,
-                selectedItem = selectedCategory,
-                onItemSelected = { category -> selectedCategory = category })
+        if (selectedCategory != null) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(text = "카테고리", fontWeight = FontWeight.Bold)
+                RoundedCategorySpinner(items = categories,
+                    selectedItem = selectedCategory,
+                    onItemSelected = onCategoryChanged)
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(
