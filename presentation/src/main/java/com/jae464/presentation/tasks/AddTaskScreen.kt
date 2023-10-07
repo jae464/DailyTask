@@ -2,7 +2,6 @@ package com.jae464.presentation.tasks
 
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -105,7 +104,6 @@ fun AddTaskScreen(
     if (categories.isNotEmpty()) {
         selectedCategory = categories[0]
     }
-
 
     when (addTaskState) {
         is AddTaskState.LoadSavedTask -> {

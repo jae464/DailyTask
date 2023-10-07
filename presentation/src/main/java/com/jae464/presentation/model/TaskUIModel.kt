@@ -20,4 +20,18 @@ data class TaskUIModel(
     val alarmTime = "%2d시 %02d분".format(alarmHour, alarmMinute)
 }
 
+fun Task.toTaskUIModel(categoryName: String): TaskUIModel {
+    return TaskUIModel(
+        id = id,
+        title = title,
+        timeHour = progressTime.hour,
+        timeMinute = progressTime.minute,
+        taskType = taskType,
+        dayOfWeek = dayOfWeeks,
+        category = categoryName,
+        alarmHour = alarmTime.hour,
+        alarmMinute = alarmTime.minute
+    )
+}
+
 
