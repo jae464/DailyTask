@@ -23,10 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.jae464.presentation.home.HomeScreen
 import com.jae464.presentation.setting.SettingScreen
 import com.jae464.presentation.statistic.StatisticScreen
@@ -47,11 +49,13 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
 
                 Scaffold(
-                    bottomBar = {BottomNavBar(navController = navController)}
+                    bottomBar = { BottomNavBar(navController = navController) }
                 ) { padding ->
-                    Row(modifier = Modifier
-                        .padding(padding)
-                        .fillMaxSize()) {
+                    Row(
+                        modifier = Modifier
+                            .padding(padding)
+                            .fillMaxSize()
+                    ) {
                         NavigationGraph(navController = navController)
                     }
                 }
@@ -67,7 +71,7 @@ fun BottomNavBar(navController: NavHostController) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar {
-        items.forEach {item ->
+        items.forEach { item ->
             NavigationBarItem(
                 selected = currentRoute == item.route,
                 onClick = {
@@ -97,10 +101,19 @@ fun NavigationGraph(navController: NavHostController) {
         composable(Routes.Home.route) {
             HomeScreen()
         }
-        composable(Routes.TaskList.route) {
+        composable(
+            route = Routes.TaskList.route
+        ) {
             TaskListScreen(
-                    onClickAddTask = {
-                    navController.navigate(addTaskScreenRoute, null)
+                onClickAddTask = {
+                    navController.navigate(addTaskScreenRoute) {
+                        launchSingleTop = true
+                    }
+                },
+                onClickTask = { taskId ->
+                    navController.navigate("$addTaskScreenRoute?taskId=$taskId") {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -110,7 +123,14 @@ fun NavigationGraph(navController: NavHostController) {
         composable(Routes.Setting.route) {
             SettingScreen()
         }
-        composable(addTaskScreenRoute) {
+        composable(
+            route = "$addTaskScreenRoute?taskId={taskId}",
+            arguments = listOf(
+                navArgument("taskId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                })
+        ) {
             AddTaskScreen(
                 onBackClick = {
                     navController.popBackStack()
@@ -121,8 +141,8 @@ fun NavigationGraph(navController: NavHostController) {
 }
 
 enum class Routes(val icon: ImageVector, val route: String) {
-    Home(Icons.Rounded.Home,"home"),
-    TaskList(Icons.Rounded.List,"task_list"),
+    Home(Icons.Rounded.Home, "home"),
+    TaskList(Icons.Rounded.List, "task_list"),
     Statistic(Icons.Rounded.Info, "statistic"),
     Setting(Icons.Rounded.Settings, "setting"),
 }
