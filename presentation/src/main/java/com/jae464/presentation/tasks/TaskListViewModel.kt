@@ -1,5 +1,6 @@
 package com.jae464.presentation.tasks
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.usecase.GetAllCategoriesUseCase
@@ -38,9 +39,14 @@ class TaskListViewModel @Inject constructor(
 
     val taskState: StateFlow<TaskState> =
         combine(categories, tasks) { categories, tasks ->
-        TaskState.Success(tasks.map { task ->
-            task.toTaskUIModel(categories.first { it.id == task.categoryId }.name)
-        })
+            // check categories and tasks are not empty
+            if (categories.isNotEmpty() && tasks.isNotEmpty()) {
+                TaskState.Success(tasks.map { task ->
+                    task.toTaskUIModel(categories.first { it.id == task.categoryId }.name)
+                })
+            } else {
+                TaskState.Loading
+            }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
