@@ -2,6 +2,7 @@ package com.jae464.presentation.tasks
 
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -83,6 +85,7 @@ fun AddTaskScreen(
 
     val addTaskState by viewModel.task.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val isCompleted by viewModel.saveCompleted.collectAsStateWithLifecycle()
 
     var title by remember { mutableStateOf("") }
     var progressTime by remember { mutableStateOf(HourMinute(1, 0)) }
@@ -92,19 +95,30 @@ fun AddTaskScreen(
     var memo by remember { mutableStateOf("") }
     var selectedCategory: Category? by remember { mutableStateOf(null) }
 
+    LaunchedEffect(isCompleted) {
+        if (isCompleted) {
+            Log.d(TAG, "saved completed! go to back screen")
+            onBackClick()
+        }
+    }
+
     if (categories.isNotEmpty()) {
         selectedCategory = categories[0]
     }
 
-    if (addTaskState is AddTaskState.Success) {
-        val savedTaskModel = (addTaskState as AddTaskState.Success).addTaskUiModel
-        title = savedTaskModel.title
-        progressTime = savedTaskModel.progressTime
-        onSelectedTaskType(savedTaskModel.taskType)
-        selectedDayOfWeeks = savedTaskModel.dayOfWeeks
-        alarmTime = savedTaskModel.alarmTime
-        memo = savedTaskModel.memo
-        selectedCategory = categories.firstOrNull { it.id == savedTaskModel.categoryId }
+
+    when (addTaskState) {
+        is AddTaskState.LoadSavedTask -> {
+            val savedTaskModel = (addTaskState as AddTaskState.LoadSavedTask).addTaskUiModel
+            title = savedTaskModel.title
+            progressTime = savedTaskModel.progressTime
+            onSelectedTaskType(savedTaskModel.taskType)
+            selectedDayOfWeeks = savedTaskModel.dayOfWeeks
+            alarmTime = savedTaskModel.alarmTime
+            memo = savedTaskModel.memo
+            selectedCategory = categories.firstOrNull { it.id == savedTaskModel.categoryId }
+        }
+        else -> {}
     }
 
     Log.d(TAG, "AddTaskScreen Rendered()")
