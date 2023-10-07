@@ -50,6 +50,7 @@ class DayOfWeekConverter {
 
     @TypeConverter
     fun stringToDayOfWeek(value: String?): List<DayOfWeek>? {
+        if (value?.isEmpty() == true) return emptyList()
         return value?.split(",")?.map { day ->
             DayOfWeek.values().first {
                 day == it.day
