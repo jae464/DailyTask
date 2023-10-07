@@ -50,6 +50,7 @@ import com.jae464.presentation.sampledata.taskUiModels
 fun TaskListScreen(
     modifier: Modifier = Modifier,
     onClickAddTask: () -> Unit,
+    onClickTask: (String) -> Unit,
     viewModel: TaskListViewModel = hiltViewModel()
 ) {
 
@@ -80,7 +81,8 @@ fun TaskListScreen(
                             key = { it.id }) { taskUiModel ->
                             TaskItem(
                                 taskUIModel = taskUiModel,
-                                modifier = Modifier.padding(vertical = 4.dp)
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                onClickTask = onClickTask
                             )
                         }
                     }
@@ -100,8 +102,9 @@ fun TaskListScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskItem(taskUIModel: TaskUIModel, modifier: Modifier) {
+fun TaskItem(taskUIModel: TaskUIModel, modifier: Modifier, onClickTask: (String) -> Unit) {
     Card(
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(
@@ -109,8 +112,8 @@ fun TaskItem(taskUIModel: TaskUIModel, modifier: Modifier) {
         ),
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-
-        ) {
+        onClick = { onClickTask(taskUIModel.id) }
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = taskUIModel.header,

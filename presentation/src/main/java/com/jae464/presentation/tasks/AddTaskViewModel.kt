@@ -34,12 +34,12 @@ class AddTaskViewModel @Inject constructor(
 
     // 기존 Task를 편집하는 경우 기존의 데이터를 가져온다.
     @OptIn(ExperimentalCoroutinesApi::class)
-    val task = savedStateHandle.getStateFlow<String?>(
+    val task = savedStateHandle.getStateFlow(
         key = "taskId",
-        initialValue = null
+        initialValue = ""
     )
         .flatMapLatest { taskId ->
-            if (taskId == null) {
+            if (taskId.isEmpty()) {
                 flowOf(null)
             }
             else {
