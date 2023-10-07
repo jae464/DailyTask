@@ -1,5 +1,6 @@
 package com.jae464.presentation.tasks
 
+import androidx.compose.runtime.MutableState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +13,7 @@ import com.jae464.presentation.model.toAddTaskUiModel
 import com.jae464.presentation.model.toTask
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -27,6 +29,8 @@ class AddTaskViewModel @Inject constructor(
     private val saveTaskUseCase: SaveTaskUseCase,
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase
 ): ViewModel() {
+
+    val saveCompleted = MutableStateFlow(false)
 
     // 기존 Task를 편집하는 경우 기존의 데이터를 가져온다.
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -47,13 +51,13 @@ class AddTaskViewModel @Inject constructor(
                 AddTaskState.Empty
             }
             else {
-                AddTaskState.Success(task.toAddTaskUiModel())
+                AddTaskState.LoadSavedTask(task.toAddTaskUiModel())
             }
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
+            initialValue = AddTaskState.Loading
         )
 
     // 모든 카테고리 가져오기
@@ -67,11 +71,13 @@ class AddTaskViewModel @Inject constructor(
     fun saveTask(addTaskUiModel: AddTaskUIModel) {
         viewModelScope.launch {
             saveTaskUseCase(addTaskUiModel.toTask())
+            saveCompleted.value = true
         }
     }
 }
 
 sealed interface AddTaskState {
-    data class Success(val addTaskUiModel: AddTaskUIModel): AddTaskState
+    object Loading: AddTaskState
+    data class LoadSavedTask(val addTaskUiModel: AddTaskUIModel): AddTaskState
     object Empty: AddTaskState
 }
