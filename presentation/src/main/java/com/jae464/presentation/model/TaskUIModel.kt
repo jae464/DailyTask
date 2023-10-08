@@ -1,5 +1,6 @@
 package com.jae464.presentation.model
 
+import android.util.Log
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
