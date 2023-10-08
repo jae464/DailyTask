@@ -30,6 +30,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jae464.presentation.home.HomeScreen
+import com.jae464.presentation.navigation.DailyTaskNavHost
+import com.jae464.presentation.navigation.TopLevelDestination
+import com.jae464.presentation.navigation.navigateToTopLevelDestination
 import com.jae464.presentation.setting.SettingScreen
 import com.jae464.presentation.statistic.StatisticScreen
 import com.jae464.presentation.tasks.AddTaskScreen
@@ -56,7 +59,7 @@ class MainActivity : ComponentActivity() {
                             .padding(padding)
                             .fillMaxSize()
                     ) {
-                        NavigationGraph(navController = navController)
+                        DailyTaskNavHost(navController = navController)
                     }
                 }
             }
@@ -66,27 +69,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BottomNavBar(navController: NavHostController) {
-    val items = Routes.values().asList()
+    val topDestinations = TopLevelDestination.values().asList()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar {
-        items.forEach { item ->
+        topDestinations.forEach { destination ->
             NavigationBarItem(
-                selected = currentRoute == item.route,
+                selected = currentRoute == destination.route,
                 onClick = {
-                    navController.navigate(item.route) {
-                        navController.graph.startDestinationRoute?.let {
-                            Log.d("MainActivity", it)
-                            popUpTo(it) { saveState = true }
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                          navController.navigateToTopLevelDestination(destination)
                 },
                 icon = {
                     Icon(
-                        imageVector = item.icon,
+                        imageVector = destination.icon,
                         contentDescription = null
                     )
                 }
