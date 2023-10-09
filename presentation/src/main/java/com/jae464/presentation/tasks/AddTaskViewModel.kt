@@ -1,5 +1,6 @@
 package com.jae464.presentation.tasks
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -8,6 +9,7 @@ import com.jae464.domain.usecase.GetAllCategoriesUseCase
 import com.jae464.domain.usecase.GetCategoryUseCase
 import com.jae464.domain.usecase.GetTaskUseCase
 import com.jae464.domain.usecase.SaveTaskUseCase
+import com.jae464.domain.usecase.UpdateTaskUseCase
 import com.jae464.presentation.model.AddTaskUIModel
 import com.jae464.presentation.model.toAddTaskUiModel
 import com.jae464.presentation.model.toTask
@@ -27,7 +29,8 @@ class AddTaskViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val getTaskUseCase: GetTaskUseCase,
     private val saveTaskUseCase: SaveTaskUseCase,
-    private val getAllCategoriesUseCase: GetAllCategoriesUseCase
+    private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
+    private val updateTaskUseCase: UpdateTaskUseCase
 ): ViewModel() {
 
     val saveCompleted = MutableStateFlow(false)
@@ -70,7 +73,18 @@ class AddTaskViewModel @Inject constructor(
 
     fun saveTask(addTaskUiModel: AddTaskUIModel) {
         viewModelScope.launch {
-            saveTaskUseCase(addTaskUiModel.toTask())
+            when (task.value) {
+                is AddTaskState.Empty -> {
+                    saveTaskUseCase(addTaskUiModel.toTask())
+                }
+                is AddTaskState.LoadSavedTask -> {
+                    val taskId = savedStateHandle.get<String>("taskId")
+                    Log.d("AddTaskViewModel", "taskId : $taskId")
+                    if (taskId == null) return@launch
+                    updateTaskUseCase(addTaskUiModel.toTask().copy(id = taskId))
+                }
+                is AddTaskState.Loading -> return@launch
+            }
             saveCompleted.value = true
         }
     }
