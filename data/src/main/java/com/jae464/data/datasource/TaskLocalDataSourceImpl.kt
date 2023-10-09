@@ -23,6 +23,10 @@ class TaskLocalDataSourceImpl @Inject constructor(
         taskDao.insertTask(taskEntity)
     }
 
+    override suspend fun updateTask(taskEntity: TaskEntity) {
+        taskDao.updateTask(taskEntity)
+    }
+
     override suspend fun deleteTask(taskId: String) {
         taskDao.deleteTask(taskId)
     }

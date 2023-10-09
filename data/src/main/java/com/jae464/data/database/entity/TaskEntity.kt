@@ -49,9 +49,9 @@ fun TaskEntity.toDomain(): Task {
     )
 }
 
-fun Task.toEntity(): TaskEntity {
+fun Task.toEntity(taskId: String? = null): TaskEntity {
     return TaskEntity(
-        id = UUID.randomUUID().toString(),
+        id = taskId ?: UUID.randomUUID().toString(),
         title = title,
         memo = memo,
         progressTime = progressTime,

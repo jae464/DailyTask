@@ -4,8 +4,13 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.jae464.data.database.entity.TaskEntity
+import com.jae464.domain.model.DayOfWeek
+import com.jae464.domain.model.HourMinute
+import com.jae464.domain.model.TaskType
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDateTime
 
 @Dao
 interface TaskDao {
@@ -17,6 +22,9 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     fun getTask(taskId: String): Flow<TaskEntity>
+
+    @Update
+    suspend fun updateTask(taskEntity: TaskEntity)
 
     @Query(
         value = """

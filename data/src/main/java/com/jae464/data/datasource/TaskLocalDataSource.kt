@@ -8,5 +8,6 @@ interface TaskLocalDataSource {
     fun getAllTasks(): Flow<List<TaskEntity>>
     fun getTask(taskId: String): Flow<TaskEntity>
     suspend fun insertTask(taskEntity: TaskEntity)
+    suspend fun updateTask(taskEntity: TaskEntity)
     suspend fun deleteTask(taskId: String)
 }

@@ -31,6 +31,10 @@ class TaskRepositoryImpl @Inject constructor(
         taskLocalDataSource.insertTask(task.toEntity())
     }
 
+    override suspend fun updateTask(task: Task) {
+        taskLocalDataSource.insertTask(task.toEntity(task.id))
+    }
+
     override suspend fun deleteTask(taskId: String) {
         taskLocalDataSource.deleteTask(taskId)
     }
