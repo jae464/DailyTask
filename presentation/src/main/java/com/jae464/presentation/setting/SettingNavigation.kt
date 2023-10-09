@@ -8,7 +8,7 @@ import androidx.navigation.compose.composable
 const val settingRoute = "setting"
 
 fun NavController.navigateToSetting(navOptions: NavOptions? = null) {
-    this.navigate(settingRoute)
+    this.navigate(settingRoute, navOptions)
 }
 
 fun NavGraphBuilder.settingScreen() {
