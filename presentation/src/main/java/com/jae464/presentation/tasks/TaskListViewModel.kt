@@ -3,6 +3,7 @@ package com.jae464.presentation.tasks
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jae464.domain.usecase.DeleteTaskUseCase
 import com.jae464.domain.usecase.GetAllCategoriesUseCase
 import com.jae464.domain.usecase.GetAllTasksUseCase
 import com.jae464.domain.usecase.GetCategoryUseCase
@@ -15,12 +16,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class TaskListViewModel @Inject constructor(
     private val getAllTasksUseCase: GetAllTasksUseCase,
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
+    private val deleteTaskUseCase: DeleteTaskUseCase
 ) : ViewModel() {
 
     private val categories = getAllCategoriesUseCase()
@@ -52,6 +55,13 @@ class TaskListViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = TaskState.Loading
     )
+
+    fun deleteTask(taskId: String) {
+        viewModelScope.launch {
+            deleteTaskUseCase(taskId)
+        }
+    }
+
 }
 
 sealed interface TaskState {
