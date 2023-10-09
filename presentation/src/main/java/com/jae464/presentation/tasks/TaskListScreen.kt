@@ -31,10 +31,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.SwipeToDismiss
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccessTimeFilled
 import androidx.compose.material.icons.rounded.AddCircle
@@ -84,7 +86,7 @@ fun TaskListScreen(
 ) {
 
     val taskState by viewModel.taskState.collectAsStateWithLifecycle()
-    var showDeleteDialog by remember { mutableStateOf(null) }
+    var showDeleteDialog by remember { mutableStateOf("") } // 삭제할 taskId 저장
 
     Surface(
         modifier = Modifier
@@ -112,7 +114,7 @@ fun TaskListScreen(
                             TaskItem(
                                 taskUIModel = taskUiModel,
                                 onClickTask = onClickTask,
-                                onClickDelete = viewModel::deleteTask
+                                onClickDelete = {showDeleteDialog = it}
                             )
                         }
                     }
@@ -131,8 +133,26 @@ fun TaskListScreen(
                 else -> {}
 
             }
-        }
 
+            if (showDeleteDialog.isNotEmpty()) {
+                AlertDialog(
+                    onDismissRequest = {
+                        showDeleteDialog = ""
+                    },
+                    title = {
+                        Text(text = "일정을 삭제하시겠습니까?")
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            viewModel.deleteTask(showDeleteDialog)
+                            showDeleteDialog = ""
+                        }) {
+                            Text(text = "삭제")
+                        }
+                    }
+                )
+            }
+        }
     }
 }
 
