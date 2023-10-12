@@ -101,22 +101,24 @@ fun AddTaskScreen(
         }
     }
 
-    if (categories.isNotEmpty()) {
-        selectedCategory = categories[0]
+    LaunchedEffect(addTaskState) {
+        when (addTaskState) {
+            is AddTaskState.LoadSavedTask -> {
+                val savedTaskModel = (addTaskState as AddTaskState.LoadSavedTask).addTaskUiModel
+                title = savedTaskModel.title
+                progressTime = savedTaskModel.progressTime
+                onSelectedTaskType(savedTaskModel.taskType)
+                selectedDayOfWeeks = savedTaskModel.dayOfWeeks
+                alarmTime = savedTaskModel.alarmTime
+                memo = savedTaskModel.memo
+                selectedCategory = categories.firstOrNull { it.id == savedTaskModel.categoryId }
+            }
+            else -> {}
+        }
     }
 
-    when (addTaskState) {
-        is AddTaskState.LoadSavedTask -> {
-            val savedTaskModel = (addTaskState as AddTaskState.LoadSavedTask).addTaskUiModel
-            title = savedTaskModel.title
-            progressTime = savedTaskModel.progressTime
-            onSelectedTaskType(savedTaskModel.taskType)
-            selectedDayOfWeeks = savedTaskModel.dayOfWeeks
-            alarmTime = savedTaskModel.alarmTime
-            memo = savedTaskModel.memo
-            selectedCategory = categories.firstOrNull { it.id == savedTaskModel.categoryId }
-        }
-        else -> {}
+    if (categories.isNotEmpty()) {
+        selectedCategory = categories[0]
     }
 
     Log.d(TAG, "AddTaskScreen Rendered()")
