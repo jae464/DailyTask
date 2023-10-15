@@ -5,8 +5,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.jae464.data.database.dao.CategoryDao
+import com.jae464.data.database.dao.ProgressTaskDao
 import com.jae464.data.database.dao.TaskDao
 import com.jae464.data.database.entity.CategoryEntity
+import com.jae464.data.database.entity.ProgressTaskEntity
 import com.jae464.data.database.entity.TaskEntity
 import com.jae464.data.database.util.DayOfWeekConverter
 import com.jae464.data.database.util.HourMinuteConverter
@@ -17,7 +19,8 @@ import java.util.concurrent.Executors
 @Database(
     entities = [
         TaskEntity::class,
-        CategoryEntity::class
+        CategoryEntity::class,
+        ProgressTaskEntity::class
     ],
     version = 1
 )
@@ -30,6 +33,7 @@ import java.util.concurrent.Executors
 abstract class DailyTaskDataBase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun progressTaskDao(): ProgressTaskDao
 
     companion object {
         val callback = object: Callback() {
