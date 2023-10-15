@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.jae464.domain.model.HourMinute
+import com.jae464.domain.model.ProgressTask
 import java.time.LocalDateTime
 
 @Entity(
@@ -27,3 +28,14 @@ data class ProgressTaskEntity(
     @ColumnInfo(name = "memo") val memo: String,
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime
 )
+
+fun ProgressTaskEntity.toDomain(): ProgressTask {
+    return ProgressTask(
+        id = id,
+        totalTime = totalTime,
+        progressedTime = progressedTime,
+        taskId = taskId,
+        memo = memo,
+        createdAt = createdAt
+    )
+}
