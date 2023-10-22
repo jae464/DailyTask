@@ -23,6 +23,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     fun getTask(taskId: String): Flow<TaskEntity>
 
+    @Query("SELECT * FROM tasks WHERE day_of_week LIKE '%' || :dayOfWeek || '%'")
+    fun getTasksByDayOfWeek(dayOfWeek: String): Flow<List<TaskEntity>>
+
     @Update
     suspend fun updateTask(taskEntity: TaskEntity)
 
