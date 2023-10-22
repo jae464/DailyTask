@@ -6,6 +6,7 @@ import androidx.room.util.joinIntoString
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.HourMinute
 import com.jae464.domain.model.TaskType
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class HourMinuteConverter {
@@ -68,5 +69,17 @@ class LocalDateTimeConverter {
     @TypeConverter
     fun stringToLocalDateTimes(value: String?): LocalDateTime? {
         return LocalDateTime.parse(value)
+    }
+}
+
+class LocalDateConverter {
+    @TypeConverter
+    fun localDateToString(localDate: LocalDate?): String {
+        return localDate.toString()
+    }
+
+    @TypeConverter
+    fun stringToLocalDate(value: String?): LocalDate? {
+        return LocalDate.parse(value)
     }
 }

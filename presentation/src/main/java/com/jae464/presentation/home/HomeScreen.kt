@@ -1,5 +1,6 @@
 package com.jae464.presentation.home
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -11,14 +12,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = hiltViewModel()
+) {
+    val tasks by viewModel.tasks.collectAsStateWithLifecycle()
+    Log.d("HomeScreen", tasks.toString())
     Surface(
-        modifier = Modifier.windowInsetsPadding(
-            WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-        ).fillMaxSize(),
+        modifier = Modifier
+            .windowInsetsPadding(
+                WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
+            )
+            .fillMaxSize(),
     ) {
         Text(text = "HOME")
     }

@@ -12,6 +12,7 @@ import com.jae464.data.database.entity.ProgressTaskEntity
 import com.jae464.data.database.entity.TaskEntity
 import com.jae464.data.database.util.DayOfWeekConverter
 import com.jae464.data.database.util.HourMinuteConverter
+import com.jae464.data.database.util.LocalDateConverter
 import com.jae464.data.database.util.LocalDateTimeConverter
 import com.jae464.data.database.util.TaskTypeConverter
 import java.util.concurrent.Executors
@@ -28,7 +29,8 @@ import java.util.concurrent.Executors
     HourMinuteConverter::class,
     TaskTypeConverter::class,
     DayOfWeekConverter::class,
-    LocalDateTimeConverter::class
+    LocalDateTimeConverter::class,
+    LocalDateConverter::class
 )
 abstract class DailyTaskDataBase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
