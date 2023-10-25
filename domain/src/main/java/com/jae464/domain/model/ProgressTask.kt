@@ -1,6 +1,6 @@
 package com.jae464.domain.model
 
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 data class ProgressTask(
     val id: String,
@@ -8,5 +8,5 @@ data class ProgressTask(
     val progressedTime: HourMinute,
     val taskId: String,
     val memo: String,
-    val createdAt: LocalDateTime
+    val createdAt: LocalDate
 )
