@@ -121,6 +121,10 @@ fun AddTaskScreen(
         selectedCategory = categories[0]
     }
 
+    if (selectedTaskType == TaskType.Irregular) {
+        selectedDayOfWeeks = emptyList()
+    }
+
     Log.d(TAG, "AddTaskScreen Rendered()")
     Scaffold(
         modifier = Modifier
@@ -299,22 +303,25 @@ fun AddTaskBody(
                 )
             }
         }
-        LazyRow(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            items(dayOfWeeks) { dayOfWeek ->
-                RoundedFilterChip(
-                    text = dayOfWeek.day,
-                    checked = selectedDayOfWeeks.contains(dayOfWeek),
-                    onCheckedChanged = { checked ->
-                        if (checked) {
-                            onDayOfWeeksChanged(selectedDayOfWeeks + listOf(dayOfWeek))
-                        } else {
-                            onDayOfWeeksChanged(selectedDayOfWeeks.filter { day -> day != dayOfWeek })
+        // 일정 타입이 정기일때만 요일 선택 칩을 보여준다.
+        if (selectedTaskType == TaskType.Regular) {
+            LazyRow(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                items(dayOfWeeks) { dayOfWeek ->
+                    RoundedFilterChip(
+                        text = dayOfWeek.day,
+                        checked = selectedDayOfWeeks.contains(dayOfWeek),
+                        onCheckedChanged = { checked ->
+                            if (checked) {
+                                onDayOfWeeksChanged(selectedDayOfWeeks + listOf(dayOfWeek))
+                            } else {
+                                onDayOfWeeksChanged(selectedDayOfWeeks.filter { day -> day != dayOfWeek })
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
