@@ -14,6 +14,7 @@ interface TaskLocalDataSource {
     fun getProgressTask(progressTaskId: String): Flow<ProgressTaskEntity>
     fun getTodayProgressTask(): Flow<ProgressTaskEntity>
     suspend fun insertTask(taskEntity: TaskEntity)
+    suspend fun insertProgressTask(progressTaskEntity: ProgressTaskEntity)
     suspend fun updateTask(taskEntity: TaskEntity)
     suspend fun deleteTask(taskId: String)
 }
