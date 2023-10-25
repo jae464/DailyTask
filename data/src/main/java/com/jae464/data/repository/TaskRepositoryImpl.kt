@@ -60,6 +60,10 @@ class TaskRepositoryImpl @Inject constructor(
         taskLocalDataSource.insertTask(task.toEntity())
     }
 
+    override suspend fun insertProgressTask(progressTask: ProgressTask) {
+        taskLocalDataSource.insertProgressTask(progressTask.toEntity())
+    }
+
     override suspend fun updateTask(task: Task) {
         taskLocalDataSource.insertTask(task.toEntity(task.id))
     }

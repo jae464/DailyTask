@@ -40,3 +40,14 @@ fun ProgressTaskEntity.toDomain(): ProgressTask {
         createdAt = createdAt
     )
 }
+
+fun ProgressTask.toEntity(): ProgressTaskEntity {
+    return ProgressTaskEntity(
+        id = id,
+        totalTime = totalTime,
+        progressedTime = progressedTime,
+        taskId = taskId,
+        memo = memo,
+        createdAt = createdAt
+    )
+}
