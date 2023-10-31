@@ -4,6 +4,7 @@ import com.jae464.data.database.dao.CategoryDao
 import com.jae464.data.database.dao.ProgressTaskDao
 import com.jae464.data.database.dao.TaskDao
 import com.jae464.data.database.entity.ProgressTaskEntity
+import com.jae464.data.database.entity.ProgressTaskWithTask
 import com.jae464.data.database.entity.TaskEntity
 import com.jae464.domain.model.DayOfWeek
 import kotlinx.coroutines.flow.Flow
@@ -32,8 +33,12 @@ class TaskLocalDataSourceImpl @Inject constructor(
         return progressTaskDao.getProgressTask(progressTaskId)
     }
 
-    override fun getTodayProgressTask(): Flow<ProgressTaskEntity> {
+    override fun getTodayProgressTasks(): Flow<List<ProgressTaskEntity>> {
         return progressTaskDao.getProgressTaskByDate(LocalDate.now())
+    }
+
+    override fun getTodayProgressTasksWithTask(): Flow<List<ProgressTaskWithTask>> {
+        return progressTaskDao.getProgressTaskWithTaskByDate(LocalDate.now())
     }
 
     override suspend fun insertTask(taskEntity: TaskEntity) {

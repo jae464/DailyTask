@@ -9,6 +9,7 @@ import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.HourMinute
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -60,5 +61,16 @@ fun Task.toEntity(taskId: String? = null): TaskEntity {
         categoryId = categoryId,
         alarmTime = alarmTime,
         createdAt = LocalDateTime.now()
+    )
+}
+
+fun Task.toProgressTaskEntity(): ProgressTaskEntity {
+    return ProgressTaskEntity(
+        id = UUID.randomUUID().toString(),
+        totalTime = progressTime,
+        progressedTime = HourMinute(0, 0),
+        taskId = id,
+        memo = "",
+        createdAt = LocalDate.now()
     )
 }

@@ -1,6 +1,7 @@
 package com.jae464.data.datasource
 
 import com.jae464.data.database.entity.ProgressTaskEntity
+import com.jae464.data.database.entity.ProgressTaskWithTask
 import com.jae464.data.database.entity.TaskEntity
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.Task
@@ -12,7 +13,8 @@ interface TaskLocalDataSource {
     fun getTask(taskId: String): Flow<TaskEntity>
     fun getTasksByDayOfWeek(dayOfWeeks: DayOfWeek): Flow<List<TaskEntity>>
     fun getProgressTask(progressTaskId: String): Flow<ProgressTaskEntity>
-    fun getTodayProgressTask(): Flow<ProgressTaskEntity>
+    fun getTodayProgressTasks(): Flow<List<ProgressTaskEntity>>
+    fun getTodayProgressTasksWithTask(): Flow<List<ProgressTaskWithTask>>
     suspend fun insertTask(taskEntity: TaskEntity)
     suspend fun insertProgressTask(progressTaskEntity: ProgressTaskEntity)
     suspend fun updateTask(taskEntity: TaskEntity)
