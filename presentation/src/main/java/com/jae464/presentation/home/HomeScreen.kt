@@ -22,8 +22,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val tasks by viewModel.tasks.collectAsStateWithLifecycle()
-    Log.d("HomeScreen", tasks.toString())
+    val progressTaskState by viewModel.progressTaskState.collectAsStateWithLifecycle()
+    Log.d("HomeScreen", progressTaskState.toString())
     Surface(
         modifier = Modifier
             .windowInsetsPadding(

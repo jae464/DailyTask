@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.jae464.data.database.entity.ProgressTaskEntity
+import com.jae464.data.database.entity.ProgressTaskWithTask
 import com.jae464.domain.model.HourMinute
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -21,7 +23,11 @@ interface ProgressTaskDao {
     fun getProgressTask(progressTaskId: String): Flow<ProgressTaskEntity>
 
     @Query("SELECT * FROM progress_tasks WHERE created_at = :date")
-    fun getProgressTaskByDate(date: LocalDate): Flow<ProgressTaskEntity>
+    fun getProgressTaskByDate(date: LocalDate): Flow<List<ProgressTaskEntity>>
+
+    @Transaction
+    @Query("SELECT * FROM progress_tasks WHERE created_at = :date")
+    fun getProgressTaskWithTaskByDate(date: LocalDate): Flow<List<ProgressTaskWithTask>>
 
     @Query("UPDATE progress_tasks SET progressed_time = :progressedTime WHERE id = :progressTaskId")
     fun updateProgressedTime(progressTaskId: String, progressedTime: HourMinute)

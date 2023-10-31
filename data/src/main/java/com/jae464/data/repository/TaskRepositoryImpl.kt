@@ -2,6 +2,7 @@ package com.jae464.data.repository
 
 import com.jae464.data.database.entity.toDomain
 import com.jae464.data.database.entity.toEntity
+import com.jae464.data.database.entity.toProgressTaskEntity
 import com.jae464.data.datasource.TaskLocalDataSource
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.ProgressTask
@@ -46,14 +47,22 @@ class TaskRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getTodayProgressTask(): Flow<ProgressTask> {
-        return taskLocalDataSource.getTodayProgressTask().map { progressTaskEntity ->
-            progressTaskEntity.toDomain()
+    override fun getTodayProgressTasks(): Flow<List<ProgressTask>> {
+        return taskLocalDataSource.getTodayProgressTasks().map { progressTaskEntities ->
+            progressTaskEntities.map {
+                it.toDomain()
+            }
         }
     }
 
-    override suspend fun updateProgressTask(tasks: List<Task>) {
+    override fun getTodayProgressTasksWithTask(): Flow<List<ProgressTask>> {
+        TODO("Not yet implemented")
+    }
 
+    override suspend fun updateProgressTask(tasks: List<Task>) {
+        tasks.forEach {
+            taskLocalDataSource.insertProgressTask(it.toProgressTaskEntity())
+        }
     }
 
     override suspend fun saveTask(task: Task) {
