@@ -55,10 +55,6 @@ class TaskRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getTodayProgressTasksWithTask(): Flow<List<ProgressTask>> {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun updateProgressTask(tasks: List<Task>) {
         tasks.forEach {
             taskLocalDataSource.insertProgressTask(it.toProgressTaskEntity())

@@ -70,6 +70,7 @@ fun Task.toProgressTaskEntity(): ProgressTaskEntity {
         totalTime = progressTime,
         progressedTime = HourMinute(0, 0),
         taskId = id,
+        categoryId = categoryId,
         memo = "",
         createdAt = LocalDate.now()
     )

@@ -47,7 +47,7 @@ class HomeViewModel @Inject constructor(
         progressTasks
     ) { tasks, progressTasks ->
         Log.d(TAG, "tasks : $tasks progressTasks: $progressTasks")
-        val progressTaskIds = progressTasks.map { it.taskId }
+        val progressTaskIds = progressTasks.map { it.task.id }
         val addProgressTasks = tasks.filter { task -> task.id !in progressTaskIds }
         Log.d(TAG, "Have to Insert Progress Task : $addProgressTasks")
 
