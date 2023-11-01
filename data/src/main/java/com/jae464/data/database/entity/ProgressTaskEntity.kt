@@ -26,27 +26,18 @@ data class ProgressTaskEntity(
     @ColumnInfo(name = "total_time") val totalTime: HourMinute,
     @ColumnInfo(name = "progressed_time") val progressedTime: HourMinute,
     @ColumnInfo(name = "task_id") val taskId: String,
+    @ColumnInfo(name = "category_id") val categoryId: Long,
     @ColumnInfo(name = "memo") val memo: String,
     @ColumnInfo(name = "created_at") val createdAt: LocalDate
 )
-
-fun ProgressTaskEntity.toDomain(): ProgressTask {
-    return ProgressTask(
-        id = id,
-        totalTime = totalTime,
-        progressedTime = progressedTime,
-        taskId = taskId,
-        memo = memo,
-        createdAt = createdAt
-    )
-}
 
 fun ProgressTask.toEntity(): ProgressTaskEntity {
     return ProgressTaskEntity(
         id = id,
         totalTime = totalTime,
         progressedTime = progressedTime,
-        taskId = taskId,
+        taskId = task.id,
+        categoryId = category.id,
         memo = memo,
         createdAt = createdAt
     )

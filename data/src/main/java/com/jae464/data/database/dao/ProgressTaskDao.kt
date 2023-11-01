@@ -19,15 +19,13 @@ interface ProgressTaskDao {
     @Query("SELECT * FROM progress_tasks")
     fun getAllProgressTasks(): Flow<List<ProgressTaskEntity>>
 
+    @Transaction
     @Query("SELECT * FROM progress_tasks WHERE id = :progressTaskId")
-    fun getProgressTask(progressTaskId: String): Flow<ProgressTaskEntity>
-
-    @Query("SELECT * FROM progress_tasks WHERE created_at = :date")
-    fun getProgressTaskByDate(date: LocalDate): Flow<List<ProgressTaskEntity>>
+    fun getProgressTask(progressTaskId: String): Flow<ProgressTaskWithTask>
 
     @Transaction
     @Query("SELECT * FROM progress_tasks WHERE created_at = :date")
-    fun getProgressTaskWithTaskByDate(date: LocalDate): Flow<List<ProgressTaskWithTask>>
+    fun getProgressTaskByDate(date: LocalDate): Flow<List<ProgressTaskWithTask>>
 
     @Query("UPDATE progress_tasks SET progressed_time = :progressedTime WHERE id = :progressTaskId")
     fun updateProgressedTime(progressTaskId: String, progressedTime: HourMinute)

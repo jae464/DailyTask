@@ -29,16 +29,12 @@ class TaskLocalDataSourceImpl @Inject constructor(
         return taskDao.getTasksByDayOfWeek(dayOfWeeks.day)
     }
 
-    override fun getProgressTask(progressTaskId: String): Flow<ProgressTaskEntity> {
+    override fun getProgressTask(progressTaskId: String): Flow<ProgressTaskWithTask> {
         return progressTaskDao.getProgressTask(progressTaskId)
     }
 
-    override fun getTodayProgressTasks(): Flow<List<ProgressTaskEntity>> {
+    override fun getTodayProgressTasks(): Flow<List<ProgressTaskWithTask>> {
         return progressTaskDao.getProgressTaskByDate(LocalDate.now())
-    }
-
-    override fun getTodayProgressTasksWithTask(): Flow<List<ProgressTaskWithTask>> {
-        return progressTaskDao.getProgressTaskWithTaskByDate(LocalDate.now())
     }
 
     override suspend fun insertTask(taskEntity: TaskEntity) {
