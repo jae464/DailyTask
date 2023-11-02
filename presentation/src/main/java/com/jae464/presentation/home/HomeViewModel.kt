@@ -31,32 +31,35 @@ class HomeViewModel @Inject constructor(
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList()
+                initialValue = null
             )
 
-    // TODO progress task 가져오기
     private val progressTasks = getTodayProgressTaskUseCase().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = emptyList()
+        initialValue = null
     )
 
-    // TODO tasks, progressTasks combine
     val progressTaskState: StateFlow<ProgressTaskState> = combine(
         tasks,
         progressTasks
     ) { tasks, progressTasks ->
-        Log.d(TAG, "tasks : $tasks progressTasks: $progressTasks")
-        val progressTaskIds = progressTasks.map { it.task.id }
-        val addProgressTasks = tasks.filter { task -> task.id !in progressTaskIds }
-        Log.d(TAG, "Have to Insert Progress Task : $addProgressTasks")
-
-        if (addProgressTasks.isNotEmpty()) {
-            updateProgressTask(addProgressTasks)
+        if (tasks == null || progressTasks == null) {
             ProgressTaskState.Loading
         }
         else {
-            ProgressTaskState.Success(progressTasks.map { it.toProgressTaskUiModel() })
+            Log.d(TAG, "tasks : $tasks progressTasks: $progressTasks")
+            val progressTaskIds = progressTasks.map { it.task.id }
+            val addProgressTasks = tasks.filter { task -> task.id !in progressTaskIds }
+            Log.d(TAG, "Have to Insert Progress Task : $addProgressTasks")
+
+            if (addProgressTasks.isNotEmpty()) {
+                updateProgressTask(addProgressTasks)
+                ProgressTaskState.Loading
+            }
+            else {
+                ProgressTaskState.Success(progressTasks.map { it.toProgressTaskUiModel() })
+            }
         }
     }.stateIn(
         scope = viewModelScope,
@@ -70,8 +73,6 @@ class HomeViewModel @Inject constructor(
             updateTodayProgressTasksUseCase(tasks)
         }
     }
-
-
 
     companion object {
         const val TAG = "HomeViewModel"
