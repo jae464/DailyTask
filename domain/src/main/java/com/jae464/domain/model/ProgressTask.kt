@@ -4,10 +4,12 @@ import java.time.LocalDate
 
 data class ProgressTask(
     val id: String,
+    val title: String,
     val totalTime: HourMinute,
     val progressedTime: HourMinute,
     val task: Task,
     val category: Category,
     val memo: String,
+    val todayMemo: String,
     val createdAt: LocalDate
 )

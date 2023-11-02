@@ -23,22 +23,26 @@ data class ProgressTaskEntity(
     @PrimaryKey
     @ColumnInfo(name = "id")
     val id: String,
+    @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "total_time") val totalTime: HourMinute,
     @ColumnInfo(name = "progressed_time") val progressedTime: HourMinute,
     @ColumnInfo(name = "task_id") val taskId: String,
     @ColumnInfo(name = "category_id") val categoryId: Long,
     @ColumnInfo(name = "memo") val memo: String,
+    @ColumnInfo(name = "today_memo") val todayMemo: String,
     @ColumnInfo(name = "created_at") val createdAt: LocalDate
 )
 
 fun ProgressTask.toEntity(): ProgressTaskEntity {
     return ProgressTaskEntity(
         id = id,
+        title = title,
         totalTime = totalTime,
         progressedTime = progressedTime,
         taskId = task.id,
         categoryId = category.id,
         memo = memo,
+        todayMemo = "",
         createdAt = createdAt
     )
 }

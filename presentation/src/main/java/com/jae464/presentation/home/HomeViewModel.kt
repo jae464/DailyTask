@@ -35,7 +35,7 @@ class HomeViewModel @Inject constructor(
             )
 
     // TODO progress task 가져오기
-    val progressTasks = getTodayProgressTaskUseCase().stateIn(
+    private val progressTasks = getTodayProgressTaskUseCase().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = emptyList()
@@ -56,7 +56,7 @@ class HomeViewModel @Inject constructor(
             ProgressTaskState.Loading
         }
         else {
-            ProgressTaskState.Success(progressTasks)
+            ProgressTaskState.Success(progressTasks.map { it.toProgressTaskUiModel() })
         }
     }.stateIn(
         scope = viewModelScope,
