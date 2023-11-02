@@ -15,7 +15,8 @@ import java.time.LocalDateTime
         ForeignKey(
             entity = TaskEntity::class,
             parentColumns = ["id"],
-            childColumns = ["task_id"]
+            childColumns = ["task_id"],
+            onDelete = ForeignKey.CASCADE
         )
     ]
 )
