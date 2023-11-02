@@ -67,11 +67,13 @@ fun Task.toEntity(taskId: String? = null): TaskEntity {
 fun Task.toProgressTaskEntity(): ProgressTaskEntity {
     return ProgressTaskEntity(
         id = UUID.randomUUID().toString(),
+        title = title,
         totalTime = progressTime,
         progressedTime = HourMinute(0, 0),
         taskId = id,
         categoryId = categoryId,
-        memo = "",
+        memo = memo,
+        todayMemo = "",
         createdAt = LocalDate.now()
     )
 }

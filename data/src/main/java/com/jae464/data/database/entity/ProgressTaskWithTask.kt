@@ -21,11 +21,13 @@ data class ProgressTaskWithTask(
 fun ProgressTaskWithTask.toDomain(): ProgressTask {
     return ProgressTask(
         id = progressTaskEntity.id,
+        title = progressTaskEntity.title,
         totalTime = progressTaskEntity.totalTime,
         progressedTime = progressTaskEntity.progressedTime,
         task = task.toDomain(),
         category = category.toDomain(),
         memo = progressTaskEntity.memo,
+        todayMemo = progressTaskEntity.todayMemo,
         createdAt = progressTaskEntity.createdAt
     )
 }
