@@ -18,10 +18,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -53,8 +56,8 @@ fun HomeScreen(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             )
             .fillMaxSize(),
+        color = Color.Black.copy(alpha = 0.05f)
     ) {
-
         ProgressTaskList(progressTaskState = progressTaskState)
     }
 }
@@ -72,14 +75,13 @@ fun ProgressTaskList(
     ) {
         when (progressTaskState) {
             is ProgressTaskState.Success -> {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 24.dp)) {
                     items(
                         progressTaskState.progressTasks,
                         key = null
                     ) { progressTaskUiModel ->
                         ProgressTaskItem(progressTaskUiModel = progressTaskUiModel)
                     }
-
                 }
             }
 
@@ -128,7 +130,13 @@ fun ProgressTaskItem(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                TextButton(onClick = { /*TODO*/ }) {
+                Button(
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier
+                        .wrapContentSize(),
+                    colors = ButtonDefaults.buttonColors(),
+
+                ) {
                     Text(text = "시작")
                 }
             }
@@ -148,7 +156,7 @@ fun RoundedTimer(
     Box(
         modifier
             .size(64.dp)
-            .background(Color.Black, CircleShape)
+            .background(MaterialTheme.colorScheme.secondary, CircleShape)
             .padding(4.dp),
         contentAlignment = Alignment.Center
     ) {
