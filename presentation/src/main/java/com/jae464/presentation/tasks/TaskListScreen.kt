@@ -47,6 +47,7 @@ import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material.swipeable
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -242,8 +243,11 @@ fun TaskItem(
                     IntOffset(swipeableState.offset.value.roundToInt(), 0)
                 }
                 .fillMaxWidth(),
+//            elevation = CardDefaults.cardElevation(
+//                defaultElevation = 16.dp
+//            ),
             shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
             onClick = { onClickTask(taskUIModel.id) }
         ) {
             Column(modifier = Modifier.padding(16.dp)) {

@@ -129,6 +129,14 @@ fun ProgressTaskItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = progressTaskUiModel.memo,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
                 }
                 Button(
                     onClick = { /*TODO*/ },
