@@ -1,15 +1,14 @@
 package com.jae464.presentation.model
 
 import com.jae464.domain.model.DayOfWeek
-import com.jae464.domain.model.HourMinute
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 data class AddTaskUIModel(
     val title: String,
-    val progressTime: HourMinute,
+    val progressTimeHour: Int,
+    val progressTimeMinute: Int,
     val taskType: TaskType,
     val dayOfWeeks: List<DayOfWeek>,
     val alarmTime: LocalDateTime,
@@ -20,7 +19,8 @@ data class AddTaskUIModel(
 fun Task.toAddTaskUiModel(): AddTaskUIModel {
     return AddTaskUIModel(
         title = title,
-        progressTime = progressTime,
+        progressTimeHour = progressTime / 3600,
+        progressTimeMinute = progressTime % 3600 / 60,
         taskType = taskType,
         dayOfWeeks = dayOfWeeks,
         alarmTime = alarmTime,
@@ -34,7 +34,7 @@ fun AddTaskUIModel.toTask(): Task {
         id = "",
         title = title,
         memo = memo,
-        progressTime = progressTime,
+        progressTime = progressTimeHour * 3600 + progressTimeMinute * 60,
         taskType = taskType,
         dayOfWeeks = dayOfWeeks,
         alarmTime = alarmTime,

@@ -3,12 +3,11 @@ package com.jae464.data.database.dao
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.jae464.data.database.DailyTaskDataBase
 import com.jae464.data.database.DailyTaskDataBase.Companion.callback
 import com.jae464.data.database.entity.CategoryEntity
 import com.jae464.domain.model.DayOfWeek
-import com.jae464.domain.model.HourMinute
+import com.jae464.presentation.model.HourMinute
 import com.jae464.domain.model.TaskType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -78,7 +77,7 @@ class TaskDaoTest {
             TaskEntity(
                 id = "test1",
                 title = "안드로이드 개인 프로젝트",
-                progressTime = HourMinute(hour = 3,minute = 0),
+                progressTime = com.jae464.presentation.model.HourMinute(hour = 3, minute = 0),
                 taskType = TaskType.Regular,
                 dayOfWeeks = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY),
                 categoryId = 1L,
@@ -88,7 +87,7 @@ class TaskDaoTest {
             TaskEntity(
                 id = "test2",
                 title = "팔굽혀펴기 30회",
-                progressTime = HourMinute(1,0),
+                progressTime = com.jae464.presentation.model.HourMinute(1, 0),
                 taskType = TaskType.Irregular,
                 dayOfWeeks = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY),
                 categoryId = 1L,

@@ -6,7 +6,7 @@ data class Task(
     val id: String,
     val title: String,
     val memo: String,
-    val progressTime: HourMinute,
+    val progressTime: Int,
     val taskType: TaskType,
     val dayOfWeeks: List<DayOfWeek>,
     val alarmTime: LocalDateTime,

@@ -7,7 +7,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.jae464.data.database.entity.ProgressTaskEntity
 import com.jae464.data.database.entity.ProgressTaskWithTask
-import com.jae464.domain.model.HourMinute
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -28,6 +27,6 @@ interface ProgressTaskDao {
     fun getProgressTaskByDate(date: LocalDate): Flow<List<ProgressTaskWithTask>>
 
     @Query("UPDATE progress_tasks SET progressed_time = :progressedTime WHERE id = :progressTaskId")
-    fun updateProgressedTime(progressTaskId: String, progressedTime: HourMinute)
+    fun updateProgressedTime(progressTaskId: String, progressedTime: Int)
 
 }

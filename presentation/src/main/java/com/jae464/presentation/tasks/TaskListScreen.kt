@@ -278,7 +278,7 @@ fun TaskItem(
                         tint = Color.Black
                     )
                     Text(
-                        text = taskUIModel.progressTime,
+                        text = taskUIModel.progressTimeStr,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

@@ -6,11 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.jae464.data.database.entity.TaskEntity
-import com.jae464.domain.model.DayOfWeek
-import com.jae464.domain.model.HourMinute
-import com.jae464.domain.model.TaskType
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDateTime
 
 @Dao
 interface TaskDao {

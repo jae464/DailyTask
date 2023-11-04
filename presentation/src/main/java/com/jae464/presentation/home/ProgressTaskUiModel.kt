@@ -1,15 +1,15 @@
 package com.jae464.presentation.home
 
-import com.jae464.domain.model.HourMinute
 import com.jae464.domain.model.ProgressTask
+import com.jae464.presentation.model.HourMinuteSecond
 
 data class ProgressTaskUiModel(
     val title: String,
     val memo: String,
     val todayMemo: String,
     val categoryName: String,
-    val totalTime: HourMinute,
-    val progressedTime: HourMinute
+    val totalTime: Int,
+    val progressedTime: Int
 )
 
 fun ProgressTask.toProgressTaskUiModel(): ProgressTaskUiModel {

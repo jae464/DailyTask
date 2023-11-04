@@ -9,8 +9,7 @@ val taskUiModels = mutableListOf(
     TaskUIModel(
         id = "1",
         title = "안드로이드 개인 프로젝트",
-        timeHour = 3,
-        timeMinute = 0,
+        progressTime = 3700,
         taskType = TaskType.Regular,
         dayOfWeek = mutableListOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.SATURDAY),
         category = "학습",
@@ -20,8 +19,7 @@ val taskUiModels = mutableListOf(
     TaskUIModel(
         id = "2",
         title = "홈 트레이닝",
-        timeHour = 1,
-        timeMinute = 0,
+        progressTime = 3700,
         taskType = TaskType.Regular,
         dayOfWeek = mutableListOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.SATURDAY),
         category = "운동",

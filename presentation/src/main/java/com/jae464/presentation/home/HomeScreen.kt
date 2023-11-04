@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,12 +18,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -32,9 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,7 +38,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.jae464.domain.model.HourMinute
 
 @Composable
 fun HomeScreen(
@@ -115,7 +109,7 @@ fun ProgressTaskItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 RoundedTimer(
-                    hourMinute = progressTaskUiModel.totalTime
+                    time = progressTaskUiModel.totalTime
                 )
                 Column(modifier = Modifier
                     .padding(16.dp)
@@ -145,8 +139,12 @@ fun ProgressTaskItem(
 @Composable
 fun RoundedTimer(
     modifier: Modifier = Modifier,
-    hourMinute: HourMinute
+    time: Int
 ) {
+    val hour = time / 3600
+    val minute = time % 3600 / 60
+    val second = time % 3600 % 60
+
     Box(
         modifier
             .size(64.dp)
@@ -155,7 +153,7 @@ fun RoundedTimer(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "${hourMinute.hour}:${hourMinute.minute}",
+            text = "%2d:%02d:%02d".format(hour,minute,second),
             style = MaterialTheme.typography.bodyMedium,
             color = Color.White
         )

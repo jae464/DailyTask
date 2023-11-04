@@ -4,10 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.jae464.domain.model.HourMinute
 import com.jae464.domain.model.ProgressTask
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Entity(
     tableName = "progress_tasks",
@@ -25,8 +23,8 @@ data class ProgressTaskEntity(
     @ColumnInfo(name = "id")
     val id: String,
     @ColumnInfo(name = "title") val title: String,
-    @ColumnInfo(name = "total_time") val totalTime: HourMinute,
-    @ColumnInfo(name = "progressed_time") val progressedTime: HourMinute,
+    @ColumnInfo(name = "total_time") val totalTime: Int,
+    @ColumnInfo(name = "progressed_time") val progressedTime: Int,
     @ColumnInfo(name = "task_id") val taskId: String,
     @ColumnInfo(name = "category_id") val categoryId: Long,
     @ColumnInfo(name = "memo") val memo: String,
