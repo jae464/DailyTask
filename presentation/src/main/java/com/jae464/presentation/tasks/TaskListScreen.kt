@@ -93,6 +93,7 @@ fun TaskListScreen(
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             ),
+        color = Color.Black.copy(alpha = 0.05f)
     ) {
         Box(
             modifier = modifier
@@ -242,7 +243,7 @@ fun TaskItem(
                 }
                 .fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             onClick = { onClickTask(taskUIModel.id) }
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -275,7 +276,7 @@ fun TaskItem(
                     Icon(
                         imageVector = Icons.Rounded.AccessTimeFilled,
                         contentDescription = "progress_time",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                     Text(
                         text = taskUIModel.progressTimeStr,
@@ -290,7 +291,7 @@ fun TaskItem(
                     Icon(
                         imageVector = Icons.Rounded.Timer,
                         contentDescription = "progress_time",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                     Text(
                         text = taskUIModel.alarmTime,
@@ -310,7 +311,7 @@ fun RoundedBackgroundText(
     Box(
         modifier
             .size(24.dp)
-            .background(MaterialTheme.colorScheme.surface, CircleShape)
+            .background(MaterialTheme.colorScheme.background, CircleShape)
             .padding(4.dp),
         contentAlignment = Alignment.Center // 내용을 가운데로 정렬
     ) {
