@@ -11,7 +11,6 @@ import com.jae464.data.database.entity.CategoryEntity
 import com.jae464.data.database.entity.ProgressTaskEntity
 import com.jae464.data.database.entity.TaskEntity
 import com.jae464.data.database.util.DayOfWeekConverter
-import com.jae464.data.database.util.HourMinuteConverter
 import com.jae464.data.database.util.LocalDateConverter
 import com.jae464.data.database.util.LocalDateTimeConverter
 import com.jae464.data.database.util.TaskTypeConverter
@@ -26,7 +25,6 @@ import java.util.concurrent.Executors
     version = 1
 )
 @TypeConverters(
-    HourMinuteConverter::class,
     TaskTypeConverter::class,
     DayOfWeekConverter::class,
     LocalDateTimeConverter::class,

@@ -4,9 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
-import com.jae464.domain.model.HourMinute
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import java.time.LocalDate
@@ -29,7 +27,7 @@ data class TaskEntity(
     val id: String,
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "memo") val memo: String,
-    @ColumnInfo(name = "progress_time") val progressTime: HourMinute,
+    @ColumnInfo(name = "progress_time") val progressTime: Int,
     @ColumnInfo(name = "task_type") val taskType: TaskType,
     @ColumnInfo(name = "day_of_week") val dayOfWeeks: List<DayOfWeek>,
     @ColumnInfo(name = "category_id") val categoryId: Long,
@@ -69,7 +67,7 @@ fun Task.toProgressTaskEntity(): ProgressTaskEntity {
         id = UUID.randomUUID().toString(),
         title = title,
         totalTime = progressTime,
-        progressedTime = HourMinute(0, 0),
+        progressedTime = 0,
         taskId = id,
         categoryId = categoryId,
         memo = memo,

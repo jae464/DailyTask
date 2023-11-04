@@ -65,7 +65,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
-import com.jae464.domain.model.HourMinute
 import com.jae464.domain.model.TaskType
 import com.jae464.presentation.model.AddTaskUIModel
 import java.time.LocalDateTime
@@ -87,7 +86,8 @@ fun AddTaskScreen(
     val isCompleted by viewModel.saveCompleted.collectAsStateWithLifecycle()
 
     var title by remember { mutableStateOf("") }
-    var progressTime by remember { mutableStateOf(HourMinute(1, 0)) }
+    var progressTimeHour by remember { mutableStateOf(0) }
+    var progressTimeMinute by remember { mutableStateOf(0) }
     val (selectedTaskType, onSelectedTaskType) = remember { mutableStateOf(TaskType.Regular) }
     var selectedDayOfWeeks by remember { mutableStateOf(emptyList<DayOfWeek>()) }
     var alarmTime by remember { mutableStateOf(LocalDateTime.now()) }
@@ -106,7 +106,8 @@ fun AddTaskScreen(
             is AddTaskState.LoadSavedTask -> {
                 val savedTaskModel = (addTaskState as AddTaskState.LoadSavedTask).addTaskUiModel
                 title = savedTaskModel.title
-                progressTime = savedTaskModel.progressTime
+                progressTimeHour = savedTaskModel.progressTimeHour
+                progressTimeMinute = savedTaskModel.progressTimeMinute
                 onSelectedTaskType(savedTaskModel.taskType)
                 selectedDayOfWeeks = savedTaskModel.dayOfWeeks
                 alarmTime = savedTaskModel.alarmTime
@@ -139,7 +140,8 @@ fun AddTaskScreen(
                     viewModel.saveTask(
                         AddTaskUIModel(
                             title = title,
-                            progressTime = progressTime,
+                            progressTimeHour = progressTimeHour,
+                            progressTimeMinute = progressTimeMinute,
                             taskType = selectedTaskType,
                             dayOfWeeks = selectedDayOfWeeks,
                             alarmTime = alarmTime,
@@ -159,7 +161,8 @@ fun AddTaskScreen(
             AddTaskBody(
                 modifier = modifier,
                 title = title,
-                progressTime = progressTime,
+                progressTimeHour = progressTimeHour,
+                progressTimeMinute = progressTimeMinute,
                 selectedTaskType = selectedTaskType,
                 selectedDayOfWeeks = selectedDayOfWeeks,
                 alarmTime = alarmTime,
@@ -167,7 +170,14 @@ fun AddTaskScreen(
                 categories = categories,
                 selectedCategory = selectedCategory,
                 onTitleChanged = { newTitle -> title = newTitle },
-                onProgressTimeChanged = { newProgressTime -> progressTime = newProgressTime },
+                onProgressTimeHourChanged = { newHour ->
+                    Log.d("AddTaskScreen", "progressTimeHour : $newHour")
+                    progressTimeHour = newHour
+                },
+                onProgressTimeMinuteChanged = { newMinute ->
+                    Log.d("AddTaskScreen", "progressTimeMinute : $newMinute")
+                    progressTimeMinute = newMinute
+                },
                 onSelectedTaskType = onSelectedTaskType,
                 onDayOfWeeksChanged = { dayOfWeeks -> selectedDayOfWeeks = dayOfWeeks },
                 onAlarmTimeChanged = { newAlarmTime -> alarmTime = newAlarmTime },
@@ -221,7 +231,8 @@ fun AddTaskTopAppBar(
 fun AddTaskBody(
     modifier: Modifier = Modifier,
     title: String,
-    progressTime: HourMinute,
+    progressTimeHour: Int,
+    progressTimeMinute: Int,
     selectedTaskType: TaskType,
     selectedDayOfWeeks: List<DayOfWeek>,
     alarmTime: LocalDateTime,
@@ -229,7 +240,8 @@ fun AddTaskBody(
     categories: List<Category>,
     selectedCategory: Category?,
     onTitleChanged: (String) -> Unit,
-    onProgressTimeChanged: (HourMinute) -> Unit,
+    onProgressTimeHourChanged: (Int) -> Unit,
+    onProgressTimeMinuteChanged: (Int) -> Unit,
     onSelectedTaskType: (TaskType) -> Unit,
     onDayOfWeeksChanged: (List<DayOfWeek>) -> Unit,
     onAlarmTimeChanged: (LocalDateTime) -> Unit,
@@ -265,25 +277,19 @@ fun AddTaskBody(
         ) {
             Text(text = "진행시간", fontWeight = FontWeight.Bold)
             RoundedNumberSpinner(items = List(24) { i -> i + 1 },
-                selectedItem = progressTime.hour,
+                selectedItem = progressTimeHour,
                 onItemSelected = { hour ->
-                    onProgressTimeChanged(
-                        HourMinute(
-                            hour,
-                            progressTime.minute
-                        )
+                    onProgressTimeHourChanged(
+                        hour
                     )
                 }
             )
             Text(text = "시간")
             RoundedNumberSpinner(items = List(60) { i -> i + 1 },
-                selectedItem = progressTime.minute,
+                selectedItem = progressTimeMinute,
                 onItemSelected = { minute ->
-                    onProgressTimeChanged(
-                        HourMinute(
-                            progressTime.hour,
-                            minute
-                        )
+                    onProgressTimeMinuteChanged(
+                        minute
                     )
                 }
             )

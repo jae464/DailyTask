@@ -8,8 +8,7 @@ import com.jae464.domain.model.TaskType
 data class TaskUIModel(
     val id: String,
     val title: String,
-    val timeHour: Int,
-    val timeMinute: Int,
+    val progressTime: Int,
     val taskType: TaskType,
     val dayOfWeek: List<DayOfWeek>?,
     val category: String,
@@ -17,7 +16,8 @@ data class TaskUIModel(
     val alarmMinute: Int,
 ) {
     val header = taskType.taskName + " / " + category
-    val progressTime = "%2d시간 %02d분".format(timeHour, timeMinute)
+    val progressTimeStr = "%2d시간 %02d분".format(progressTime / 3600, progressTime % 3600 / 60)
+//    val progressTime = "%2d시간 %02d분".format(timeHour, timeMinute)
     val alarmTime = "%2d시 %02d분".format(alarmHour, alarmMinute)
 }
 
@@ -25,8 +25,7 @@ fun Task.toTaskUIModel(categoryName: String): TaskUIModel {
     return TaskUIModel(
         id = id,
         title = title,
-        timeHour = progressTime.hour,
-        timeMinute = progressTime.minute,
+        progressTime = progressTime,
         taskType = taskType,
         dayOfWeek = dayOfWeeks,
         category = categoryName,

@@ -5,8 +5,8 @@ import java.time.LocalDate
 data class ProgressTask(
     val id: String,
     val title: String,
-    val totalTime: HourMinute,
-    val progressedTime: HourMinute,
+    val totalTime: Int,
+    val progressedTime: Int,
     val task: Task,
     val category: Category,
     val memo: String,

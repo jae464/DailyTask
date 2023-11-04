@@ -1,32 +1,10 @@
 package com.jae464.data.database.util
 
-import androidx.core.text.isDigitsOnly
 import androidx.room.TypeConverter
-import androidx.room.util.joinIntoString
 import com.jae464.domain.model.DayOfWeek
-import com.jae464.domain.model.HourMinute
 import com.jae464.domain.model.TaskType
 import java.time.LocalDate
 import java.time.LocalDateTime
-
-class HourMinuteConverter {
-    @TypeConverter
-    fun hourMinuteToString(hourMinute: HourMinute?): String? {
-        return hourMinute?.let {
-            "${it.hour}:${it.minute}"
-        }
-    }
-
-    @TypeConverter
-    fun stringToHourMinute(value: String?): HourMinute? {
-        val data = value?.split(":") ?: return null
-        println(data)
-        if (data.size == 2) {
-            return HourMinute(data[0].toInt(), data[1].toInt())
-        }
-        return null
-    }
-}
 
 class TaskTypeConverter {
     @TypeConverter
