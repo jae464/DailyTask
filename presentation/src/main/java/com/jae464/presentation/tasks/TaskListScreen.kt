@@ -264,7 +264,7 @@ fun TaskItem(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = taskUIModel.title,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
