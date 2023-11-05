@@ -27,6 +27,6 @@ interface ProgressTaskDao {
     fun getProgressTaskByDate(date: LocalDate): Flow<List<ProgressTaskWithTask>>
 
     @Query("UPDATE progress_tasks SET progressed_time = :progressedTime WHERE id = :progressTaskId")
-    fun updateProgressedTime(progressTaskId: String, progressedTime: Int)
+    suspend fun updateProgressedTime(progressTaskId: String, progressedTime: Int)
 
 }
