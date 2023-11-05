@@ -99,7 +99,7 @@ fun TaskListScreen(
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .padding(horizontal = 16.dp)
         ) {
             when (taskState) {
                 is TaskState.Loading -> {
@@ -107,19 +107,10 @@ fun TaskListScreen(
                 }
 
                 is TaskState.Success -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(
-                            (taskState as TaskState.Success).taskUIModels,
-                            key = { it.id }) { taskUiModel ->
-                            TaskItem(
-                                taskUIModel = taskUiModel,
-                                onClickTask = onClickTask,
-                                onClickDelete = {showDeleteDialog = it}
-                            )
-                        }
-                    }
+                    TaskList(
+                        taskState = taskState,
+                        onClickTask = onClickTask,
+                        onClickDelete = { showDeleteDialog = it })
                     IconButton(
                         onClick = onClickAddTask,
                         modifier = modifier.align(Alignment.BottomEnd)
@@ -152,6 +143,31 @@ fun TaskListScreen(
                             Text(text = "삭제")
                         }
                     }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TaskList(
+    modifier: Modifier = Modifier,
+    taskState: TaskState,
+    onClickTask: (String) -> Unit,
+    onClickDelete: (String) -> Unit
+) {
+    if (taskState is TaskState.Success) {
+        LazyColumn(
+            modifier = Modifier.padding(top = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(
+                taskState.taskUIModels,
+                key = { it.id }) { taskUiModel ->
+                TaskItem(
+                    taskUIModel = taskUiModel,
+                    onClickTask = onClickTask,
+                    onClickDelete = onClickDelete
                 )
             }
         }
@@ -221,7 +237,7 @@ fun TaskItem(
 
         IconButton(
             onClick = {
-                      Log.d("TaskListScreen", "onClick delete button")
+                Log.d("TaskListScreen", "onClick delete button")
                 // TODO show alert dialog to confirm delete
                 onClickDelete(taskUIModel.id)
             },
