@@ -7,6 +7,8 @@ androidx-core-ktx = "1.9.0"
 androidx-activity-compose = "1.7.2"
 androidx-compose-bom = "2023.03.00"
 androidx-hilt-navigation-compose = "1.0.0"
+androidx-hilt = "1.0.0"
+androidx-work = "2.8.0"
 
 # TEST
 junit = "4.13.2"
@@ -46,6 +48,10 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room"}
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room"}
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidx-hilt-navigation-compose" }
+androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref =  "androidx-hilt"}
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "androidx-hilt"}
+androidx-work-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "androidx-work"}
+androidx-work-testing = { module = "androidx.work:work-testing", version.ref = "androidx-work"}
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt"}
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt"}
 javax-inject = "javax.inject:javax.inject:1"

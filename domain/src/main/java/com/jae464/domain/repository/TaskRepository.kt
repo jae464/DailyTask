@@ -13,6 +13,7 @@ interface TaskRepository {
     fun getProgressTask(progressTaskId: String): Flow<ProgressTask>
     fun getTodayProgressTasks(): Flow<List<ProgressTask>>
     suspend fun updateProgressTask(tasks: List<Task>)
+    suspend fun updateProgressedTime(progressTaskId: String, progressedTime: Int)
     suspend fun saveTask(task: Task)
     suspend fun insertProgressTask(progressTask: ProgressTask)
     suspend fun updateTask(task: Task)

@@ -1,14 +1,21 @@
 package com.jae464.presentation.home
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.jae464.domain.model.ProgressTask
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.toDayOfWeek
 import com.jae464.domain.repository.TaskRepository
 import com.jae464.domain.usecase.GetTasksByDayOfWeekUseCase
 import com.jae464.domain.usecase.GetTodayProgressTaskUseCase
+import com.jae464.domain.usecase.UpdateProgressedTimeUseCase
 import com.jae464.domain.usecase.UpdateTodayProgressTasksUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -24,8 +31,13 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val getTasksByDayOfWeekUseCase: GetTasksByDayOfWeekUseCase,
     private val getTodayProgressTaskUseCase: GetTodayProgressTaskUseCase,
-    private val updateTodayProgressTasksUseCase: UpdateTodayProgressTasksUseCase
+    private val updateTodayProgressTasksUseCase: UpdateTodayProgressTasksUseCase,
+    private val updateProgressedTimeUseCase: UpdateProgressedTimeUseCase
 ) : ViewModel() {
+
+    private val progressingTaskManager = ProgressingTaskManager.getInstance()
+    val progressingTask = progressingTaskManager.progressingState
+
     val tasks =
         getTasksByDayOfWeekUseCase(LocalDate.now().dayOfWeek.toDayOfWeek())
             .stateIn(
@@ -34,7 +46,8 @@ class HomeViewModel @Inject constructor(
                 initialValue = null
             )
 
-    private val progressTasks = getTodayProgressTaskUseCase().stateIn(
+    private val progressTasks =
+        getTodayProgressTaskUseCase().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = null
@@ -54,7 +67,7 @@ class HomeViewModel @Inject constructor(
             Log.d(TAG, "Have to Insert Progress Task : $addProgressTasks")
 
             if (addProgressTasks.isNotEmpty()) {
-                updateProgressTask(addProgressTasks)
+                updateProgressTasks(addProgressTasks)
                 ProgressTaskState.Loading
             }
             else {
@@ -67,10 +80,37 @@ class HomeViewModel @Inject constructor(
         initialValue = ProgressTaskState.Loading
     )
 
-    private fun updateProgressTask(tasks: List<Task>) {
+    private fun updateProgressTasks(tasks: List<Task>) {
         viewModelScope.launch {
             Log.d(TAG, "ProgressTask 업데이트 합니다.")
             updateTodayProgressTasksUseCase(tasks)
+        }
+    }
+
+    fun startProgressTask(id: String, context: Context) {
+        val progressTask = progressTasks.value?.firstOrNull{it.id == id} ?: return
+
+        if (progressingTaskManager.progressingState.value is ProgressingState.Progressing) {
+            val progressingTaskId = progressingTaskManager.getCurrentProgressTask()?.id
+
+            stopCurrentProgressingTask()
+
+            if (progressingTaskId != id) {
+                progressingTaskManager.startProgressTask(progressTask, context)
+            }
+        }
+        else {
+            progressingTaskManager.startProgressTask(progressTask, context)
+        }
+    }
+
+    private fun stopCurrentProgressingTask() {
+        if (progressingTaskManager.progressingState.value is ProgressingState.Progressing) {
+            val progressingTaskId = progressingTaskManager.getCurrentProgressTask()?.id ?: return
+            val progressedTime = progressingTaskManager.stopProgressTask()
+            viewModelScope.launch {
+                updateProgressedTimeUseCase(progressingTaskId, progressedTime)
+            }
         }
     }
 

@@ -37,6 +37,10 @@ class TaskLocalDataSourceImpl @Inject constructor(
         return progressTaskDao.getProgressTaskByDate(LocalDate.now())
     }
 
+    override suspend fun updateProgressTime(progressTaskId: String, progressedTime: Int) {
+        progressTaskDao.updateProgressedTime(progressTaskId, progressedTime)
+    }
+
     override suspend fun insertTask(taskEntity: TaskEntity) {
         taskDao.insertTask(taskEntity)
     }

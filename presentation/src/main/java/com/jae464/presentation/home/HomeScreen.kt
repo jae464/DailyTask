@@ -32,10 +32,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,8 +50,10 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val progressTaskState by viewModel.progressTaskState.collectAsStateWithLifecycle()
+    val progressingTaskState by viewModel.progressingTask.collectAsStateWithLifecycle()
 
-    Log.d("HomeScreen", progressTaskState.toString())
+    val context = LocalContext.current
+
     Surface(
         modifier = Modifier
             .windowInsetsPadding(
@@ -58,14 +62,21 @@ fun HomeScreen(
             .fillMaxSize(),
         color = Color.Black.copy(alpha = 0.05f)
     ) {
-        ProgressTaskList(progressTaskState = progressTaskState)
+        ProgressTaskList(progressTaskState = progressTaskState,
+            progressingTaskState = progressingTaskState,
+            onClickStart = {
+                viewModel.startProgressTask(it, context)
+            }
+        )
     }
 }
 
 @Composable
 fun ProgressTaskList(
     modifier: Modifier = Modifier,
-    progressTaskState: ProgressTaskState
+    progressTaskState: ProgressTaskState,
+    progressingTaskState: ProgressingState,
+    onClickStart: (String) -> Unit
 ) {
     Log.d("ProgressTaskList", progressTaskState.toString())
     Box(
@@ -75,12 +86,27 @@ fun ProgressTaskList(
     ) {
         when (progressTaskState) {
             is ProgressTaskState.Success -> {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 24.dp)) {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(top = 24.dp)
+                ) {
                     items(
                         progressTaskState.progressTasks,
                         key = null
                     ) { progressTaskUiModel ->
-                        ProgressTaskItem(progressTaskUiModel = progressTaskUiModel)
+                        if (progressingTaskState is ProgressingState.Progressing && progressingTaskState.progressTask.id == progressTaskUiModel.id) {
+                            ProgressTaskItem(
+                                progressTaskUiModel = progressingTaskState.progressTask.toProgressTaskUiModel(
+                                    true
+                                ),
+                                onClickStart = onClickStart
+                            )
+                        } else {
+                            ProgressTaskItem(
+                                progressTaskUiModel = progressTaskUiModel,
+                                onClickStart = onClickStart
+                            )
+                        }
                     }
                 }
             }
@@ -94,6 +120,7 @@ fun ProgressTaskList(
 fun ProgressTaskItem(
     modifier: Modifier = Modifier,
     progressTaskUiModel: ProgressTaskUiModel,
+    onClickStart: (String) -> Unit,
 ) {
     Box(
         modifier = modifier
@@ -111,11 +138,14 @@ fun ProgressTaskItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 RoundedTimer(
-                    time = progressTaskUiModel.totalTime
+                    time = progressTaskUiModel.remainTime,
+                    isProgressing = progressTaskUiModel.isProgressing
                 )
-                Column(modifier = Modifier
-                    .padding(16.dp)
-                    .weight(1f)) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .weight(1f)
+                ) {
                     Text(
                         text = progressTaskUiModel.categoryName,
                         color = MaterialTheme.colorScheme.tertiary,
@@ -139,13 +169,15 @@ fun ProgressTaskItem(
 
                 }
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                        onClickStart(progressTaskUiModel.id)
+                    },
                     modifier = Modifier
                         .wrapContentSize(),
                     colors = ButtonDefaults.buttonColors(),
 
-                ) {
-                    Text(text = "시작")
+                    ) {
+                    Text(text = if (progressTaskUiModel.isProgressing) "중지" else "시작")
                 }
             }
         }
@@ -155,7 +187,8 @@ fun ProgressTaskItem(
 @Composable
 fun RoundedTimer(
     modifier: Modifier = Modifier,
-    time: Int
+    time: Int,
+    isProgressing: Boolean
 ) {
     val hour = time / 3600
     val minute = time % 3600 / 60
@@ -164,12 +197,15 @@ fun RoundedTimer(
     Box(
         modifier
             .size(64.dp)
-            .background(MaterialTheme.colorScheme.secondary, CircleShape)
+            .background(
+                if (isProgressing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                CircleShape
+            )
             .padding(4.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "%2d:%02d:%02d".format(hour,minute,second),
+            text = "%2d:%02d:%02d".format(hour, minute, second),
             style = MaterialTheme.typography.bodyMedium,
             color = Color.White
         )
