@@ -331,11 +331,11 @@ fun RoundedBackgroundText(
     Box(
         modifier
             .size(24.dp)
-            .background(MaterialTheme.colorScheme.background, CircleShape)
+            .background(MaterialTheme.colorScheme.primary, CircleShape)
             .padding(4.dp),
         contentAlignment = Alignment.Center // 내용을 가운데로 정렬
     ) {
-        Text(text = text, style = MaterialTheme.typography.labelSmall)
+        Text(text = text, style = MaterialTheme.typography.labelSmall, color = Color.White)
     }
 }
 
