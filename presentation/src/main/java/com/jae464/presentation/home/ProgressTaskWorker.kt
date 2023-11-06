@@ -52,6 +52,7 @@ class ProgressTaskWorker @AssistedInject constructor(
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setContentTitle(progressingTaskManager.getCurrentProgressTask()?.title)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setOngoing(true)
             .setContentIntent(pendingIntent)
             .build()
 
