@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -37,6 +38,8 @@ class HomeViewModel @Inject constructor(
 
     private val progressingTaskManager = ProgressingTaskManager.getInstance()
     val progressingTask = progressingTaskManager.progressingState
+
+    private var isUploading = false
 
     val tasks =
         getTasksByDayOfWeekUseCase(LocalDate.now().dayOfWeek.toDayOfWeek())
@@ -57,7 +60,7 @@ class HomeViewModel @Inject constructor(
         tasks,
         progressTasks
     ) { tasks, progressTasks ->
-        if (tasks == null || progressTasks == null) {
+        if (tasks == null || progressTasks == null || isUploading) {
             ProgressTaskState.Loading
         }
         else {
@@ -67,6 +70,7 @@ class HomeViewModel @Inject constructor(
             Log.d(TAG, "Have to Insert Progress Task : $addProgressTasks")
 
             if (addProgressTasks.isNotEmpty()) {
+                isUploading = true
                 updateProgressTasks(addProgressTasks)
                 ProgressTaskState.Loading
             }
@@ -84,6 +88,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             Log.d(TAG, "ProgressTask 업데이트 합니다.")
             updateTodayProgressTasksUseCase(tasks)
+            isUploading = false
         }
     }
 
