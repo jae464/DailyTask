@@ -118,12 +118,17 @@ fun AddTaskScreen(
         }
     }
 
-    if (categories.isNotEmpty()) {
-        selectedCategory = categories[0]
+    LaunchedEffect(categories) {
+        if (categories.isNotEmpty()) {
+            Log.d("AddTaskScreen", "selectedCategory = categories[0]")
+            selectedCategory = categories[0]
+        }
     }
 
-    if (selectedTaskType == TaskType.Irregular) {
-        selectedDayOfWeeks = emptyList()
+    LaunchedEffect(selectedTaskType) {
+        if (selectedTaskType == TaskType.Irregular) {
+            selectedDayOfWeeks = emptyList()
+        }
     }
 
     Log.d(TAG, "AddTaskScreen Rendered()")
