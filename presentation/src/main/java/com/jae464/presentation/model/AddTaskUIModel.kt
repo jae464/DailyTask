@@ -11,6 +11,7 @@ data class AddTaskUIModel(
     val progressTimeMinute: Int,
     val taskType: TaskType,
     val dayOfWeeks: List<DayOfWeek>,
+    val useAlarm: Boolean,
     val alarmTime: LocalDateTime,
     val memo: String,
     val categoryId: Long
@@ -23,6 +24,7 @@ fun Task.toAddTaskUiModel(): AddTaskUIModel {
         progressTimeMinute = progressTime % 3600 / 60,
         taskType = taskType,
         dayOfWeeks = dayOfWeeks,
+        useAlarm = useAlarm,
         alarmTime = alarmTime,
         memo = memo,
         categoryId = categoryId
@@ -37,6 +39,7 @@ fun AddTaskUIModel.toTask(): Task {
         progressTime = progressTimeHour * 3600 + progressTimeMinute * 60,
         taskType = taskType,
         dayOfWeeks = dayOfWeeks,
+        useAlarm = useAlarm,
         alarmTime = alarmTime,
         categoryId = categoryId
     )

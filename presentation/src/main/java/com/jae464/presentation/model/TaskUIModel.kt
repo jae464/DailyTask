@@ -12,6 +12,7 @@ data class TaskUIModel(
     val taskType: TaskType,
     val dayOfWeek: List<DayOfWeek>?,
     val category: String,
+    val useAlarm: Boolean,
     val alarmHour: Int,
     val alarmMinute: Int,
 ) {
@@ -29,6 +30,7 @@ fun Task.toTaskUIModel(categoryName: String): TaskUIModel {
         taskType = taskType,
         dayOfWeek = dayOfWeeks,
         category = categoryName,
+        useAlarm = useAlarm,
         alarmHour = alarmTime.hour,
         alarmMinute = alarmTime.minute
     )
