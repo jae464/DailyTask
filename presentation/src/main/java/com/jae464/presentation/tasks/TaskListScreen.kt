@@ -101,30 +101,37 @@ fun TaskListScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
+
             when (taskState) {
                 is TaskState.Loading -> {
                     Text(text = "로딩중")
                 }
-
                 is TaskState.Success -> {
                     TaskList(
                         taskState = taskState,
                         onClickTask = onClickTask,
                         onClickDelete = { showDeleteDialog = it })
-                    IconButton(
-                        onClick = onClickAddTask,
-                        modifier = modifier.align(Alignment.BottomEnd)
-                    ) {
-                        Image(
-                            imageVector = Icons.Rounded.AddCircle,
-                            contentDescription = "add_task",
-                            modifier = Modifier.size(64.dp)
-                        )
-                    }
                 }
-
+                is TaskState.Empty -> {
+                    Text(
+                        text = "새로운 일정을 추가해주세요.",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
                 else -> {}
+            }
 
+            IconButton(
+                onClick = onClickAddTask,
+                modifier = modifier.align(Alignment.BottomEnd)
+            ) {
+                Image(
+                    imageVector = Icons.Rounded.AddCircle,
+                    contentDescription = "add_task",
+                    modifier = Modifier.size(64.dp)
+                )
             }
 
             if (showDeleteDialog.isNotEmpty()) {

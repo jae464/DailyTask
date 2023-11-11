@@ -42,11 +42,15 @@ class TaskListViewModel @Inject constructor(
 
     val taskState: StateFlow<TaskState> =
         combine(categories, tasks) { categories, tasks ->
-            // check categories and tasks are not empty
             if (categories.isNotEmpty()) {
-                TaskState.Success(tasks.map { task ->
-                    task.toTaskUIModel(categories.first { it.id == task.categoryId }.name)
-                })
+                if (tasks.isEmpty()) {
+                    TaskState.Empty
+                }
+                else {
+                    TaskState.Success(tasks.map { task ->
+                        task.toTaskUIModel(categories.first { it.id == task.categoryId }.name)
+                    })
+                }
             } else {
                 TaskState.Loading
             }
@@ -67,4 +71,5 @@ class TaskListViewModel @Inject constructor(
 sealed interface TaskState {
     object Loading : TaskState
     data class Success(val taskUIModels: List<TaskUIModel>) : TaskState
+    object Empty : TaskState
 }
