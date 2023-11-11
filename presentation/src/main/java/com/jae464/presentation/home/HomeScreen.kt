@@ -110,6 +110,14 @@ fun ProgressTaskList(
                     }
                 }
             }
+            is ProgressTaskState.Empty -> {
+                Text(
+                    text = "오늘 진행할 일정이 존재하지 않습니다.",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
 
             else -> {}
         }

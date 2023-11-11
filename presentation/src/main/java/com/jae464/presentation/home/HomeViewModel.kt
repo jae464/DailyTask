@@ -69,13 +69,19 @@ class HomeViewModel @Inject constructor(
             val addProgressTasks = tasks.filter { task -> task.id !in progressTaskIds }
             Log.d(TAG, "Have to Insert Progress Task : $addProgressTasks")
 
+            // 추가할 Task가 있는 경우
             if (addProgressTasks.isNotEmpty()) {
                 isUploading = true
                 updateProgressTasks(addProgressTasks)
                 ProgressTaskState.Loading
             }
             else {
-                ProgressTaskState.Success(progressTasks.map { it.toProgressTaskUiModel() })
+                if (progressTasks.isEmpty()) {
+                    ProgressTaskState.Empty
+                }
+                else {
+                    ProgressTaskState.Success(progressTasks.map { it.toProgressTaskUiModel() })
+                }
             }
         }
     }.stateIn(
