@@ -41,6 +41,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
@@ -67,6 +68,7 @@ import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.TaskType
 import com.jae464.presentation.model.AddTaskUIModel
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -90,7 +92,8 @@ fun AddTaskScreen(
     var progressTimeMinute by remember { mutableStateOf(0) }
     val (selectedTaskType, onSelectedTaskType) = remember { mutableStateOf(TaskType.Regular) }
     var selectedDayOfWeeks by remember { mutableStateOf(emptyList<DayOfWeek>()) }
-    var alarmTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var useAlarm by remember { mutableStateOf(false) }
+    var alarmTime by remember { mutableStateOf(LocalDateTime.of(LocalDate.now(), LocalTime.of(9,0))) }
     var memo by remember { mutableStateOf("") }
     var selectedCategory: Category? by remember { mutableStateOf(null) }
 
@@ -110,6 +113,7 @@ fun AddTaskScreen(
                 progressTimeMinute = savedTaskModel.progressTimeMinute
                 onSelectedTaskType(savedTaskModel.taskType)
                 selectedDayOfWeeks = savedTaskModel.dayOfWeeks
+                useAlarm = savedTaskModel.useAlarm
                 alarmTime = savedTaskModel.alarmTime
                 memo = savedTaskModel.memo
                 selectedCategory = categories.firstOrNull { it.id == savedTaskModel.categoryId }
@@ -149,6 +153,7 @@ fun AddTaskScreen(
                             progressTimeMinute = progressTimeMinute,
                             taskType = selectedTaskType,
                             dayOfWeeks = selectedDayOfWeeks,
+                            useAlarm = useAlarm,
                             alarmTime = alarmTime,
                             memo = memo,
                             categoryId = selectedCategory!!.id
@@ -170,6 +175,7 @@ fun AddTaskScreen(
                 progressTimeMinute = progressTimeMinute,
                 selectedTaskType = selectedTaskType,
                 selectedDayOfWeeks = selectedDayOfWeeks,
+                useAlarm = useAlarm,
                 alarmTime = alarmTime,
                 memo = memo,
                 categories = categories,
@@ -185,6 +191,7 @@ fun AddTaskScreen(
                 },
                 onSelectedTaskType = onSelectedTaskType,
                 onDayOfWeeksChanged = { dayOfWeeks -> selectedDayOfWeeks = dayOfWeeks },
+                onUseAlarmChanged = {useAlarm = it},
                 onAlarmTimeChanged = { newAlarmTime -> alarmTime = newAlarmTime },
                 onMemoChanged = { newMemo -> memo = newMemo },
                 onCategoryChanged = { category -> selectedCategory = category }
@@ -240,6 +247,7 @@ fun AddTaskBody(
     progressTimeMinute: Int,
     selectedTaskType: TaskType,
     selectedDayOfWeeks: List<DayOfWeek>,
+    useAlarm: Boolean,
     alarmTime: LocalDateTime,
     memo: String,
     categories: List<Category>,
@@ -249,6 +257,7 @@ fun AddTaskBody(
     onProgressTimeMinuteChanged: (Int) -> Unit,
     onSelectedTaskType: (TaskType) -> Unit,
     onDayOfWeeksChanged: (List<DayOfWeek>) -> Unit,
+    onUseAlarmChanged: (Boolean) -> Unit,
     onAlarmTimeChanged: (LocalDateTime) -> Unit,
     onMemoChanged: (String) -> Unit,
     onCategoryChanged: (Category) -> Unit
@@ -281,7 +290,7 @@ fun AddTaskBody(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(text = "진행시간", fontWeight = FontWeight.Bold)
-            RoundedNumberSpinner(items = List(24) { i -> i + 1 },
+            RoundedNumberSpinner(items = List(23) { i -> i + 1 },
                 selectedItem = progressTimeHour,
                 onItemSelected = { hour ->
                     onProgressTimeHourChanged(
@@ -290,7 +299,7 @@ fun AddTaskBody(
                 }
             )
             Text(text = "시간")
-            RoundedNumberSpinner(items = List(60) { i -> i + 1 },
+            RoundedNumberSpinner(items = List(59) { i -> i + 1 },
                 selectedItem = progressTimeMinute,
                 onItemSelected = { minute ->
                     onProgressTimeMinuteChanged(
@@ -354,27 +363,40 @@ fun AddTaskBody(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(text = "알림", fontWeight = FontWeight.Bold)
-            RoundedNumberSpinner(items = List(24) { i -> i + 1 },
-                selectedItem = alarmTime.hour,
-                onItemSelected = {
-                    val localDateTime = LocalDateTime.now()
-                    val localTime = LocalTime.of(it, alarmTime.minute)
-                    onAlarmTimeChanged(localDateTime.with(localTime))
-                }
+            Text(text = "알람", fontWeight = FontWeight.Bold)
+            Switch(
+                checked = useAlarm,
+                onCheckedChange = onUseAlarmChanged
             )
-            Text(text = "시")
-            RoundedNumberSpinner(items = List(60) { i -> i + 1 },
-                selectedItem = alarmTime.minute,
-                onItemSelected = {
-                    val localDateTime = LocalDateTime.now()
-                    val localTime = LocalTime.of(alarmTime.hour, it)
-                    onAlarmTimeChanged(localDateTime.with(localTime))
-                }
-            )
-            Text(text = "분")
         }
         Spacer(modifier = Modifier.height(16.dp))
+        if (useAlarm) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(text = "알람시간", fontWeight = FontWeight.Bold)
+                RoundedNumberSpinner(items = List(23) { i -> i + 1 },
+                    selectedItem = alarmTime.hour,
+                    onItemSelected = {
+                        val localDateTime = LocalDateTime.now()
+                        val localTime = LocalTime.of(it, alarmTime.minute)
+                        onAlarmTimeChanged(localDateTime.with(localTime))
+                    }
+                )
+                Text(text = "시")
+                RoundedNumberSpinner(items = List(59) { i -> i + 1 },
+                    selectedItem = alarmTime.minute,
+                    onItemSelected = {
+                        val localDateTime = LocalDateTime.now()
+                        val localTime = LocalTime.of(alarmTime.hour, it)
+                        onAlarmTimeChanged(localDateTime.with(localTime))
+                    }
+                )
+                Text(text = "분")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         Column {
             Text(text = "메모", fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))

@@ -31,6 +31,7 @@ data class TaskEntity(
     @ColumnInfo(name = "task_type") val taskType: TaskType,
     @ColumnInfo(name = "day_of_week") val dayOfWeeks: List<DayOfWeek>,
     @ColumnInfo(name = "category_id") val categoryId: Long,
+    @ColumnInfo(name = "use_alarm") val useAlarm: Boolean,
     @ColumnInfo(name = "alarm_time") val alarmTime: LocalDateTime,
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime
 )
@@ -43,6 +44,7 @@ fun TaskEntity.toDomain(): Task {
         progressTime = progressTime,
         taskType = taskType,
         dayOfWeeks = dayOfWeeks,
+        useAlarm = useAlarm,
         alarmTime = alarmTime,
         categoryId = categoryId
     )
@@ -57,6 +59,7 @@ fun Task.toEntity(taskId: String? = null): TaskEntity {
         taskType = taskType,
         dayOfWeeks = dayOfWeeks,
         categoryId = categoryId,
+        useAlarm = useAlarm,
         alarmTime = alarmTime,
         createdAt = LocalDateTime.now()
     )

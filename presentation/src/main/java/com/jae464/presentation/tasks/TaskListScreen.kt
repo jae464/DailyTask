@@ -321,7 +321,7 @@ fun TaskItem(
                         tint = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = taskUIModel.alarmTime,
+                        text = if (taskUIModel.useAlarm) taskUIModel.alarmTime else "없음",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
