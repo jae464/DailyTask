@@ -97,6 +97,8 @@ fun AddTaskScreen(
     var memo by remember { mutableStateOf("") }
     var selectedCategory: Category? by remember { mutableStateOf(null) }
 
+    val context = LocalContext.current
+
     LaunchedEffect(isCompleted) {
         if (isCompleted) {
             Log.d(TAG, "saved completed! go to back screen")
@@ -146,6 +148,14 @@ fun AddTaskScreen(
                 onBackClick = onBackClick,
                 onSaveClick = {
                     if (selectedCategory == null) return@AddTaskTopAppBar
+                    if (title.isEmpty()) {
+                        Toast.makeText(context, "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                        return@AddTaskTopAppBar
+                    }
+                    if (progressTimeHour == 0 && progressTimeMinute == 0) {
+                        Toast.makeText(context, "진행시간을 설정해주세요.", Toast.LENGTH_SHORT).show()
+                        return@AddTaskTopAppBar
+                    }
                     viewModel.saveTask(
                         AddTaskUIModel(
                             title = title,
@@ -206,7 +216,6 @@ fun AddTaskTopAppBar(
     onBackClick: () -> Unit,
     onSaveClick: () -> Unit
 ) {
-    val context = LocalContext.current
     CenterAlignedTopAppBar(
         title = {
             Text(text = "일정 추가")
@@ -223,7 +232,6 @@ fun AddTaskTopAppBar(
         },
         actions = {
             IconButton(onClick = {
-                Toast.makeText(context, "저장 버튼 클릭", Toast.LENGTH_SHORT).show()
                 onSaveClick()
 
             }) {
