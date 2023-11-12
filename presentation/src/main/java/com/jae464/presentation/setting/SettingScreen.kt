@@ -20,6 +20,6 @@ fun SettingScreen() {
         ),
         color = MaterialTheme.colorScheme.primary
     ) {
-        Text(text = "SETTING")
+
     }
 }
