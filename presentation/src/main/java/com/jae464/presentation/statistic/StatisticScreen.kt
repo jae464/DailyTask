@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
@@ -86,17 +87,22 @@ fun StatisticScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     if (selectPeriod) {
 
-                    }
-                    else {
+                    } else {
                         SelectYearMonthDay(
                             yearMonthDay = yearMonthDay,
-                            onChangedYear = {yearMonthDay = yearMonthDay.copy(year = it)},
-                            onChangedMonth = {yearMonthDay = yearMonthDay.copy(month = it)},
-                            onChangedDay = {yearMonthDay = yearMonthDay.copy(day = it)}
+                            onChangedYear = { yearMonthDay = yearMonthDay.copy(year = it) },
+                            onChangedMonth = { yearMonthDay = yearMonthDay.copy(month = it) },
+                            onChangedDay = { yearMonthDay = yearMonthDay.copy(day = it) }
                         )
                     }
                 }
-                GetStatisticButton(selectPeriod = selectPeriod, yearMonthDay = yearMonthDay, viewModel = viewModel)
+                Spacer(modifier = Modifier.height(16.dp))
+                GetStatisticButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    selectPeriod = selectPeriod,
+                    yearMonthDay = yearMonthDay,
+                    viewModel = viewModel
+                )
                 LazyColumn() {
                     items(
                         progressTasks,
@@ -123,7 +129,7 @@ fun SelectPeriodRadioButton(
 
 @Composable
 fun SelectYearMonthDay(
-    yearMonthDay : YearMonthDay,
+    yearMonthDay: YearMonthDay,
     onChangedYear: (Int) -> Unit,
     onChangedMonth: (Int) -> Unit,
     onChangedDay: (Int) -> Unit
@@ -141,7 +147,7 @@ fun SelectYearMonthDay(
     for (i in 0..31) {
         days.add(i)
     }
-    
+
     Spinner(
         modifier = Modifier.wrapContentSize(),
         dropDownModifier = Modifier.height(200.dp),
@@ -154,11 +160,12 @@ fun SelectYearMonthDay(
                 horizontalArrangement = Arrangement.Center,
             ) {
                 if (item == 0) {
-                    Text(text = "전체",
+                    Text(
+                        text = "전체",
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
-                }
-                else {
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                    )
+                } else {
                     Text(
                         text = item.toString(),
                         style = MaterialTheme.typography.bodyMedium,
@@ -170,8 +177,7 @@ fun SelectYearMonthDay(
         dropDownItemFactory = { item, _ ->
             if (item == 0) {
                 Text(text = "전체")
-            }
-            else {
+            } else {
                 Text(text = item.toString())
             }
         }
@@ -193,11 +199,12 @@ fun SelectYearMonthDay(
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     if (item == 0) {
-                        Text(text = "전체",
+                        Text(
+                            text = "전체",
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
-                    }
-                    else {
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                        )
+                    } else {
                         Text(
                             text = item.toString(),
                             style = MaterialTheme.typography.bodyMedium,
@@ -209,8 +216,7 @@ fun SelectYearMonthDay(
             dropDownItemFactory = { item, _ ->
                 if (item == 0) {
                     Text(text = "전체")
-                }
-                else {
+                } else {
                     Text(text = item.toString())
                 }
             }
@@ -223,7 +229,9 @@ fun SelectYearMonthDay(
         Spinner(
             modifier = Modifier.wrapContentSize(),
             dropDownModifier = Modifier.height(200.dp),
-            items = days,
+            items = days.filter {
+                it <= LocalDate.of(yearMonthDay.year, yearMonthDay.month, 1).lengthOfMonth()
+            },
             selectedItem = yearMonthDay.day,
             onItemSelected = onChangedDay,
             selectedItemFactory = { modifier, item ->
@@ -232,11 +240,12 @@ fun SelectYearMonthDay(
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     if (item == 0) {
-                        Text(text = "전체",
+                        Text(
+                            text = "전체",
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
-                    }
-                    else {
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                        )
+                    } else {
                         Text(
                             text = item.toString(),
                             style = MaterialTheme.typography.bodyMedium,
@@ -248,8 +257,7 @@ fun SelectYearMonthDay(
             dropDownItemFactory = { item, _ ->
                 if (item == 0) {
                     Text(text = "전체")
-                }
-                else {
+                } else {
                     Text(text = item.toString())
                 }
             }
@@ -258,9 +266,8 @@ fun SelectYearMonthDay(
         Text(text = "일")
     }
 
-    
-}
 
+}
 
 
 @Composable
@@ -303,6 +310,7 @@ fun <T> Spinner(
 
 @Composable
 fun GetStatisticButton(
+    modifier: Modifier = Modifier,
     selectPeriod: Boolean,
     yearMonthDay: YearMonthDay,
     viewModel: StatisticViewModel
@@ -313,22 +321,20 @@ fun GetStatisticButton(
         val fromDay = if (yearMonthDay.day == 0) 1 else yearMonthDay.day
         val toYear = if (yearMonthDay.year == 0) 2023 else yearMonthDay.year
         val toMonth = if (yearMonthDay.month == 0) 12 else yearMonthDay.month
-        val toDay = if (yearMonthDay.day == 0) 31 else yearMonthDay.day
-        var fromLocalDate: LocalDate?
-        var toLocalDate: LocalDate?
-        try {
-            fromLocalDate = LocalDate.of(fromYear, fromMonth, fromDay)
-            toLocalDate = LocalDate.of(toYear, toMonth, toDay)
-        } catch (e: DateTimeException) {
-            Log.d(TAG, "invalidate date")
-            fromLocalDate = LocalDate.of(fromYear, fromMonth, fromDay)
-            toLocalDate = LocalDate.of(toYear, toMonth, LocalDate.of(toYear, toMonth, 1).lengthOfMonth())
-        }
+        val toDay = if (yearMonthDay.day == 0) LocalDate.of(toYear, toMonth, 1)
+            .lengthOfMonth() else yearMonthDay.day
+        val fromLocalDate = LocalDate.of(fromYear, fromMonth, fromDay)
+        val toLocalDate = LocalDate.of(toYear, toMonth, toDay)
         Log.d(TAG, "$fromLocalDate $toLocalDate")
-        Button(onClick = {
-            viewModel.getProgressTasks(fromLocalDate?: LocalDate.now(), toLocalDate ?: LocalDate.now())
+        Button(
+            modifier = modifier,
+            onClick = {
+            viewModel.getProgressTasks(
+                fromLocalDate ?: LocalDate.now(),
+                toLocalDate ?: LocalDate.now()
+            )
         }) {
-            Text(text = "버튼")
+            Text(text = "불러오기")
         }
 
 
