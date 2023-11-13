@@ -26,6 +26,11 @@ interface ProgressTaskDao {
     @Query("SELECT * FROM progress_tasks WHERE created_at = :date")
     fun getProgressTaskByDate(date: LocalDate): Flow<List<ProgressTaskWithTask>>
 
+    @Transaction
+    @Query("SELECT * FROM progress_tasks WHERE created_at BETWEEN :startDate AND :endDate")
+    fun getProgressTasksByDateRange(startDate: LocalDate, endDate: LocalDate): Flow<List<ProgressTaskWithTask>>
+
+
     @Query("UPDATE progress_tasks SET progressed_time = :progressedTime WHERE id = :progressTaskId")
     suspend fun updateProgressedTime(progressTaskId: String, progressedTime: Int)
 

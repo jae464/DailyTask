@@ -55,6 +55,17 @@ class TaskRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getProgressTasksByDate(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<List<ProgressTask>> {
+        return taskLocalDataSource.getProgressTasksByDate(startDate, endDate).map { progressTaskEntities ->
+            progressTaskEntities.map {
+                it.toDomain()
+            }
+        }
+    }
+
     override suspend fun updateProgressTask(tasks: List<Task>) {
         tasks.forEach {
             taskLocalDataSource.insertProgressTask(it.toProgressTaskEntity())

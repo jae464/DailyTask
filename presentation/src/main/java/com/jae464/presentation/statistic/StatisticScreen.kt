@@ -18,7 +18,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -35,18 +38,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.DateTimeException
 import java.time.LocalDate
 
 private const val TAG = "StatisticScreen"
 
 @Composable
-fun StatisticScreen() {
+fun StatisticScreen(
+    viewModel: StatisticViewModel = hiltViewModel()
+) {
 
     var selectPeriod by remember { mutableStateOf(false) }
     var fromLocalDate by remember { mutableStateOf(LocalDate.now()) }
     var toLocalDate by remember { mutableStateOf(LocalDate.now()) }
 
     var yearMonthDay by remember { mutableStateOf(YearMonthDay(0, 0, 0)) }
+    val progressTasks by viewModel.progressTasks.collectAsStateWithLifecycle()
+
+    Log.d(TAG, progressTasks.toString())
 
     Surface(
         modifier = Modifier.windowInsetsPadding(
@@ -83,6 +94,15 @@ fun StatisticScreen() {
                             onChangedMonth = {yearMonthDay = yearMonthDay.copy(month = it)},
                             onChangedDay = {yearMonthDay = yearMonthDay.copy(day = it)}
                         )
+                    }
+                }
+                GetStatisticButton(selectPeriod = selectPeriod, yearMonthDay = yearMonthDay, viewModel = viewModel)
+                LazyColumn() {
+                    items(
+                        progressTasks,
+                        key = null
+                    ) { p ->
+                        Text(text = p.title)
                     }
                 }
             }
@@ -157,8 +177,9 @@ fun SelectYearMonthDay(
         }
     )
     Spacer(modifier = Modifier.width(4.dp))
+    Text(text = "년")
+
     if (yearMonthDay.year != 0) {
-        Text(text = "년")
         Spacer(modifier = Modifier.width(16.dp))
         Spinner(
             modifier = Modifier.wrapContentSize(),
@@ -194,10 +215,10 @@ fun SelectYearMonthDay(
                 }
             }
         )
-    }
-    Spacer(modifier = Modifier.width(4.dp))
-    if (yearMonthDay.month != 0) {
+        Spacer(modifier = Modifier.width(4.dp))
         Text(text = "월")
+    }
+    if (yearMonthDay.month != 0) {
         Spacer(modifier = Modifier.width(16.dp))
         Spinner(
             modifier = Modifier.wrapContentSize(),
@@ -233,8 +254,6 @@ fun SelectYearMonthDay(
                 }
             }
         )
-    }
-    if (yearMonthDay.day != 0) {
         Spacer(modifier = Modifier.width(4.dp))
         Text(text = "일")
     }
@@ -279,6 +298,40 @@ fun <T> Spinner(
                     })
             }
         }
+    }
+}
+
+@Composable
+fun GetStatisticButton(
+    selectPeriod: Boolean,
+    yearMonthDay: YearMonthDay,
+    viewModel: StatisticViewModel
+) {
+    if (!selectPeriod) {
+        val fromYear = if (yearMonthDay.year == 0) 2000 else yearMonthDay.year
+        val fromMonth = if (yearMonthDay.month == 0) 1 else yearMonthDay.month
+        val fromDay = if (yearMonthDay.day == 0) 1 else yearMonthDay.day
+        val toYear = if (yearMonthDay.year == 0) 2023 else yearMonthDay.year
+        val toMonth = if (yearMonthDay.month == 0) 12 else yearMonthDay.month
+        val toDay = if (yearMonthDay.day == 0) 31 else yearMonthDay.day
+        var fromLocalDate: LocalDate?
+        var toLocalDate: LocalDate?
+        try {
+            fromLocalDate = LocalDate.of(fromYear, fromMonth, fromDay)
+            toLocalDate = LocalDate.of(toYear, toMonth, toDay)
+        } catch (e: DateTimeException) {
+            Log.d(TAG, "invalidate date")
+            fromLocalDate = LocalDate.of(fromYear, fromMonth, fromDay)
+            toLocalDate = LocalDate.of(toYear, toMonth, LocalDate.of(toYear, toMonth, 1).lengthOfMonth())
+        }
+        Log.d(TAG, "$fromLocalDate $toLocalDate")
+        Button(onClick = {
+            viewModel.getProgressTasks(fromLocalDate?: LocalDate.now(), toLocalDate ?: LocalDate.now())
+        }) {
+            Text(text = "버튼")
+        }
+
+
     }
 }
 
