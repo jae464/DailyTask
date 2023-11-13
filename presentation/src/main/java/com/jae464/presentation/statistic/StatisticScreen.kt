@@ -41,6 +41,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.yml.charts.common.model.PlotType
+import co.yml.charts.ui.piechart.charts.PieChart
+import co.yml.charts.ui.piechart.models.PieChartConfig
+import co.yml.charts.ui.piechart.models.PieChartData
+import com.jae464.domain.model.ProgressTask
 import java.time.DateTimeException
 import java.time.LocalDate
 
@@ -103,14 +108,15 @@ fun StatisticScreen(
                     yearMonthDay = yearMonthDay,
                     viewModel = viewModel
                 )
-                LazyColumn() {
-                    items(
-                        progressTasks,
-                        key = null
-                    ) { p ->
-                        Text(text = p.title)
-                    }
-                }
+//                LazyColumn() {
+//                    items(
+//                        progressTasks,
+//                        key = null
+//                    ) { p ->
+//                        Text(text = p.title)
+//                    }
+//                }
+                ProgressTaskPieChart(progressTasks = progressTasks)
             }
         }
     }
@@ -341,4 +347,33 @@ fun GetStatisticButton(
     }
 }
 
+@Composable
+fun ProgressTaskPieChart(progressTasks: List<ProgressTask>) {
+    val pieChartConfig = PieChartConfig(
+        isAnimationEnable = true,
+        showSliceLabels = true,
+        activeSliceAlpha = 0.5f,
+        animationDuration = 1500
+    )
+    val colors = listOf(Color.Blue, Color.LightGray, Color.Magenta, Color.Gray, Color.Green, Color.Cyan, Color.DarkGray)
+    val group = progressTasks.groupBy { it.title }
 
+    val pieChartSlices = group.keys.mapIndexed { index, s ->
+        Log.d(TAG, "$s 크기 : ${group[s]?.size?.toFloat() ?: 0f}")
+        val title = if (s.length >= 10) s.substring(0,10) else s
+        PieChartData.Slice(title, group[s]?.size?.toFloat() ?: 0f, colors[index % colors.size])
+    }
+
+    val pieChartData = PieChartData(
+        slices = pieChartSlices,
+        plotType = PlotType.Pie
+    )
+
+    if (pieChartSlices.isNotEmpty()) {
+        PieChart(modifier = Modifier
+            .width(400.dp)
+            .height(400.dp),
+            pieChartData = pieChartData,
+            pieChartConfig = pieChartConfig)
+    }
+}
