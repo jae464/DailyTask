@@ -82,5 +82,5 @@ dependencies {
     implementation(libs.androidx.work.ktx)
     androidTestImplementation(libs.androidx.work.testing)
 
-    implementation("co.yml:ycharts:2.1.0")
+    implementation(libs.ychart)
 }

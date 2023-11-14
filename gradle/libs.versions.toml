@@ -28,6 +28,9 @@ room = "2.5.0"
 # Hilt
 hilt = "2.44"
 
+# YCharts
+ycharts = "2.1.0"
+
 [libraries]
 #androidx
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx"}
@@ -59,6 +62,9 @@ javax-inject = "javax.inject:javax.inject:1"
 #kotlin
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutine" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlin-coroutine" }
+
+#ycharts
+ychart = { module = "co.yml:ycharts", version.ref = "ycharts"}
 
 #test
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" , version.ref = "kotlin-coroutine" }
