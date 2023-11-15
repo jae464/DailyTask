@@ -267,9 +267,9 @@ fun TaskItem(
                 }
                 .fillMaxWidth(),
 //            elevation = CardDefaults.cardElevation(
-//                defaultElevation = 16.dp
+//                defaultElevation = 8.dp
 //            ),
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             onClick = { onClickTask(taskUIModel.id) }
         ) {
