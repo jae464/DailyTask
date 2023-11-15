@@ -350,19 +350,28 @@ fun GetStatisticButton(
 @Composable
 fun ProgressTaskPieChart(progressTasks: List<ProgressTask>) {
     val pieChartConfig = PieChartConfig(
+        sliceLabelTextColor = Color(0xFF333333),
         isAnimationEnable = true,
         showSliceLabels = true,
         activeSliceAlpha = 0.5f,
         animationDuration = 1500
     )
-    val colors = listOf(Color.Blue, Color.LightGray, Color.Magenta, Color.Gray, Color.Green, Color.Cyan, Color.DarkGray)
+//    val colors = listOf(Color.Blue, Color.LightGray, Color.Magenta, Color.Gray, Color.Green, Color.Cyan, Color.DarkGray, Color(0xFFF53844))
+    val colors = listOf(Color(0xFFFFB6C1), Color(0xFFFFFFB6), Color(0xFFADD8E6), Color(0xFFE6E6FA)
+        , Color(0xFF98FB98), Color(0xFFFFDAB9), Color(0xFFE6E6FA),
+        Color(0xFF90EE90), Color(0xFFADD8E6), Color(0xFFFFE4C4))
     val group = progressTasks.groupBy { it.title }
+    val totalProgressedTime = progressTasks.sumOf { it.progressedTime }.toFloat() // 전체 진행된 시간
+    Log.d(TAG, "전체 진행된 시간 : $totalProgressedTime")
 
     val pieChartSlices = group.keys.mapIndexed { index, s ->
-        Log.d(TAG, "$s 크기 : ${group[s]?.size?.toFloat() ?: 0f}")
         val title = if (s.length >= 10) s.substring(0,10) else s
-        PieChartData.Slice(title, group[s]?.size?.toFloat() ?: 0f, colors[index % colors.size])
-    }
+        val progressedTime = group[s]?.sumOf { it.progressedTime }?.toFloat() ?: 0f
+        Log.d(TAG, "$s 가 진행된 총 시간 : $progressedTime")
+        PieChartData.Slice(title, (progressedTime / totalProgressedTime), colors[index % colors.size])
+    }.filter { it.value > 0f }
+
+    Log.d(TAG, "pieChartSlices : $pieChartSlices")
 
     val pieChartData = PieChartData(
         slices = pieChartSlices,
