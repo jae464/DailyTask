@@ -56,6 +56,8 @@ fun HomeScreen(
 
     val context = LocalContext.current
 
+    Log.d("HomeScreen", "HomeScreen Rendered")
+
     Surface(
         modifier = Modifier
             .windowInsetsPadding(
@@ -64,7 +66,8 @@ fun HomeScreen(
             .fillMaxSize(),
         color = Color.Black.copy(alpha = 0.05f)
     ) {
-        ProgressTaskList(progressTaskState = progressTaskState,
+        ProgressTaskList(
+            progressTaskState = progressTaskState,
             progressingTaskState = progressingTaskState,
             onClickStart = {
                 viewModel.startProgressTask(it, context)
