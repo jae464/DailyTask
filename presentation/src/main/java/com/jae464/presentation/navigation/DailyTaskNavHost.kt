@@ -3,6 +3,8 @@ package com.jae464.presentation.navigation
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.jae464.presentation.detail.detailScreen
+import com.jae464.presentation.detail.navigateToDetail
 import com.jae464.presentation.home.homeRoute
 import com.jae464.presentation.home.homeScreen
 import com.jae464.presentation.setting.settingScreen
@@ -17,7 +19,11 @@ fun DailyTaskNavHost(
     startDestination: String = homeRoute
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
-        homeScreen()
+        homeScreen(
+            onClickItem = {
+                navController.navigateToDetail(progressTaskId = it)
+            }
+        )
         taskListScreen(
             onClickAddTask = {
                 navController.navigateToAddTask()
@@ -33,6 +39,10 @@ fun DailyTaskNavHost(
         )
         statisticScreen()
         settingScreen()
-
+        detailScreen(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
     }
 }
