@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -47,7 +48,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    onClickItem: (String) -> Unit = {}
 ) {
     val progressTaskState by viewModel.progressTaskState.collectAsStateWithLifecycle()
     val progressingTaskState by viewModel.progressingTask.collectAsStateWithLifecycle()
@@ -66,7 +68,8 @@ fun HomeScreen(
             progressingTaskState = progressingTaskState,
             onClickStart = {
                 viewModel.startProgressTask(it, context)
-            }
+            },
+            onClickItem = onClickItem
         )
     }
 }
@@ -76,7 +79,8 @@ fun ProgressTaskList(
     modifier: Modifier = Modifier,
     progressTaskState: ProgressTaskState,
     progressingTaskState: ProgressingState,
-    onClickStart: (String) -> Unit
+    onClickStart: (String) -> Unit,
+    onClickItem: (String) -> Unit
 ) {
     Log.d("ProgressTaskList", progressTaskState.toString())
     Box(
@@ -99,12 +103,15 @@ fun ProgressTaskList(
                                 progressTaskUiModel = progressingTaskState.progressTask.toProgressTaskUiModel(
                                     true
                                 ),
-                                onClickStart = onClickStart
+                                onClickStart = onClickStart,
+                                onClickItem = onClickItem
+
                             )
                         } else {
                             ProgressTaskItem(
                                 progressTaskUiModel = progressTaskUiModel,
-                                onClickStart = onClickStart
+                                onClickStart = onClickStart,
+                                onClickItem = onClickItem
                             )
                         }
                     }
@@ -124,11 +131,13 @@ fun ProgressTaskList(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgressTaskItem(
     modifier: Modifier = Modifier,
     progressTaskUiModel: ProgressTaskUiModel,
     onClickStart: (String) -> Unit,
+    onClickItem: (String) -> Unit,
 ) {
     Box(
         modifier = modifier
@@ -140,6 +149,7 @@ fun ProgressTaskItem(
                 .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
+            onClick = { onClickItem(progressTaskUiModel.id) }
         ) {
             Row(
                 modifier = modifier.padding(8.dp),
