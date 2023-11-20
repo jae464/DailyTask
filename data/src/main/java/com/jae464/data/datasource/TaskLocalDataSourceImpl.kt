@@ -8,6 +8,7 @@ import com.jae464.data.database.entity.ProgressTaskWithTask
 import com.jae464.data.database.entity.TaskEntity
 import com.jae464.domain.model.DayOfWeek
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -29,7 +30,7 @@ class TaskLocalDataSourceImpl @Inject constructor(
         return taskDao.getTasksByDayOfWeek(dayOfWeeks.day)
     }
 
-    override fun getProgressTask(progressTaskId: String): Flow<ProgressTaskWithTask> {
+    override fun getProgressTask(progressTaskId: String): Flow<ProgressTaskWithTask?> {
         return progressTaskDao.getProgressTask(progressTaskId)
     }
 

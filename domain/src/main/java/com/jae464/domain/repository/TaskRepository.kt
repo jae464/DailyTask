@@ -10,7 +10,7 @@ interface TaskRepository {
     fun getAllTasks(): Flow<List<Task>>
     fun getTask(taskId: String): Flow<Task>
     fun getTasksByDayOfWeek(dayOfWeeks: DayOfWeek): Flow<List<Task>>
-    fun getProgressTask(progressTaskId: String): Flow<ProgressTask>
+    fun getProgressTask(progressTaskId: String): Flow<ProgressTask?>
     fun getTodayProgressTasks(): Flow<List<ProgressTask>>
     fun getProgressTasksByDate(startDate: LocalDate, endDate: LocalDate): Flow<List<ProgressTask>>
     suspend fun updateProgressTask(tasks: List<Task>)

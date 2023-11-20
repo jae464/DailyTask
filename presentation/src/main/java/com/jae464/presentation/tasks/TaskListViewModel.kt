@@ -7,6 +7,7 @@ import com.jae464.domain.usecase.DeleteTaskUseCase
 import com.jae464.domain.usecase.GetAllCategoriesUseCase
 import com.jae464.domain.usecase.GetAllTasksUseCase
 import com.jae464.domain.usecase.GetCategoryUseCase
+import com.jae464.presentation.home.ProgressingTaskManager
 import com.jae464.presentation.model.TaskUIModel
 import com.jae464.presentation.model.toTaskUIModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,6 +26,8 @@ class TaskListViewModel @Inject constructor(
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase
 ) : ViewModel() {
+
+    private val progressingTaskManager = ProgressingTaskManager.getInstance()
 
     private val categories = getAllCategoriesUseCase()
         .stateIn(
@@ -62,6 +65,10 @@ class TaskListViewModel @Inject constructor(
 
     fun deleteTask(taskId: String) {
         viewModelScope.launch {
+            // 삭제하려는 일정이 현재 진행중인 일정이면 진행을 멈춘다.
+            if ((progressingTaskManager.getCurrentProgressTask()?.task?.id ?: "") == taskId) {
+                progressingTaskManager.stopProgressTask()
+            }
             deleteTaskUseCase(taskId)
         }
     }

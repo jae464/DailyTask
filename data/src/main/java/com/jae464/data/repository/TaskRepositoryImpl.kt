@@ -10,6 +10,7 @@ import com.jae464.domain.model.Task
 import com.jae464.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import javax.inject.Inject
@@ -41,9 +42,9 @@ class TaskRepositoryImpl @Inject constructor(
     }
 
 
-    override fun getProgressTask(progressTaskId: String): Flow<ProgressTask> {
+    override fun getProgressTask(progressTaskId: String): Flow<ProgressTask?> {
         return taskLocalDataSource.getProgressTask(progressTaskId).map { progressTaskEntity ->
-            progressTaskEntity.toDomain()
+            progressTaskEntity?.toDomain()
         }
     }
 

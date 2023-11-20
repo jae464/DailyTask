@@ -19,8 +19,8 @@ interface ProgressTaskDao {
     fun getAllProgressTasks(): Flow<List<ProgressTaskEntity>>
 
     @Transaction
-    @Query("SELECT * FROM progress_tasks WHERE id = :progressTaskId")
-    fun getProgressTask(progressTaskId: String): Flow<ProgressTaskWithTask>
+    @Query("SELECT * FROM progress_tasks  WHERE id = :progressTaskId")
+    fun getProgressTask(progressTaskId: String): Flow<ProgressTaskWithTask?>
 
     @Transaction
     @Query("SELECT * FROM progress_tasks WHERE created_at = :date")
