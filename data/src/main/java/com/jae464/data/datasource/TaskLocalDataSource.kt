@@ -12,7 +12,7 @@ interface TaskLocalDataSource {
     fun getAllTasks(): Flow<List<TaskEntity>>
     fun getTask(taskId: String): Flow<TaskEntity>
     fun getTasksByDayOfWeek(dayOfWeeks: DayOfWeek): Flow<List<TaskEntity>>
-    fun getProgressTask(progressTaskId: String): Flow<ProgressTaskWithTask>
+    fun getProgressTask(progressTaskId: String): Flow<ProgressTaskWithTask?>
     fun getTodayProgressTasks(): Flow<List<ProgressTaskWithTask>>
     fun getProgressTasksByDate(startDate: LocalDate, endDate: LocalDate): Flow<List<ProgressTaskWithTask>>
     suspend fun updateProgressTime(progressTaskId: String, progressedTime: Int)

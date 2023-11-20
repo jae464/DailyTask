@@ -63,8 +63,13 @@ class DetailViewModel @Inject constructor(
             viewModelScope.launch {
                 getProgressTaskUseCase(savedStateHandle["progressTaskId"] ?: "")
                     .collectLatest {
-                        progressTask = it
-                        _uiState.emit(DetailUiState.Success(it.toProgressTaskUiModel()))
+                        if (it == null) {
+                            _uiState.emit(DetailUiState.Loading)
+                        }
+                        else {
+                            progressTask = it
+                            _uiState.emit(DetailUiState.Success(it.toProgressTaskUiModel()))
+                        }
                     }
             }
         }
