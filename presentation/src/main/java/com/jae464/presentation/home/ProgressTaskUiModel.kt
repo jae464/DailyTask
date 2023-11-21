@@ -14,6 +14,13 @@ data class ProgressTaskUiModel(
     val isProgressing: Boolean
 ) {
     val remainTime = totalTime - progressedTime
+
+    fun getRemainTimeString(): String {
+        val hour = remainTime / 3600
+        val minute = remainTime % 3600 / 60
+        val second = remainTime % 3600 % 60
+        return "%2d:%02d:%02d".format(hour, minute, second)
+    }
 }
 
 fun ProgressTask.toProgressTaskUiModel(isProgressing: Boolean = false): ProgressTaskUiModel {

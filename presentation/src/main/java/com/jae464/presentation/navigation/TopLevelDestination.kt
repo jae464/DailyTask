@@ -23,11 +23,11 @@ enum class TopLevelDestination(val icon: ImageVector, val route: String) {
 
 fun NavController.navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
     val topLevelNavOptions = navOptions {
-        popUpTo(graph.findStartDestination().id){
-            saveState = true
+        popUpTo(graph.findStartDestination().id) {
+//            saveState = true
         }
         launchSingleTop = true
-        restoreState = true
+//        restoreState = true
     }
     when (topLevelDestination) {
         TopLevelDestination.Home -> {
