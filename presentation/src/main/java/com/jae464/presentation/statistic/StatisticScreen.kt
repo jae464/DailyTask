@@ -365,7 +365,7 @@ fun ProgressTaskPieChart(progressTasks: List<ProgressTask>) {
     Log.d(TAG, "전체 진행된 시간 : $totalProgressedTime")
 
     val pieChartSlices = group.keys.mapIndexed { index, s ->
-        val title = if (s.length >= 10) s.substring(0,10) else s
+        val title = if (s.length >= 10) s.substring(0,10) + "..." else s
         val progressedTime = group[s]?.sumOf { it.progressedTime }?.toFloat() ?: 0f
         Log.d(TAG, "$s 가 진행된 총 시간 : $progressedTime")
         PieChartData.Slice(title, (progressedTime / totalProgressedTime), colors[index % colors.size])
