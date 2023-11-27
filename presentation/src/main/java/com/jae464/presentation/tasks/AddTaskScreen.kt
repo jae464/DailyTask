@@ -343,7 +343,7 @@ fun AddTaskBody(
                         checked = selectedDayOfWeeks.contains(dayOfWeek),
                         onCheckedChanged = { checked ->
                             if (checked) {
-                                onDayOfWeeksChanged(selectedDayOfWeeks + listOf(dayOfWeek))
+                                onDayOfWeeksChanged((selectedDayOfWeeks + listOf(dayOfWeek)).sorted())
                             } else {
                                 onDayOfWeeksChanged(selectedDayOfWeeks.filter { day -> day != dayOfWeek })
                             }
