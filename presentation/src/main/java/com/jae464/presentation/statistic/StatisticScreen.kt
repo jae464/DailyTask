@@ -95,8 +95,19 @@ fun StatisticScreen(
                     } else {
                         SelectYearMonthDay(
                             yearMonthDay = yearMonthDay,
-                            onChangedYear = { yearMonthDay = yearMonthDay.copy(year = it) },
-                            onChangedMonth = { yearMonthDay = yearMonthDay.copy(month = it) },
+                            onChangedYear = {
+                                yearMonthDay = if (it == 0) {
+                                    yearMonthDay.copy(year = 0, month = 0, day = 0)
+                                } else {
+                                    yearMonthDay.copy(year = it)
+                                }
+                            },
+                            onChangedMonth = {
+                                yearMonthDay = if (it == 0) yearMonthDay.copy(
+                                    month = 0,
+                                    day = 0
+                                ) else yearMonthDay.copy(month = it)
+                            },
                             onChangedDay = { yearMonthDay = yearMonthDay.copy(day = it) }
                         )
                     }
@@ -230,7 +241,7 @@ fun SelectYearMonthDay(
         Spacer(modifier = Modifier.width(4.dp))
         Text(text = "월")
     }
-    if (yearMonthDay.month != 0) {
+    if (yearMonthDay.month != 0 && yearMonthDay.year != 0) {
         Spacer(modifier = Modifier.width(16.dp))
         Spinner(
             modifier = Modifier.wrapContentSize(),
@@ -335,11 +346,11 @@ fun GetStatisticButton(
         Button(
             modifier = modifier,
             onClick = {
-            viewModel.getProgressTasks(
-                fromLocalDate ?: LocalDate.now(),
-                toLocalDate ?: LocalDate.now()
-            )
-        }) {
+                viewModel.getProgressTasks(
+                    fromLocalDate ?: LocalDate.now(),
+                    toLocalDate ?: LocalDate.now()
+                )
+            }) {
             Text(text = "불러오기")
         }
 
@@ -357,18 +368,31 @@ fun ProgressTaskPieChart(progressTasks: List<ProgressTask>) {
         animationDuration = 1500
     )
 //    val colors = listOf(Color.Blue, Color.LightGray, Color.Magenta, Color.Gray, Color.Green, Color.Cyan, Color.DarkGray, Color(0xFFF53844))
-    val colors = listOf(Color(0xFFFFB6C1), Color(0xFFFFFFB6), Color(0xFFADD8E6), Color(0xFFE6E6FA)
-        , Color(0xFF98FB98), Color(0xFFFFDAB9), Color(0xFFE6E6FA),
-        Color(0xFF90EE90), Color(0xFFADD8E6), Color(0xFFFFE4C4))
+    val colors = listOf(
+        Color(0xFFFFB6C1),
+        Color(0xFFFFFFB6),
+        Color(0xFFADD8E6),
+        Color(0xFFE6E6FA),
+        Color(0xFF98FB98),
+        Color(0xFFFFDAB9),
+        Color(0xFFE6E6FA),
+        Color(0xFF90EE90),
+        Color(0xFFADD8E6),
+        Color(0xFFFFE4C4)
+    )
     val group = progressTasks.groupBy { it.title }
     val totalProgressedTime = progressTasks.sumOf { it.progressedTime }.toFloat() // 전체 진행된 시간
     Log.d(TAG, "전체 진행된 시간 : $totalProgressedTime")
 
     val pieChartSlices = group.keys.mapIndexed { index, s ->
-        val title = if (s.length >= 10) s.substring(0,10) + "..." else s
+        val title = if (s.length >= 10) s.substring(0, 10) + "..." else s
         val progressedTime = group[s]?.sumOf { it.progressedTime }?.toFloat() ?: 0f
         Log.d(TAG, "$s 가 진행된 총 시간 : $progressedTime")
-        PieChartData.Slice(title, (progressedTime / totalProgressedTime), colors[index % colors.size])
+        PieChartData.Slice(
+            title,
+            (progressedTime / totalProgressedTime),
+            colors[index % colors.size]
+        )
     }.filter { it.value > 0f }
 
     Log.d(TAG, "pieChartSlices : $pieChartSlices")
@@ -379,10 +403,12 @@ fun ProgressTaskPieChart(progressTasks: List<ProgressTask>) {
     )
 
     if (pieChartSlices.isNotEmpty()) {
-        PieChart(modifier = Modifier
-            .width(400.dp)
-            .height(400.dp),
+        PieChart(
+            modifier = Modifier
+                .width(400.dp)
+                .height(400.dp),
             pieChartData = pieChartData,
-            pieChartConfig = pieChartConfig)
+            pieChartConfig = pieChartConfig
+        )
     }
 }
