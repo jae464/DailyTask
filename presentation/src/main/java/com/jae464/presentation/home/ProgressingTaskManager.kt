@@ -25,7 +25,6 @@ class ProgressingTaskManager {
         this.progressTask = progressTask
 
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
         val request = OneTimeWorkRequestBuilder<ProgressTaskWorker>()
             .setConstraints(constraints)

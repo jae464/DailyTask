@@ -184,6 +184,7 @@ fun AddTaskScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
+            val context = LocalContext.current
             AddTaskBody(
                 modifier = modifier,
                 title = title,
@@ -196,7 +197,14 @@ fun AddTaskScreen(
                 memo = memo,
                 categories = categories,
                 selectedCategory = selectedCategory,
-                onTitleChanged = { newTitle -> title = newTitle },
+                onTitleChanged = { newTitle ->
+                    if (newTitle.length > 30) {
+                        Toast.makeText(context, "제목은 최대 30자까지 입력할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        title = newTitle
+                    }
+                },
                 onProgressTimeHourChanged = { newHour ->
                     Log.d("AddTaskScreen", "progressTimeHour : $newHour")
                     progressTimeHour = newHour
