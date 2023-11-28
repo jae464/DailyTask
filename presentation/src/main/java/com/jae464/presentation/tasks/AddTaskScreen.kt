@@ -158,6 +158,10 @@ fun AddTaskScreen(
                         Toast.makeText(context, "진행시간을 설정해주세요.", Toast.LENGTH_SHORT).show()
                         return@AddTaskTopAppBar
                     }
+                    if (selectedTaskType == TaskType.Regular && selectedDayOfWeeks.isEmpty()) {
+                        Toast.makeText(context, "하나 이상의 요일을 설정해주세요.", Toast.LENGTH_SHORT).show()
+                        return@AddTaskTopAppBar
+                    }
                     viewModel.saveTask(
                         AddTaskUIModel(
                             title = title,
