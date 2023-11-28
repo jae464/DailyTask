@@ -93,7 +93,14 @@ fun AddTaskScreen(
     val (selectedTaskType, onSelectedTaskType) = remember { mutableStateOf(TaskType.Regular) }
     var selectedDayOfWeeks by remember { mutableStateOf(emptyList<DayOfWeek>()) }
     var useAlarm by remember { mutableStateOf(false) }
-    var alarmTime by remember { mutableStateOf(LocalDateTime.of(LocalDate.now(), LocalTime.of(9,0))) }
+    var alarmTime by remember {
+        mutableStateOf(
+            LocalDateTime.of(
+                LocalDate.now(),
+                LocalTime.of(9, 0)
+            )
+        )
+    }
     var memo by remember { mutableStateOf("") }
     var selectedCategory: Category? by remember { mutableStateOf(null) }
 
@@ -120,22 +127,17 @@ fun AddTaskScreen(
                 memo = savedTaskModel.memo
                 selectedCategory = categories.firstOrNull { it.id == savedTaskModel.categoryId }
             }
+
             else -> {}
         }
     }
 
     LaunchedEffect(categories) {
-        if (categories.isNotEmpty()) {
-            Log.d("AddTaskScreen", "selectedCategory = categories[0]")
+        if (categories.isNotEmpty() && selectedCategory == null) {
             selectedCategory = categories[0]
         }
     }
 
-    LaunchedEffect(selectedTaskType) {
-        if (selectedTaskType == TaskType.Irregular) {
-            selectedDayOfWeeks = emptyList()
-        }
-    }
 
     Log.d(TAG, "AddTaskScreen Rendered()")
     Scaffold(
@@ -162,7 +164,7 @@ fun AddTaskScreen(
                             progressTimeHour = progressTimeHour,
                             progressTimeMinute = progressTimeMinute,
                             taskType = selectedTaskType,
-                            dayOfWeeks = selectedDayOfWeeks,
+                            dayOfWeeks = if (selectedTaskType == TaskType.Regular) selectedDayOfWeeks else emptyList(),
                             useAlarm = useAlarm,
                             alarmTime = alarmTime,
                             memo = memo,
@@ -199,9 +201,11 @@ fun AddTaskScreen(
                     Log.d("AddTaskScreen", "progressTimeMinute : $newMinute")
                     progressTimeMinute = newMinute
                 },
-                onSelectedTaskType = onSelectedTaskType,
+                onSelectedTaskType = {
+                    onSelectedTaskType(it)
+                },
                 onDayOfWeeksChanged = { dayOfWeeks -> selectedDayOfWeeks = dayOfWeeks },
-                onUseAlarmChanged = {useAlarm = it},
+                onUseAlarmChanged = { useAlarm = it },
                 onAlarmTimeChanged = { newAlarmTime -> alarmTime = newAlarmTime },
                 onMemoChanged = { newMemo -> memo = newMemo },
                 onCategoryChanged = { category -> selectedCategory = category }
