@@ -33,6 +33,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import co.yml.charts.common.extensions.isNotNull
+import com.jae464.presentation.detail.navigateToDetail
 import com.jae464.presentation.home.HomeScreen
 import com.jae464.presentation.navigation.DailyTaskNavHost
 import com.jae464.presentation.navigation.TopLevelDestination
@@ -85,10 +87,17 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                     ) {
                         DailyTaskNavHost(navController = navController)
+
+                        // Notification 클릭해서 들어온 경우
+                        val progressTaskId = intent.getStringExtra("progressTaskId") ?: ""
+                        if (progressTaskId.isNotEmpty()) {
+                            navController.navigateToDetail(progressTaskId)
+                        }
                     }
                 }
             }
         }
+
     }
 }
 
