@@ -159,7 +159,7 @@ fun ProgressTaskItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 RoundedTimer(
-                    time = progressTaskUiModel.remainTime,
+                    time = progressTaskUiModel.getRemainTimeString(),
                     isProgressing = progressTaskUiModel.isProgressing
                 )
                 Column(
@@ -208,13 +208,9 @@ fun ProgressTaskItem(
 @Composable
 fun RoundedTimer(
     modifier: Modifier = Modifier,
-    time: Int,
+    time: String,
     isProgressing: Boolean
 ) {
-    val hour = time / 3600
-    val minute = time % 3600 / 60
-    val second = time % 3600 % 60
-
     Box(
         modifier
             .size(64.dp)
@@ -226,7 +222,7 @@ fun RoundedTimer(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "%2d:%02d:%02d".format(hour, minute, second),
+            text = time,
             style = MaterialTheme.typography.bodyMedium,
             color = Color.White
         )
