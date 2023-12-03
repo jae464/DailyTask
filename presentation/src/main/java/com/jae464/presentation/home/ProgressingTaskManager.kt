@@ -32,7 +32,7 @@ class ProgressingTaskManager {
         val workManager = WorkManager.getInstance(context)
         workManager.beginUniqueWork(
             "taskWorker",
-            ExistingWorkPolicy.KEEP,
+            ExistingWorkPolicy.REPLACE,
             request
         )
             .enqueue()
