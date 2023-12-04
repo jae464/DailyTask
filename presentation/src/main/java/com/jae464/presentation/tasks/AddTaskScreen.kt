@@ -30,6 +30,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.rounded.AddCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -43,6 +45,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -55,6 +58,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +67,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.yml.charts.common.extensions.isNotNull
 import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
@@ -199,9 +204,9 @@ fun AddTaskScreen(
                 selectedCategory = selectedCategory,
                 onTitleChanged = { newTitle ->
                     if (newTitle.length > 30) {
-                        Toast.makeText(context, "제목은 최대 30자까지 입력할 수 있습니다.", Toast.LENGTH_SHORT).show()
-                    }
-                    else {
+                        Toast.makeText(context, "제목은 최대 30자까지 입력할 수 있습니다.", Toast.LENGTH_SHORT)
+                            .show()
+                    } else {
                         title = newTitle
                     }
                 },
@@ -220,7 +225,15 @@ fun AddTaskScreen(
                 onUseAlarmChanged = { useAlarm = it },
                 onAlarmTimeChanged = { newAlarmTime -> alarmTime = newAlarmTime },
                 onMemoChanged = { newMemo -> memo = newMemo },
-                onCategoryChanged = { category -> selectedCategory = category }
+                onCategoryChanged = { category -> selectedCategory = category },
+                onAddCategoryClick = { categoryName ->
+                    if (categories.firstOrNull { it.name == categoryName}.isNotNull()) {
+                        Toast.makeText(context, "이미 존재하는 카테고리입니다.", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        viewModel.addCategory(categoryName)
+                    }
+                }
             )
         }
     }
@@ -284,7 +297,8 @@ fun AddTaskBody(
     onUseAlarmChanged: (Boolean) -> Unit,
     onAlarmTimeChanged: (LocalDateTime) -> Unit,
     onMemoChanged: (String) -> Unit,
-    onCategoryChanged: (Category) -> Unit
+    onCategoryChanged: (Category) -> Unit,
+    onAddCategoryClick: (String) -> Unit
 ) {
     // variables
     val taskOptions = listOf(TaskType.Regular, TaskType.Irregular)
@@ -293,6 +307,7 @@ fun AddTaskBody(
 
     // states
     val scrollState = rememberScrollState()
+    var showAddCategoryDialog by remember { mutableStateOf(false) }
 
     Log.d(TAG, "AddTaskBody Rendered()")
 
@@ -380,6 +395,11 @@ fun AddTaskBody(
                     selectedItem = selectedCategory,
                     onItemSelected = onCategoryChanged
                 )
+                IconButton(onClick = {
+                    showAddCategoryDialog = true
+                }) {
+                    Icon(imageVector = Icons.Rounded.AddCircle, contentDescription = "add_category")
+                }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -430,6 +450,9 @@ fun AddTaskBody(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
+    }
+    if (showAddCategoryDialog) {
+        AddCategoryDialog(onSaveCategory = onAddCategoryClick, onChangedShowDialog = {showAddCategoryDialog = it})
     }
 }
 
@@ -537,6 +560,7 @@ fun <T> Spinner(
     dropDownItemFactory: @Composable (T, Int) -> Unit
 ) {
     var expanded: Boolean by remember { mutableStateOf(false) }
+    var showCategoryAddDialog by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.wrapContentSize(Alignment.TopStart)) {
         selectedItemFactory(
@@ -562,6 +586,42 @@ fun <T> Spinner(
             }
         }
     }
+}
+
+@Composable
+fun AddCategoryDialog(
+    onSaveCategory: (String) -> Unit,
+    onChangedShowDialog: (Boolean) -> Unit
+) {
+    var categoryName by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = { onChangedShowDialog(false) },
+        title = {
+            Column {
+                Text(
+                    text = "새로운 카테고리 추가",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                TextField(
+                    value = categoryName,
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    onValueChange = {
+                        categoryName = it
+                    })
+            }
+        },
+        confirmButton = {
+            // TODO 위에서 카테고리 명 중복 확인 필요
+            TextButton(onClick = {
+                onSaveCategory(categoryName)
+                onChangedShowDialog(false)
+            }) {
+                Text(text = "추가")
+            }
+        }
+    )
 }
 
 @Composable
