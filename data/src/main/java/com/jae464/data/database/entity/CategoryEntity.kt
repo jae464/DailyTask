@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.jae464.domain.model.Category
+import java.util.UUID
 
 @Entity(tableName = "categories")
 data class CategoryEntity(
@@ -23,7 +24,7 @@ fun CategoryEntity.toDomain(): Category {
 
 fun Category.toEntity(): CategoryEntity {
     return CategoryEntity(
-        id = id,
+        id = 0L,
         categoryName = name
     )
 }

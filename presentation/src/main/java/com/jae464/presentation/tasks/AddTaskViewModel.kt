@@ -5,6 +5,8 @@ import androidx.compose.runtime.MutableState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jae464.domain.model.Category
+import com.jae464.domain.usecase.AddCategoryUseCase
 import com.jae464.domain.usecase.GetAllCategoriesUseCase
 import com.jae464.domain.usecase.GetCategoryUseCase
 import com.jae464.domain.usecase.GetTaskUseCase
@@ -30,7 +32,8 @@ class AddTaskViewModel @Inject constructor(
     private val getTaskUseCase: GetTaskUseCase,
     private val saveTaskUseCase: SaveTaskUseCase,
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
-    private val updateTaskUseCase: UpdateTaskUseCase
+    private val updateTaskUseCase: UpdateTaskUseCase,
+    private val addCategoryUseCase: AddCategoryUseCase
 ): ViewModel() {
 
     val saveCompleted = MutableStateFlow(false)
@@ -86,6 +89,12 @@ class AddTaskViewModel @Inject constructor(
                 is AddTaskState.Loading -> return@launch
             }
             saveCompleted.value = true
+        }
+    }
+
+    fun addCategory(categoryName: String) {
+        viewModelScope.launch {
+            addCategoryUseCase(Category(0L, categoryName))
         }
     }
 }

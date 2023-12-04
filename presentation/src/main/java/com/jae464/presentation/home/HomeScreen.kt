@@ -2,6 +2,7 @@ package com.jae464.presentation.home
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -196,7 +198,6 @@ fun ProgressTaskItem(
                     modifier = Modifier
                         .wrapContentSize(),
                     colors = ButtonDefaults.buttonColors(),
-
                     ) {
                     Text(text = if (progressTaskUiModel.isProgressing) "중지" else "시작")
                 }
@@ -215,8 +216,8 @@ fun RoundedTimer(
         modifier
             .size(64.dp)
             .background(
-                if (isProgressing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                CircleShape
+                color = if (isProgressing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                shape = CircleShape,
             )
             .padding(4.dp),
         contentAlignment = Alignment.Center
