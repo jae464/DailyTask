@@ -121,23 +121,12 @@ fun DetailProgressTask(
 ) {
     val scrollState = rememberScrollState()
 
-    var todayMemo by remember {
-        mutableStateOf(
-            ""
-        )
-    }
-    Log.d("DetailScreen", "todayMemo : $todayMemo")
-
-
     when (uiState) {
         is DetailUiState.Loading -> {
 
         }
 
         is DetailUiState.Success -> {
-            if (todayMemo.isEmpty() && uiState.progressTaskUiModel.todayMemo.isNotEmpty()) {
-                todayMemo = uiState.progressTaskUiModel.todayMemo
-            }
             Column(
                 modifier = Modifier
                     .padding(top = 26.dp)
@@ -174,28 +163,6 @@ fun DetailProgressTask(
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-//                Row {
-//                    Text(text = "메모", fontWeight = FontWeight.Bold)
-//                    IconButton(onClick = {
-//                        onClickSaveTodayMemo(todayMemo)
-//                    }) {
-//                        Icon(
-//                            imageVector = Icons.Default.Save,
-//                            contentDescription = "save_today_memo"
-//                        )
-//                    }
-//                }
-//                Spacer(modifier = Modifier.height(16.dp))
-//                TextField(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(200.dp),
-//                    value = todayMemo,
-//                    onValueChange = {
-//                        Log.d("DetailScreen", "onValueChange : $it")
-//                        todayMemo = it
-//                    }
-//                )
                 TodayMemoField(onClickSaveTodayMemo = onClickSaveTodayMemo, savedTodayMemo = uiState.progressTaskUiModel.todayMemo)
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
