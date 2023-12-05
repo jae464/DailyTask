@@ -28,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -162,7 +163,8 @@ fun ProgressTaskItem(
             ) {
                 RoundedTimer(
                     time = progressTaskUiModel.getRemainTimeString(),
-                    isProgressing = progressTaskUiModel.isProgressing
+                    isProgressing = progressTaskUiModel.isProgressing,
+                    progress = progressTaskUiModel.progressedTime.toFloat() /  progressTaskUiModel.totalTime.toFloat()
                 )
                 Column(
                     modifier = Modifier
@@ -210,7 +212,8 @@ fun ProgressTaskItem(
 fun RoundedTimer(
     modifier: Modifier = Modifier,
     time: String,
-    isProgressing: Boolean
+    isProgressing: Boolean,
+    progress: Float = 0f
 ) {
     Box(
         modifier
@@ -218,10 +221,16 @@ fun RoundedTimer(
             .background(
                 color = if (isProgressing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
                 shape = CircleShape,
-            )
-            .padding(4.dp),
+            ),
+//            .padding(2.dp),
         contentAlignment = Alignment.Center
     ) {
+        CircularProgressIndicator(
+            progress = progress,
+            modifier = Modifier.size(100.dp),
+            color = Color.Magenta,
+            strokeWidth = 2.dp
+        )
         Text(
             text = time,
             style = MaterialTheme.typography.bodyMedium,
