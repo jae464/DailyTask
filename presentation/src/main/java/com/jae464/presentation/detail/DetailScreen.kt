@@ -1,9 +1,11 @@
 package com.jae464.presentation.detail
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -26,6 +28,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,7 +60,6 @@ fun DetailScreen(
     viewModel: DetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var todayMemo by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     Surface(
@@ -75,10 +77,9 @@ fun DetailScreen(
         ) {
             DetailProgressTask(
                 uiState = uiState,
-                todayMemo = todayMemo,
-                onChangedTodayMemo = { todayMemo = it },
                 onClickStart = { viewModel.startProgressTask(context) },
-                onClickStop = { viewModel.stopProgressTask() }
+                onClickStop = { viewModel.stopProgressTask() },
+                onClickSaveTodayMemo = { viewModel.updateTodayMemo(it) }
             )
         }
     }
@@ -114,18 +115,29 @@ fun DetailTopAppBar(
 fun DetailProgressTask(
     modifier: Modifier = Modifier,
     uiState: DetailUiState,
-    todayMemo: String,
-    onChangedTodayMemo: (String) -> Unit,
     onClickStart: () -> Unit,
-    onClickStop: () -> Unit
+    onClickStop: () -> Unit,
+    onClickSaveTodayMemo: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
+
+    var todayMemo by remember {
+        mutableStateOf(
+            ""
+        )
+    }
+    Log.d("DetailScreen", "todayMemo : $todayMemo")
+
+
     when (uiState) {
         is DetailUiState.Loading -> {
 
         }
 
         is DetailUiState.Success -> {
+            if (todayMemo.isEmpty() && uiState.progressTaskUiModel.todayMemo.isNotEmpty()) {
+                todayMemo = uiState.progressTaskUiModel.todayMemo
+            }
             Column(
                 modifier = Modifier
                     .padding(top = 26.dp)
@@ -162,15 +174,29 @@ fun DetailProgressTask(
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "메모", fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    value = todayMemo,
-                    onValueChange = { onChangedTodayMemo(it) }
-                )
+//                Row {
+//                    Text(text = "메모", fontWeight = FontWeight.Bold)
+//                    IconButton(onClick = {
+//                        onClickSaveTodayMemo(todayMemo)
+//                    }) {
+//                        Icon(
+//                            imageVector = Icons.Default.Save,
+//                            contentDescription = "save_today_memo"
+//                        )
+//                    }
+//                }
+//                Spacer(modifier = Modifier.height(16.dp))
+//                TextField(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(200.dp),
+//                    value = todayMemo,
+//                    onValueChange = {
+//                        Log.d("DetailScreen", "onValueChange : $it")
+//                        todayMemo = it
+//                    }
+//                )
+                TodayMemoField(onClickSaveTodayMemo = onClickSaveTodayMemo, savedTodayMemo = uiState.progressTaskUiModel.todayMemo)
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = uiState.progressTaskUiModel.getRemainTimeString(),
@@ -197,4 +223,40 @@ fun DetailProgressTask(
             }
         }
     }
+}
+
+@Composable
+fun TodayMemoField(
+    savedTodayMemo: String = "",
+    onClickSaveTodayMemo: (String) -> Unit
+) {
+    var todayMemo by remember {
+        mutableStateOf(
+            savedTodayMemo
+        )
+    }
+
+    Row {
+        Text(text = "메모", fontWeight = FontWeight.Bold)
+        IconButton(onClick = {
+            onClickSaveTodayMemo(todayMemo)
+        }) {
+            Icon(
+                imageVector = Icons.Default.Save,
+                contentDescription = "save_today_memo"
+            )
+        }
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+    TextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp),
+        value = todayMemo,
+        onValueChange = {
+            Log.d("DetailScreen", "onValueChange : $it")
+            todayMemo = it
+        }
+    )
+
 }
