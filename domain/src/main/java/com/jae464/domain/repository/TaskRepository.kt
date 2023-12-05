@@ -15,6 +15,7 @@ interface TaskRepository {
     fun getProgressTasksByDate(startDate: LocalDate, endDate: LocalDate): Flow<List<ProgressTask>>
     suspend fun updateProgressTask(tasks: List<Task>)
     suspend fun updateProgressedTime(progressTaskId: String, progressedTime: Int)
+    suspend fun updateTodayMemo(progressTaskId: String, todayMemo: String)
     suspend fun saveTask(task: Task)
     suspend fun insertProgressTask(progressTask: ProgressTask)
     suspend fun updateTask(task: Task)

@@ -34,4 +34,7 @@ interface ProgressTaskDao {
     @Query("UPDATE progress_tasks SET progressed_time = :progressedTime WHERE id = :progressTaskId")
     suspend fun updateProgressedTime(progressTaskId: String, progressedTime: Int)
 
+    @Query("UPDATE progress_tasks SET today_memo = :todayMemo WHERE id = :progressTaskId")
+    suspend fun updateTodayMemo(progressTaskId: String, todayMemo: String)
+
 }

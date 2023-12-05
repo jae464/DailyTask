@@ -77,6 +77,10 @@ class TaskRepositoryImpl @Inject constructor(
         taskLocalDataSource.updateProgressTime(progressTaskId, progressedTime)
     }
 
+    override suspend fun updateTodayMemo(progressTaskId: String, todayMemo: String) {
+        taskLocalDataSource.updateTodayMemo(progressTaskId, todayMemo)
+    }
+
     override suspend fun saveTask(task: Task) {
         taskLocalDataSource.insertTask(task.toEntity())
     }

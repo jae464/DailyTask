@@ -9,6 +9,7 @@ import co.yml.charts.common.extensions.isNotNull
 import com.jae464.domain.model.ProgressTask
 import com.jae464.domain.usecase.GetProgressTaskUseCase
 import com.jae464.domain.usecase.UpdateProgressedTimeUseCase
+import com.jae464.domain.usecase.UpdateTodayMemoUseCase
 import com.jae464.presentation.home.ProgressTaskUiModel
 import com.jae464.presentation.home.ProgressingState
 import com.jae464.presentation.home.ProgressingTaskManager
@@ -31,7 +32,8 @@ import javax.inject.Inject
 class DetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val getProgressTaskUseCase: GetProgressTaskUseCase,
-    private val updateProgressedTimeUseCase: UpdateProgressedTimeUseCase
+    private val updateProgressedTimeUseCase: UpdateProgressedTimeUseCase,
+    private val updateTodayMemoUseCase: UpdateTodayMemoUseCase
 ) : ViewModel() {
 
     private val TAG = "DetailViewModel"
@@ -105,6 +107,13 @@ class DetailViewModel @Inject constructor(
             viewModelScope.launch {
                 updateProgressedTimeUseCase(progressingTaskId, progressedTime)
             }
+        }
+    }
+
+    fun updateTodayMemo(todayMemo: String) {
+        val progressTaskId = progressTask.id
+        viewModelScope.launch {
+            updateTodayMemoUseCase(progressTaskId, todayMemo)
         }
     }
 

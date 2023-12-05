@@ -16,6 +16,7 @@ interface TaskLocalDataSource {
     fun getTodayProgressTasks(): Flow<List<ProgressTaskWithTask>>
     fun getProgressTasksByDate(startDate: LocalDate, endDate: LocalDate): Flow<List<ProgressTaskWithTask>>
     suspend fun updateProgressTime(progressTaskId: String, progressedTime: Int)
+    suspend fun updateTodayMemo(progressTaskId: String, todayMemo: String)
     suspend fun insertTask(taskEntity: TaskEntity)
     suspend fun insertProgressTask(progressTaskEntity: ProgressTaskEntity)
     suspend fun updateTask(taskEntity: TaskEntity)
