@@ -166,7 +166,7 @@ fun TaskList(
     if (taskState is TaskState.Success) {
         LazyColumn(
             modifier = Modifier.padding(top = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(
                 taskState.taskUIModels,
@@ -338,11 +338,11 @@ fun RoundedBackgroundText(
     Box(
         modifier
             .size(24.dp)
-            .background(MaterialTheme.colorScheme.primary, CircleShape)
+            .background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape)
             .padding(4.dp),
         contentAlignment = Alignment.Center // 내용을 가운데로 정렬
     ) {
-        Text(text = text, style = MaterialTheme.typography.labelSmall, color = Color.White)
+        Text(text = text, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
     }
 }
 

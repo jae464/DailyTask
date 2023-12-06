@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -39,6 +40,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
@@ -47,6 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jae464.presentation.ui.theme.PurpleGrey80
 
 @Composable
 fun HomeScreen(
@@ -97,8 +100,10 @@ fun ProgressTaskList(
         when (progressTaskState) {
             is ProgressTaskState.Success -> {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(top = 24.dp)
+//                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .padding(top = 24.dp)
+                        .clip(RoundedCornerShape(16.dp))
                 ) {
                     items(
                         progressTaskState.progressTasks,
@@ -153,7 +158,7 @@ fun ProgressTaskItem(
         Card(
             modifier = modifier
                 .fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = RectangleShape,
             colors = CardDefaults.cardColors(containerColor = Color.White),
             onClick = { onClickItem(progressTaskUiModel.id) }
         ) {
@@ -198,10 +203,15 @@ fun ProgressTaskItem(
                         onClickStart(progressTaskUiModel.id)
                     },
                     modifier = Modifier
-                        .wrapContentSize(),
-                    colors = ButtonDefaults.buttonColors(),
+                        .wrapContentSize()
+                    ,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PurpleGrey80,
+                        contentColor =MaterialTheme.colorScheme.tertiary,
+                    ),
+                    shape = RoundedCornerShape(8.dp),
                     ) {
-                    Text(text = if (progressTaskUiModel.isProgressing) "중지" else "시작")
+                    Text(fontWeight = FontWeight.Bold, text = if (progressTaskUiModel.isProgressing) "중지" else "시작")
                 }
             }
         }
