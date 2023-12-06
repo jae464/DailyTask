@@ -94,7 +94,8 @@ fun TaskListScreen(
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             ),
-        color = Color.Black.copy(alpha = 0.05f)
+        color = Color.Black.copy(alpha = 0.01f)
+//                color = Color.White
     ) {
         Box(
             modifier = modifier
@@ -224,7 +225,7 @@ fun TaskItem(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(16.dp))
             .fillMaxWidth()
             .wrapContentHeight()
             .swipeable(
