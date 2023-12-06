@@ -26,6 +26,8 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldColors
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
@@ -68,7 +70,7 @@ fun DetailScreen(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             )
             .fillMaxSize(),
-        color = Color.Black.copy(alpha = 0.05f)
+        color = Color.Black.copy(alpha = 0.01f)
     ) {
         Box(
             modifier = modifier
@@ -147,8 +149,8 @@ fun DetailProgressTask(
                 Column(
                     modifier = Modifier
                         .background(
-                            color = MaterialTheme.colorScheme.background,
-                            shape = RoundedCornerShape(8.dp)
+                            color = Color.White,
+                            shape = RoundedCornerShape(16.dp)
                         )
                         .padding(16.dp)
                         .heightIn(min = 200.dp, max = 400.dp)
@@ -217,13 +219,15 @@ fun TodayMemoField(
     Spacer(modifier = Modifier.height(16.dp))
     TextField(
         modifier = Modifier
+            .background(Color.White)
             .fillMaxWidth()
             .height(200.dp),
         value = todayMemo,
         onValueChange = {
             Log.d("DetailScreen", "onValueChange : $it")
             todayMemo = it
-        }
+        },
+
     )
 
 }

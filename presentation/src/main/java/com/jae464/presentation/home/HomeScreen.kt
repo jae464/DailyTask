@@ -70,7 +70,7 @@ fun HomeScreen(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             )
             .fillMaxSize(),
-        color = Color.Black.copy(alpha = 0.05f)
+        color = Color.Black.copy(alpha = 0.01f)
     ) {
         ProgressTaskList(
             progressTaskState = progressTaskState,
