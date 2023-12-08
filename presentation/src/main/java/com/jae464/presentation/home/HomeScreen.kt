@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jae464.presentation.extension.addFocusCleaner
-import com.jae464.presentation.ui.theme.PurpleGrey80
 
 @Composable
 fun HomeScreen(
@@ -73,7 +72,7 @@ fun HomeScreen(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             )
             .fillMaxSize(),
-        color = Color.Black.copy(alpha = 0.01f)
+        color = Color.Black.copy(alpha = 0.05f)
     ) {
         ProgressTaskList(
             progressTaskState = progressTaskState,
@@ -103,7 +102,7 @@ fun ProgressTaskList(
         when (progressTaskState) {
             is ProgressTaskState.Success -> {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier
                         .padding(top = 24.dp)
                 ) {
@@ -160,8 +159,8 @@ fun ProgressTaskItem(
         Card(
             modifier = modifier
                 .fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(32.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
             onClick = { onClickItem(progressTaskUiModel.id) }
         ) {
             Row(
@@ -208,10 +207,10 @@ fun ProgressTaskItem(
                         .wrapContentSize()
                     ,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PurpleGrey80,
-                        contentColor =MaterialTheme.colorScheme.tertiary,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     ),
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(32.dp),
                     ) {
                     Text(fontWeight = FontWeight.Bold, text = if (progressTaskUiModel.isProgressing) "중지" else "시작")
                 }
@@ -231,7 +230,7 @@ fun RoundedTimer(
         modifier
             .size(64.dp)
             .background(
-                color = if (isProgressing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                color = if (isProgressing) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.primary,
                 shape = CircleShape,
             ),
 //            .padding(2.dp),
@@ -240,13 +239,13 @@ fun RoundedTimer(
         CircularProgressIndicator(
             progress = progress,
             modifier = Modifier.size(100.dp),
-            color = Color.Magenta,
-            strokeWidth = 2.dp
+            color = MaterialTheme.colorScheme.outline,
+            strokeWidth = 4.dp
         )
         Text(
             text = time,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.White
+            color = if (isProgressing) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.primaryContainer,
         )
     }
 }

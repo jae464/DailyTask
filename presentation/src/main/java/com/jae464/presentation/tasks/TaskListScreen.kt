@@ -239,7 +239,7 @@ fun TaskItem(
                 state = swipeableState,
                 orientation = Orientation.Horizontal
             )
-            .background(if (swipeableState.offset.value < 0) Color.Red else Color.White)
+            .background(if (swipeableState.offset.value < 0) MaterialTheme.colorScheme.errorContainer else Color.White)
 
     ) {
 
