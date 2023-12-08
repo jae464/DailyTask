@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
@@ -47,11 +49,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jae464.domain.model.ProgressTask
+import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.presentation.home.ProgressingState
 import com.jae464.presentation.home.toProgressTaskUiModel
 
@@ -64,17 +68,22 @@ fun DetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    Surface(
+    val focusManager = LocalFocusManager.current
+
+    Scaffold(
         modifier = Modifier
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             )
             .fillMaxSize(),
-        color = Color.Black.copy(alpha = 0.01f)
-    ) {
+        topBar = {
+            DetailTopAppBar(onBackClick = onBackClick)
+        }
+    ) { padding ->
         Box(
             modifier = modifier
-                .padding(horizontal = 16.dp)
+                .padding(padding)
+                .addFocusCleaner(focusManager)
                 .fillMaxSize()
         ) {
             DetailProgressTask(
@@ -131,41 +140,28 @@ fun DetailProgressTask(
         is DetailUiState.Success -> {
             Column(
                 modifier = Modifier
-                    .padding(top = 26.dp)
+                    .padding(horizontal = 24.dp)
                     .verticalScroll(scrollState)
             ) {
                 Text(
                     text = uiState.progressTaskUiModel.categoryName,
                     color = MaterialTheme.colorScheme.tertiary,
-                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.labelMedium,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = uiState.progressTaskUiModel.title,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Column(
-                    modifier = Modifier
-                        .background(
-                            color = Color.White,
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(16.dp)
-                        .heightIn(min = 200.dp, max = 400.dp)
-                        .fillMaxWidth(),
-
-                    ) {
-                    Text(
-                        text = uiState.progressTaskUiModel.memo,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState())
-                    )
-                }
+                ProgressTaskContent(content = uiState.progressTaskUiModel.memo)
                 Spacer(modifier = Modifier.height(16.dp))
-                TodayMemoField(onClickSaveTodayMemo = onClickSaveTodayMemo, savedTodayMemo = uiState.progressTaskUiModel.todayMemo)
+                TodayMemoField(
+                    onClickSaveTodayMemo = onClickSaveTodayMemo,
+                    savedTodayMemo = uiState.progressTaskUiModel.todayMemo
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = uiState.progressTaskUiModel.getRemainTimeString(),
@@ -195,6 +191,30 @@ fun DetailProgressTask(
 }
 
 @Composable
+fun ProgressTaskContent(
+    modifier: Modifier = Modifier,
+    content: String
+) {
+    Text(
+        text = "설명",
+        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.titleMedium
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier = Modifier
+            .wrapContentHeight()
+            .fillMaxWidth(),
+        ) {
+        Text(
+            text = content,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+    }
+}
+@Composable
 fun TodayMemoField(
     savedTodayMemo: String = "",
     onClickSaveTodayMemo: (String) -> Unit
@@ -205,21 +225,28 @@ fun TodayMemoField(
         )
     }
 
-    Row {
-        Text(text = "메모", fontWeight = FontWeight.Bold)
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "메모",
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleMedium
+        )
         IconButton(onClick = {
             onClickSaveTodayMemo(todayMemo)
         }) {
             Icon(
                 imageVector = Icons.Default.Save,
-                contentDescription = "save_today_memo"
+                contentDescription = "save_today_memo",
             )
         }
     }
     Spacer(modifier = Modifier.height(16.dp))
-    TextField(
+    BasicTextField(
         modifier = Modifier
-            .background(Color.White)
+            .background(Color.Black.copy(alpha = 0.05f))
+            .padding(8.dp)
             .fillMaxWidth()
             .height(200.dp),
         value = todayMemo,
@@ -228,6 +255,6 @@ fun TodayMemoField(
             todayMemo = it
         },
 
-    )
+        )
 
 }
