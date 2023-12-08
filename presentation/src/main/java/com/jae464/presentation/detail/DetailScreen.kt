@@ -175,14 +175,14 @@ fun DetailProgressTask(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { onClickStop() }
                     ) {
-                        Text(text = "STOP", color = Color.White)
+                        Text(text = "중지", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 } else {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { onClickStart() }
                     ) {
-                        Text(text = "START", color = Color.White)
+                        Text(text = "시작", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             }
