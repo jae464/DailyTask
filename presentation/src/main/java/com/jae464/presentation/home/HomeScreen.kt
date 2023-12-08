@@ -41,14 +41,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.presentation.ui.theme.PurpleGrey80
 
 @Composable
@@ -78,7 +81,7 @@ fun HomeScreen(
             onClickStart = {
                 viewModel.startProgressTask(it, context)
             },
-            onClickItem = onClickItem
+            onClickItem = onClickItem,
         )
     }
 }
@@ -89,7 +92,7 @@ fun ProgressTaskList(
     progressTaskState: ProgressTaskState,
     progressingTaskState: ProgressingState,
     onClickStart: (String) -> Unit,
-    onClickItem: (String) -> Unit
+    onClickItem: (String) -> Unit,
 ) {
     Log.d("ProgressTaskList", progressTaskState.toString())
     Box(
@@ -100,10 +103,9 @@ fun ProgressTaskList(
         when (progressTaskState) {
             is ProgressTaskState.Success -> {
                 LazyColumn(
-//                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
                     modifier = Modifier
                         .padding(top = 24.dp)
-                        .clip(RoundedCornerShape(16.dp))
                 ) {
                     items(
                         progressTaskState.progressTasks,
@@ -158,7 +160,7 @@ fun ProgressTaskItem(
         Card(
             modifier = modifier
                 .fillMaxWidth(),
-            shape = RectangleShape,
+            shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             onClick = { onClickItem(progressTaskUiModel.id) }
         ) {
