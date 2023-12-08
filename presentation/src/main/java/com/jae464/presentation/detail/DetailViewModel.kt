@@ -49,31 +49,20 @@ class DetailViewModel @Inject constructor(
 
         val currentProgressingTask = progressingTaskManager.getCurrentProgressTask()
 
-        // 현재 진행중인 Task인 경우
-        if (currentProgressingTask?.id == savedStateHandle["progressTaskId"]) {
-            collectProgressingTaskJob = viewModelScope.launch {
-                progressingTaskManager.progressingState.collectLatest {
-                    if (it is ProgressingState.Progressing) {
-                        progressTask = it.progressTask
-                        _uiState.emit(DetailUiState.Success(it.progressTask.toProgressTaskUiModel(true)))
+        viewModelScope.launch {
+            getProgressTaskUseCase(savedStateHandle["progressTaskId"] ?: "")
+                .collectLatest {
+                    if (it == null) {
+                        _uiState.emit(DetailUiState.Loading)
+                    } else {
+                        progressTask = it
+                        _uiState.emit(DetailUiState.Success(it.toProgressTaskUiModel()))
+
+                        if (currentProgressingTask?.id == savedStateHandle["progressTaskId"]) {
+                            startCollectProgressingTask()
+                        }
                     }
                 }
-            }
-        }
-        // 진행중이 아닌 Task인 경우
-        else {
-            viewModelScope.launch {
-                getProgressTaskUseCase(savedStateHandle["progressTaskId"] ?: "")
-                    .collectLatest {
-                        if (it == null) {
-                            _uiState.emit(DetailUiState.Loading)
-                        }
-                        else {
-                            progressTask = it
-                            _uiState.emit(DetailUiState.Success(it.toProgressTaskUiModel()))
-                        }
-                    }
-            }
         }
     }
 
@@ -82,12 +71,20 @@ class DetailViewModel @Inject constructor(
         // 기존 진행중인 ProgressTask 업데이트
         stopCurrentProgressingTask()
         progressingTaskManager.startProgressTask(progressTask, context)
+        startCollectProgressingTask()
+    }
+
+    private fun startCollectProgressingTask() {
         if (collectProgressingTaskJob == null) {
             collectProgressingTaskJob = viewModelScope.launch {
                 progressingTaskManager.progressingState.collectLatest {
                     if (it is ProgressingState.Progressing) {
-                        progressTask = it.progressTask
-                        _uiState.emit(DetailUiState.Success(it.progressTask.toProgressTaskUiModel(true)))
+                        progressTask = progressTask.copy(progressedTime = it.progressTask.progressedTime)
+                        _uiState.emit(
+                            DetailUiState.Success(
+                                progressTask.toProgressTaskUiModel(true)
+                            )
+                        )
                     }
                 }
             }
@@ -98,6 +95,9 @@ class DetailViewModel @Inject constructor(
         stopCurrentProgressingTask()
         collectProgressingTaskJob?.cancel()
         collectProgressingTaskJob = null
+        viewModelScope.launch {
+            _uiState.emit(DetailUiState.Success(progressTask.toProgressTaskUiModel(false)))
+        }
     }
 
     private fun stopCurrentProgressingTask() {
@@ -122,5 +122,5 @@ class DetailViewModel @Inject constructor(
 
 sealed interface DetailUiState {
     object Loading : DetailUiState
-    data class Success(val progressTaskUiModel: ProgressTaskUiModel): DetailUiState
+    data class Success(val progressTaskUiModel: ProgressTaskUiModel) : DetailUiState
 }
