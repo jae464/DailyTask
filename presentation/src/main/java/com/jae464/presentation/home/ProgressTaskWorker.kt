@@ -34,8 +34,8 @@ class ProgressTaskWorker @AssistedInject constructor(
                 if (progressingTaskManager.progressingState.value is ProgressingState.Ready) {
                     break
                 }
-                progressingTaskManager.tick()
                 delay(1000)
+                progressingTaskManager.tick()
             }
             Result.success()
         } else {
