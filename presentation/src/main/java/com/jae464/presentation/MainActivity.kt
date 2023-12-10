@@ -110,8 +110,8 @@ fun BottomNavBar(navController: NavHostController) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar(
-
-        tonalElevation = 4.dp
+        tonalElevation = 4.dp,
+        containerColor = MaterialTheme.colorScheme.background
     ) {
         topDestinations.forEach { destination ->
             NavigationBarItem(
