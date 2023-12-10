@@ -1,6 +1,7 @@
 package com.jae464.presentation.detail
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
@@ -90,7 +91,10 @@ fun DetailScreen(
                 uiState = uiState,
                 onClickStart = { viewModel.startProgressTask(context) },
                 onClickStop = { viewModel.stopProgressTask() },
-                onClickSaveTodayMemo = { viewModel.updateTodayMemo(it) }
+                onClickSaveTodayMemo = {
+                    viewModel.updateTodayMemo(it)
+                    Toast.makeText(context, "메모가 저장되었습니다.", Toast.LENGTH_SHORT).show()
+                }
             )
         }
     }
@@ -256,7 +260,6 @@ fun TodayMemoField(
             Log.d("DetailScreen", "onValueChange : $it")
             todayMemo = it
         },
-
         )
 
 }
