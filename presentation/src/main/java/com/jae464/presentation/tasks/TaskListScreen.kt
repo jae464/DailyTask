@@ -304,7 +304,7 @@ fun TaskItem(
                     Icon(
                         imageVector = Icons.Rounded.AccessTimeFilled,
                         contentDescription = "progress_time",
-                        tint = MaterialTheme.colorScheme.secondary
+                        tint = MaterialTheme.colorScheme.onSecondary
                     )
                     Text(
                         text = taskUIModel.progressTimeStr,
@@ -319,7 +319,7 @@ fun TaskItem(
                     Icon(
                         imageVector = Icons.Rounded.Timer,
                         contentDescription = "progress_time",
-                        tint = MaterialTheme.colorScheme.secondary
+                        tint = MaterialTheme.colorScheme.onSecondary
                     )
                     Text(
                         text = if (taskUIModel.useAlarm) taskUIModel.alarmTime else "없음",
