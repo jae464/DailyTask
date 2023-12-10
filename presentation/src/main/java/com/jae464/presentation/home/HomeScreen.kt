@@ -72,7 +72,9 @@ fun HomeScreen(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             )
             .fillMaxSize(),
-        color = Color.Black.copy(alpha = 0.05f)
+//        color = Color.Black.copy(alpha = 0.03f)
+//        color = MaterialTheme.colorScheme.secondary
+        color = MaterialTheme.colorScheme.surface
     ) {
         ProgressTaskList(
             progressTaskState = progressTaskState,
@@ -230,22 +232,22 @@ fun RoundedTimer(
         modifier
             .size(64.dp)
             .background(
-                color = if (isProgressing) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.primary,
+                color = if (isProgressing) Color(0xFF1735f5) else MaterialTheme.colorScheme.primary,
                 shape = CircleShape,
             ),
 //            .padding(2.dp),
         contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator(
-            progress = progress,
-            modifier = Modifier.size(100.dp),
-            color = MaterialTheme.colorScheme.outline,
-            strokeWidth = 4.dp
-        )
+//        CircularProgressIndicator(
+//            progress = progress,
+//            modifier = Modifier.size(100.dp),
+//            color = MaterialTheme.colorScheme.outline,
+//            strokeWidth = 4.dp
+//        )
         Text(
             text = time,
             style = MaterialTheme.typography.bodyMedium,
-            color = if (isProgressing) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.primaryContainer,
+            color = if (isProgressing) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary,
         )
     }
 }

@@ -245,8 +245,10 @@ fun TodayMemoField(
     Spacer(modifier = Modifier.height(16.dp))
     BasicTextField(
         modifier = Modifier
-            .background(Color.Black.copy(alpha = 0.05f))
-            .padding(8.dp)
+            .background(color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(16.dp)
             .fillMaxWidth()
             .height(200.dp),
         value = todayMemo,

@@ -24,6 +24,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -44,6 +46,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchColors
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -56,6 +60,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -146,6 +151,7 @@ fun AddTaskScreen(
 
     Log.d(TAG, "AddTaskScreen Rendered()")
     Scaffold(
+        containerColor = Color.Transparent,
         modifier = Modifier
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
@@ -247,7 +253,7 @@ fun AddTaskTopAppBar(
 ) {
     CenterAlignedTopAppBar(
         title = {
-            Text(text = "일정 추가")
+            Text(text = "")
         },
         navigationIcon = {
             IconButton(onClick = {
@@ -410,7 +416,7 @@ fun AddTaskBody(
             Text(text = "알람", fontWeight = FontWeight.Bold)
             Switch(
                 checked = useAlarm,
-                onCheckedChange = onUseAlarmChanged
+                onCheckedChange = onUseAlarmChanged,
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -486,7 +492,9 @@ fun TitleTextField(
         ),
         keyboardActions = KeyboardActions {
             focusManager.clearFocus()
-        }
+        },
+        shape = RoundedCornerShape(16.dp)
+
     )
 }
 
@@ -565,7 +573,7 @@ fun <T> Spinner(
     Box(modifier = modifier.wrapContentSize(Alignment.TopStart)) {
         selectedItemFactory(
             Modifier
-                .background(color = MaterialTheme.colorScheme.secondaryContainer, CircleShape)
+                .background(color = MaterialTheme.colorScheme.secondary, CircleShape)
                 .clickable { expanded = true },
             selectedItem
         )
@@ -672,9 +680,13 @@ fun ContentTextField(
     content: String,
     onContentChanged: (String) -> Unit
 ) {
-    TextField(
+    BasicTextField(
         modifier = modifier
             .fillMaxWidth()
+            .background(color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(16.dp)
             .height(200.dp),
         value = content,
         onValueChange = {
