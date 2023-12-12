@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
@@ -32,6 +33,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -41,6 +43,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -401,10 +404,17 @@ fun AddTaskBody(
                     selectedItem = selectedCategory,
                     onItemSelected = onCategoryChanged
                 )
-                IconButton(onClick = {
+                IconButton(
+                    onClick = {
                     showAddCategoryDialog = true
-                }) {
-                    Icon(imageVector = Icons.Rounded.AddCircle, contentDescription = "add_category")
+                    },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(imageVector = Icons.Rounded.Add, contentDescription = "add_category")
                 }
             }
         }
@@ -481,7 +491,6 @@ fun TitleTextField(
             Text(
                 text = "제목",
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.secondary
             )
         },
         singleLine = true,
@@ -683,7 +692,8 @@ fun ContentTextField(
     BasicTextField(
         modifier = modifier
             .fillMaxWidth()
-            .background(color = MaterialTheme.colorScheme.secondary,
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(16.dp)

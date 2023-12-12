@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -34,11 +35,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccessTimeFilled
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Timer
@@ -94,8 +97,7 @@ fun TaskListScreen(
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             ),
-        color = Color.Black.copy(alpha = 0.01f)
-//                color = Color.White
+        color = MaterialTheme.colorScheme.surface
     ) {
         Box(
             modifier = modifier
@@ -123,17 +125,31 @@ fun TaskListScreen(
                 }
                 else -> {}
             }
-
-            IconButton(
+            FloatingActionButton(
                 onClick = onClickAddTask,
-                modifier = modifier.align(Alignment.BottomEnd)
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(vertical = 16.dp),
+                backgroundColor = MaterialTheme.colorScheme.primary,
             ) {
-                Image(
-                    imageVector = Icons.Rounded.AddCircle,
+                Icon(
+                    imageVector = Icons.Rounded.Add,
                     contentDescription = "add_task",
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier
+                        .wrapContentSize(),
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
+//            IconButton(
+//                onClick = onClickAddTask,
+//                modifier = modifier.align(Alignment.BottomEnd)
+//            ) {
+//                Image(
+//                    imageVector = Icons.Rounded.AddCircle,
+//                    contentDescription = "add_task",
+//                    modifier = Modifier.size(128.dp)
+//                )
+//            }
 
             if (showDeleteDialog.isNotEmpty()) {
                 AlertDialog(
