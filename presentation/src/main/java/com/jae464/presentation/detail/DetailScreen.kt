@@ -149,7 +149,7 @@ fun DetailProgressTask(
             ) {
                 Text(
                     text = uiState.progressTaskUiModel.categoryName,
-                    color = MaterialTheme.colorScheme.tertiary,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.labelMedium,
                 )

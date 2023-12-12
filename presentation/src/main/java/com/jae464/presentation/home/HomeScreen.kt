@@ -179,7 +179,7 @@ fun ProgressTaskItem(
                 ) {
                     Text(
                         text = progressTaskUiModel.categoryName,
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = MaterialTheme.colorScheme.onSecondary,
                         style = MaterialTheme.typography.bodySmall,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -230,7 +230,7 @@ fun RoundedTimer(
         modifier
             .size(64.dp)
             .background(
-                color = if (isProgressing) Color(0xFF1735f5) else MaterialTheme.colorScheme.primary,
+                color = if (isProgressing) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
                 shape = CircleShape,
             ),
 //            .padding(2.dp),
