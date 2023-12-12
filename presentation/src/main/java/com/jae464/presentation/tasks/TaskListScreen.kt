@@ -167,7 +167,7 @@ fun TaskList(
     if (taskState is TaskState.Success) {
         LazyColumn(
             modifier = Modifier.padding(top = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             items(
                 taskState.taskUIModels,
@@ -284,10 +284,11 @@ fun TaskItem(
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     taskUIModel.dayOfWeek?.forEach { it ->
                         RoundedBackgroundText(text = it.day)
+//                        Text(text = it.day, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -340,10 +341,10 @@ fun RoundedBackgroundText(
         modifier
             .size(24.dp)
             .background(MaterialTheme.colorScheme.primary, CircleShape)
-            .padding(4.dp),
+            .padding(1.dp),
         contentAlignment = Alignment.Center // 내용을 가운데로 정렬
     ) {
-        Text(text = text, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+        Text(text = text, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimary)
     }
 }
 

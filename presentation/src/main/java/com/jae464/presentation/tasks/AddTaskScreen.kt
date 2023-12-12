@@ -327,7 +327,7 @@ fun AddTaskBody(
         TitleTextField(
             title = title,
             onTitleChanged = onTitleChanged,
-            focusManager = focusManager
+            focusManager = focusManager,
         )
         Spacer(modifier = Modifier.height(16.dp))
         Row(

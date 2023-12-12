@@ -72,8 +72,6 @@ fun HomeScreen(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             )
             .fillMaxSize(),
-//        color = Color.Black.copy(alpha = 0.03f)
-//        color = MaterialTheme.colorScheme.secondary
         color = MaterialTheme.colorScheme.surface
     ) {
         ProgressTaskList(
