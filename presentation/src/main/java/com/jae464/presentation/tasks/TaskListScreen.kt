@@ -283,9 +283,6 @@ fun TaskItem(
                     IntOffset(swipeableState.offset.value.roundToInt(), 0)
                 }
                 .fillMaxWidth(),
-//            elevation = CardDefaults.cardElevation(
-//                defaultElevation = 8.dp
-//            ),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             onClick = { onClickTask(taskUIModel.id) }
@@ -293,7 +290,7 @@ fun TaskItem(
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = taskUIModel.header,
-                    color = MaterialTheme.colorScheme.tertiary,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     style = MaterialTheme.typography.bodySmall
 
                 )
