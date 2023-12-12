@@ -3,6 +3,7 @@ package com.jae464.presentation.setting
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -17,8 +18,8 @@ fun SettingScreen() {
     Surface(
         modifier = Modifier.windowInsetsPadding(
             WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-        ),
-        color = MaterialTheme.colorScheme.primary
+        ).fillMaxSize(),
+        color = MaterialTheme.colorScheme.surface
     ) {
 
     }
