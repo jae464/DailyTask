@@ -6,8 +6,8 @@ import com.jae464.domain.usecase.task.DeleteTaskUseCase
 import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
 import com.jae464.domain.usecase.task.GetAllTasksUseCase
 import com.jae464.presentation.home.ProgressingTaskManager
-import com.jae464.presentation.model.TaskUIModel
-import com.jae464.presentation.model.toTaskUIModel
+import com.jae464.presentation.model.TaskUiModel
+import com.jae464.presentation.model.toTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -39,24 +39,24 @@ class TaskListViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    val taskState: StateFlow<TaskState> =
+    val taskListUiState: StateFlow<TaskListUiState> =
         combine(categories, tasks) { categories, tasks ->
             if (categories.isNotEmpty()) {
                 if (tasks.isEmpty()) {
-                    TaskState.Empty
+                    TaskListUiState.Empty
                 }
                 else {
-                    TaskState.Success(tasks.map { task ->
-                        task.toTaskUIModel(categories.first { it.id == task.categoryId }.name)
+                    TaskListUiState.Success(tasks.map { task ->
+                        task.toTaskUiModel(categories.first { it.id == task.categoryId }.name)
                     })
                 }
             } else {
-                TaskState.Loading
+                TaskListUiState.Loading
             }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = TaskState.Loading
+        initialValue = TaskListUiState.Loading
     )
 
     fun deleteTask(taskId: String) {
@@ -71,8 +71,8 @@ class TaskListViewModel @Inject constructor(
 
 }
 
-sealed interface TaskState {
-    object Loading : TaskState
-    data class Success(val taskUIModels: List<TaskUIModel>) : TaskState
-    object Empty : TaskState
+sealed interface TaskListUiState {
+    object Loading : TaskListUiState
+    data class Success(val taskUiModels: List<TaskUiModel>) : TaskListUiState
+    object Empty : TaskListUiState
 }

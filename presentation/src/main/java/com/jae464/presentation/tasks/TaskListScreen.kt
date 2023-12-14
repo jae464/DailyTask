@@ -77,7 +77,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.jae464.presentation.model.TaskUIModel
+import com.jae464.presentation.model.TaskUiModel
 import com.jae464.presentation.sampledata.taskUiModels
 import kotlin.math.roundToInt
 
@@ -89,7 +89,7 @@ fun TaskListScreen(
     viewModel: TaskListViewModel = hiltViewModel()
 ) {
 
-    val taskState by viewModel.taskState.collectAsStateWithLifecycle()
+    val taskListUiState by viewModel.taskListUiState.collectAsStateWithLifecycle()
     var showDeleteDialog by remember { mutableStateOf("") } // 삭제할 taskId 저장
 
     Surface(
@@ -105,17 +105,17 @@ fun TaskListScreen(
                 .padding(horizontal = 16.dp)
         ) {
 
-            when (taskState) {
-                is TaskState.Loading -> {
+            when (taskListUiState) {
+                is TaskListUiState.Loading -> {
                     Text(text = "로딩중")
                 }
-                is TaskState.Success -> {
+                is TaskListUiState.Success -> {
                     TaskList(
-                        taskState = taskState,
+                        taskListUiState = taskListUiState,
                         onClickTask = onClickTask,
                         onClickDelete = { showDeleteDialog = it })
                 }
-                is TaskState.Empty -> {
+                is TaskListUiState.Empty -> {
                     Text(
                         text = "새로운 일정을 추가해주세요.",
                         style = MaterialTheme.typography.titleLarge,
@@ -176,17 +176,17 @@ fun TaskListScreen(
 @Composable
 fun TaskList(
     modifier: Modifier = Modifier,
-    taskState: TaskState,
+    taskListUiState: TaskListUiState,
     onClickTask: (String) -> Unit,
     onClickDelete: (String) -> Unit
 ) {
-    if (taskState is TaskState.Success) {
+    if (taskListUiState is TaskListUiState.Success) {
         LazyColumn(
             modifier = Modifier.padding(top = 24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             items(
-                taskState.taskUIModels,
+                taskListUiState.taskUiModels,
                 key = { it.id }) { taskUiModel ->
                 TaskItem(
                     taskUIModel = taskUiModel,
@@ -231,7 +231,7 @@ fun SwipeDismissItem(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun TaskItem(
-    taskUIModel: TaskUIModel,
+    taskUIModel: TaskUiModel,
     modifier: Modifier = Modifier,
     onClickTask: (String) -> Unit,
     onClickDelete: (String) -> Unit,

@@ -8,10 +8,10 @@ import com.jae464.domain.model.ProgressTask
 import com.jae464.domain.usecase.progresstask.GetProgressTaskUseCase
 import com.jae464.domain.usecase.progresstask.UpdateProgressedTimeUseCase
 import com.jae464.domain.usecase.progresstask.UpdateTodayMemoUseCase
-import com.jae464.presentation.home.ProgressTaskUiModel
+import com.jae464.presentation.model.ProgressTaskUiModel
 import com.jae464.presentation.home.ProgressingState
 import com.jae464.presentation.home.ProgressingTaskManager
-import com.jae464.presentation.home.toProgressTaskUiModel
+import com.jae464.presentation.model.toProgressTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

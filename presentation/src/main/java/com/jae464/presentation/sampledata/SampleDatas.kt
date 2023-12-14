@@ -2,11 +2,11 @@ package com.jae464.presentation.sampledata
 
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.TaskType
-import com.jae464.presentation.model.TaskUIModel
+import com.jae464.presentation.model.TaskUiModel
 import com.jae464.domain.model.DayOfWeek
 
 val taskUiModels = mutableListOf(
-    TaskUIModel(
+    TaskUiModel(
         id = "1",
         title = "안드로이드 개인 프로젝트",
         progressTime = 3700,
@@ -17,7 +17,7 @@ val taskUiModels = mutableListOf(
         alarmHour = 15,
         alarmMinute = 0,
     ),
-    TaskUIModel(
+    TaskUiModel(
         id = "2",
         title = "홈 트레이닝",
         progressTime = 3700,

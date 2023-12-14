@@ -81,7 +81,7 @@ import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.TaskType
-import com.jae464.presentation.model.AddTaskUIModel
+import com.jae464.presentation.model.AddTaskUiModel
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -97,7 +97,7 @@ fun AddTaskScreen(
     viewModel: AddTaskViewModel = hiltViewModel()
 ) {
 
-    val addTaskState by viewModel.task.collectAsStateWithLifecycle()
+    val addTaskUiState by viewModel.task.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val isCompleted by viewModel.saveCompleted.collectAsStateWithLifecycle()
 
@@ -127,10 +127,10 @@ fun AddTaskScreen(
         }
     }
 
-    LaunchedEffect(addTaskState) {
-        when (addTaskState) {
-            is AddTaskState.LoadSavedTask -> {
-                val savedTaskModel = (addTaskState as AddTaskState.LoadSavedTask).addTaskUiModel
+    LaunchedEffect(addTaskUiState) {
+        when (addTaskUiState) {
+            is AddTaskUiState.LoadSavedTask -> {
+                val savedTaskModel = (addTaskUiState as AddTaskUiState.LoadSavedTask).addTaskUiModel
                 title = savedTaskModel.title
                 progressTimeHour = savedTaskModel.progressTimeHour
                 progressTimeMinute = savedTaskModel.progressTimeMinute
@@ -178,7 +178,7 @@ fun AddTaskScreen(
                         return@AddTaskTopAppBar
                     }
                     viewModel.saveTask(
-                        AddTaskUIModel(
+                        AddTaskUiModel(
                             title = title,
                             progressTimeHour = progressTimeHour,
                             progressTimeMinute = progressTimeMinute,

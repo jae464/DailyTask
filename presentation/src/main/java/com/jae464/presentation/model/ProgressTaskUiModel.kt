@@ -1,7 +1,6 @@
-package com.jae464.presentation.home
+package com.jae464.presentation.model
 
 import com.jae464.domain.model.ProgressTask
-import com.jae464.presentation.model.HourMinuteSecond
 import kotlin.math.absoluteValue
 
 data class ProgressTaskUiModel(
