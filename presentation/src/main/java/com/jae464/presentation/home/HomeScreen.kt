@@ -2,7 +2,6 @@ package com.jae464.presentation.home
 
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -29,29 +27,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.jae464.presentation.extension.addFocusCleaner
+import com.jae464.presentation.model.ProgressTaskUiModel
+import com.jae464.presentation.model.toProgressTaskUiModel
 
 @Composable
 fun HomeScreen(
@@ -59,7 +50,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onClickItem: (String) -> Unit = {}
 ) {
-    val progressTaskState by viewModel.progressTaskState.collectAsStateWithLifecycle()
+    val progressUiTaskState by viewModel.progressUiTaskState.collectAsStateWithLifecycle()
     val progressingTaskState by viewModel.progressingTask.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
@@ -75,7 +66,7 @@ fun HomeScreen(
         color = MaterialTheme.colorScheme.surface
     ) {
         ProgressTaskList(
-            progressTaskState = progressTaskState,
+            progressUiTaskState = progressUiTaskState,
             progressingTaskState = progressingTaskState,
             onClickStart = {
                 viewModel.startProgressTask(it, context)
@@ -88,26 +79,26 @@ fun HomeScreen(
 @Composable
 fun ProgressTaskList(
     modifier: Modifier = Modifier,
-    progressTaskState: ProgressTaskState,
+    progressUiTaskState: ProgressTaskUiState,
     progressingTaskState: ProgressingState,
     onClickStart: (String) -> Unit,
     onClickItem: (String) -> Unit,
 ) {
-    Log.d("ProgressTaskList", progressTaskState.toString())
+    Log.d("ProgressTaskList", progressUiTaskState.toString())
     Box(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        when (progressTaskState) {
-            is ProgressTaskState.Success -> {
+        when (progressUiTaskState) {
+            is ProgressTaskUiState.Success -> {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier
                         .padding(top = 24.dp)
                 ) {
                     items(
-                        progressTaskState.progressTasks,
+                        progressUiTaskState.progressTasks,
                         key = null
                     ) { progressTaskUiModel ->
                         if (progressingTaskState is ProgressingState.Progressing && progressingTaskState.progressTask.id == progressTaskUiModel.id) {
@@ -129,7 +120,7 @@ fun ProgressTaskList(
                     }
                 }
             }
-            is ProgressTaskState.Empty -> {
+            is ProgressTaskUiState.Empty -> {
                 Text(
                     text = "오늘 진행할 일정이 존재하지 않습니다.",
                     style = MaterialTheme.typography.titleLarge,

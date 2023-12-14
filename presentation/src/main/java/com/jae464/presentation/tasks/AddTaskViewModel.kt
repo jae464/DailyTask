@@ -10,7 +10,7 @@ import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
 import com.jae464.domain.usecase.task.GetTaskUseCase
 import com.jae464.domain.usecase.task.SaveTaskUseCase
 import com.jae464.domain.usecase.task.UpdateTaskUseCase
-import com.jae464.presentation.model.AddTaskUIModel
+import com.jae464.presentation.model.AddTaskUiModel
 import com.jae464.presentation.model.toAddTaskUiModel
 import com.jae464.presentation.model.toTask
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -52,16 +52,16 @@ class AddTaskViewModel @Inject constructor(
         }
         .map { task ->
             if (task == null) {
-                AddTaskState.Empty
+                AddTaskUiState.Empty
             }
             else {
-                AddTaskState.LoadSavedTask(task.toAddTaskUiModel())
+                AddTaskUiState.LoadSavedTask(task.toAddTaskUiModel())
             }
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = AddTaskState.Loading
+            initialValue = AddTaskUiState.Loading
         )
 
     // 모든 카테고리 가져오기
@@ -72,19 +72,19 @@ class AddTaskViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    fun saveTask(addTaskUiModel: AddTaskUIModel) {
+    fun saveTask(addTaskUiModel: AddTaskUiModel) {
         viewModelScope.launch {
             when (task.value) {
-                is AddTaskState.Empty -> {
+                is AddTaskUiState.Empty -> {
                     saveTaskUseCase(addTaskUiModel.toTask())
                 }
-                is AddTaskState.LoadSavedTask -> {
+                is AddTaskUiState.LoadSavedTask -> {
                     val taskId = savedStateHandle.get<String>("taskId")
                     Log.d("AddTaskViewModel", "taskId : $taskId")
                     if (taskId == null) return@launch
                     updateTaskUseCase(addTaskUiModel.toTask().copy(id = taskId))
                 }
-                is AddTaskState.Loading -> return@launch
+                is AddTaskUiState.Loading -> return@launch
             }
             saveCompleted.value = true
         }
@@ -97,8 +97,8 @@ class AddTaskViewModel @Inject constructor(
     }
 }
 
-sealed interface AddTaskState {
-    object Loading: AddTaskState
-    data class LoadSavedTask(val addTaskUiModel: AddTaskUIModel): AddTaskState
-    object Empty: AddTaskState
+sealed interface AddTaskUiState {
+    object Loading: AddTaskUiState
+    data class LoadSavedTask(val addTaskUiModel: AddTaskUiModel): AddTaskUiState
+    object Empty: AddTaskUiState
 }

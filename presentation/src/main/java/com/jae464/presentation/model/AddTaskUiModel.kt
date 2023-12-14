@@ -5,7 +5,7 @@ import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import java.time.LocalDateTime
 
-data class AddTaskUIModel(
+data class AddTaskUiModel(
     val title: String,
     val progressTimeHour: Int,
     val progressTimeMinute: Int,
@@ -17,8 +17,8 @@ data class AddTaskUIModel(
     val categoryId: Long
 )
 
-fun Task.toAddTaskUiModel(): AddTaskUIModel {
-    return AddTaskUIModel(
+fun Task.toAddTaskUiModel(): AddTaskUiModel {
+    return AddTaskUiModel(
         title = title,
         progressTimeHour = progressTime / 3600,
         progressTimeMinute = progressTime % 3600 / 60,
@@ -31,7 +31,7 @@ fun Task.toAddTaskUiModel(): AddTaskUIModel {
     )
 }
 
-fun AddTaskUIModel.toTask(): Task {
+fun AddTaskUiModel.toTask(): Task {
     return Task(
         id = "",
         title = title,

@@ -1,11 +1,10 @@
 package com.jae464.presentation.model
 
-import android.util.Log
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 
-data class TaskUIModel(
+data class TaskUiModel(
     val id: String,
     val title: String,
     val progressTime: Int,
@@ -22,8 +21,8 @@ data class TaskUIModel(
     val alarmTime = "%2d시 %02d분".format(alarmHour, alarmMinute)
 }
 
-fun Task.toTaskUIModel(categoryName: String): TaskUIModel {
-    return TaskUIModel(
+fun Task.toTaskUiModel(categoryName: String): TaskUiModel {
+    return TaskUiModel(
         id = id,
         title = title,
         progressTime = progressTime,

@@ -10,6 +10,8 @@ import com.jae464.domain.usecase.task.GetTasksByDayOfWeekUseCase
 import com.jae464.domain.usecase.progresstask.GetTodayProgressTaskUseCase
 import com.jae464.domain.usecase.progresstask.UpdateProgressedTimeUseCase
 import com.jae464.domain.usecase.progresstask.UpdateTodayProgressTasksUseCase
+import com.jae464.presentation.model.ProgressTaskUiModel
+import com.jae464.presentation.model.toProgressTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -47,12 +49,12 @@ class HomeViewModel @Inject constructor(
         initialValue = null
     )
 
-    val progressTaskState: StateFlow<ProgressTaskState> = combine(
+    val progressUiTaskState: StateFlow<ProgressTaskUiState> = combine(
         tasks,
         progressTasks
     ) { tasks, progressTasks ->
         if (tasks == null || progressTasks == null || isUploading) {
-            ProgressTaskState.Loading
+            ProgressTaskUiState.Loading
         }
         else {
             Log.d(TAG, "tasks : $tasks progressTasks: $progressTasks")
@@ -64,21 +66,21 @@ class HomeViewModel @Inject constructor(
             if (addProgressTasks.isNotEmpty()) {
                 isUploading = true
                 updateProgressTasks(addProgressTasks)
-                ProgressTaskState.Loading
+                ProgressTaskUiState.Loading
             }
             else {
                 if (progressTasks.isEmpty()) {
-                    ProgressTaskState.Empty
+                    ProgressTaskUiState.Empty
                 }
                 else {
-                    ProgressTaskState.Success(progressTasks.map { it.toProgressTaskUiModel() })
+                    ProgressTaskUiState.Success(progressTasks.map { it.toProgressTaskUiModel() })
                 }
             }
         }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = ProgressTaskState.Loading
+        initialValue = ProgressTaskUiState.Loading
     )
 
     private fun updateProgressTasks(tasks: List<Task>) {
@@ -119,4 +121,10 @@ class HomeViewModel @Inject constructor(
     companion object {
         const val TAG = "HomeViewModel"
     }
+}
+
+sealed interface ProgressTaskUiState {
+    object Loading: ProgressTaskUiState
+    data class Success(val progressTasks: List<ProgressTaskUiModel>): ProgressTaskUiState
+    object Empty : ProgressTaskUiState
 }
