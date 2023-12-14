@@ -32,6 +32,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddCircle
@@ -551,12 +552,19 @@ fun RoundedCategorySpinner(
         selectedItemFactory = { modifier, item ->
             Row(
                 modifier = modifier.wrapContentSize(),
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = item.name,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                )
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "expand",
+                    modifier = Modifier.padding(end = 8.dp),
+                    tint = MaterialTheme.colorScheme.onSecondary
                 )
             }
         },
@@ -586,7 +594,6 @@ fun <T> Spinner(
                 .clickable { expanded = true },
             selectedItem
         )
-
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
