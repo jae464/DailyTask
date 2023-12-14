@@ -1,4 +1,4 @@
-package com.jae464.domain.usecase
+package com.jae464.domain.usecase.task
 
 import com.jae464.domain.repository.TaskRepository
 import javax.inject.Inject

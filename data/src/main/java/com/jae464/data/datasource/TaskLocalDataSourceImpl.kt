@@ -15,8 +15,6 @@ import javax.inject.Inject
 
 class TaskLocalDataSourceImpl @Inject constructor(
     private val taskDao: TaskDao,
-    private val categoryDao: CategoryDao,
-    private val progressTaskDao: ProgressTaskDao
 ) : TaskLocalDataSource {
     override fun getAllTasks(): Flow<List<TaskEntity>> {
         return taskDao.getAllTasks()
@@ -30,35 +28,8 @@ class TaskLocalDataSourceImpl @Inject constructor(
         return taskDao.getTasksByDayOfWeek(dayOfWeeks.day)
     }
 
-    override fun getProgressTask(progressTaskId: String): Flow<ProgressTaskWithTask?> {
-        return progressTaskDao.getProgressTask(progressTaskId)
-    }
-
-    override fun getTodayProgressTasks(): Flow<List<ProgressTaskWithTask>> {
-        return progressTaskDao.getProgressTaskByDate(LocalDate.now())
-    }
-
-    override fun getProgressTasksByDate(
-        startDate: LocalDate,
-        endDate: LocalDate
-    ): Flow<List<ProgressTaskWithTask>> {
-        return progressTaskDao.getProgressTasksByDateRange(startDate, endDate)
-    }
-
-    override suspend fun updateProgressTime(progressTaskId: String, progressedTime: Int) {
-        progressTaskDao.updateProgressedTime(progressTaskId, progressedTime)
-    }
-
-    override suspend fun updateTodayMemo(progressTaskId: String, todayMemo: String) {
-        progressTaskDao.updateTodayMemo(progressTaskId, todayMemo)
-    }
-
     override suspend fun insertTask(taskEntity: TaskEntity) {
         taskDao.insertTask(taskEntity)
-    }
-
-    override suspend fun insertProgressTask(progressTaskEntity: ProgressTaskEntity) {
-        progressTaskDao.insertProgressTask(progressTaskEntity)
     }
 
     override suspend fun updateTask(taskEntity: TaskEntity) {

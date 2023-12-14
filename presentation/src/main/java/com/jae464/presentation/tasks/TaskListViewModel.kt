@@ -1,12 +1,10 @@
 package com.jae464.presentation.tasks
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jae464.domain.usecase.DeleteTaskUseCase
-import com.jae464.domain.usecase.GetAllCategoriesUseCase
-import com.jae464.domain.usecase.GetAllTasksUseCase
-import com.jae464.domain.usecase.GetCategoryUseCase
+import com.jae464.domain.usecase.task.DeleteTaskUseCase
+import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
+import com.jae464.domain.usecase.task.GetAllTasksUseCase
 import com.jae464.presentation.home.ProgressingTaskManager
 import com.jae464.presentation.model.TaskUIModel
 import com.jae464.presentation.model.toTaskUIModel
@@ -14,8 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject

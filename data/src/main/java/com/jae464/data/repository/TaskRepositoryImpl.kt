@@ -41,53 +41,10 @@ class TaskRepositoryImpl @Inject constructor(
         }
     }
 
-
-    override fun getProgressTask(progressTaskId: String): Flow<ProgressTask?> {
-        return taskLocalDataSource.getProgressTask(progressTaskId).map { progressTaskEntity ->
-            progressTaskEntity?.toDomain()
-        }
-    }
-
-    override fun getTodayProgressTasks(): Flow<List<ProgressTask>> {
-        return taskLocalDataSource.getTodayProgressTasks().map { progressTaskEntities ->
-            progressTaskEntities.map {
-                it.toDomain()
-            }
-        }
-    }
-
-    override fun getProgressTasksByDate(
-        startDate: LocalDate,
-        endDate: LocalDate
-    ): Flow<List<ProgressTask>> {
-        return taskLocalDataSource.getProgressTasksByDate(startDate, endDate).map { progressTaskEntities ->
-            progressTaskEntities.map {
-                it.toDomain()
-            }
-        }
-    }
-
-    override suspend fun updateProgressTask(tasks: List<Task>) {
-        tasks.forEach {
-            taskLocalDataSource.insertProgressTask(it.toProgressTaskEntity())
-        }
-    }
-
-    override suspend fun updateProgressedTime(progressTaskId: String, progressedTime: Int) {
-        taskLocalDataSource.updateProgressTime(progressTaskId, progressedTime)
-    }
-
-    override suspend fun updateTodayMemo(progressTaskId: String, todayMemo: String) {
-        taskLocalDataSource.updateTodayMemo(progressTaskId, todayMemo)
-    }
-
     override suspend fun saveTask(task: Task) {
         taskLocalDataSource.insertTask(task.toEntity())
     }
 
-    override suspend fun insertProgressTask(progressTask: ProgressTask) {
-        taskLocalDataSource.insertProgressTask(progressTask.toEntity())
-    }
 
     override suspend fun updateTask(task: Task) {
         taskLocalDataSource.updateTask(task.toEntity(task.id))
