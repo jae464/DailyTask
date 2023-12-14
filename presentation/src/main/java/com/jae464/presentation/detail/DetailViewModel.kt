@@ -1,30 +1,22 @@
 package com.jae464.presentation.detail
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.yml.charts.common.extensions.isNotNull
 import com.jae464.domain.model.ProgressTask
-import com.jae464.domain.usecase.GetProgressTaskUseCase
-import com.jae464.domain.usecase.UpdateProgressedTimeUseCase
-import com.jae464.domain.usecase.UpdateTodayMemoUseCase
+import com.jae464.domain.usecase.progresstask.GetProgressTaskUseCase
+import com.jae464.domain.usecase.progresstask.UpdateProgressedTimeUseCase
+import com.jae464.domain.usecase.progresstask.UpdateTodayMemoUseCase
 import com.jae464.presentation.home.ProgressTaskUiModel
 import com.jae464.presentation.home.ProgressingState
 import com.jae464.presentation.home.ProgressingTaskManager
 import com.jae464.presentation.home.toProgressTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

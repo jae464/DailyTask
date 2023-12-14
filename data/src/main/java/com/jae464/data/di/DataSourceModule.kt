@@ -2,6 +2,8 @@ package com.jae464.data.di
 
 import com.jae464.data.datasource.CategoryLocalDataSource
 import com.jae464.data.datasource.CategoryLocalDataSourceImpl
+import com.jae464.data.datasource.ProgressTaskLocalDataSource
+import com.jae464.data.datasource.ProgressTaskLocalDataSourceImpl
 import com.jae464.data.datasource.TaskLocalDataSource
 import com.jae464.data.datasource.TaskLocalDataSourceImpl
 import dagger.Binds
@@ -25,4 +27,10 @@ interface DataSourceModule {
     fun bindCategoryLocalDataSource(
         source: CategoryLocalDataSourceImpl
     ): CategoryLocalDataSource
+
+    @Binds
+    @Singleton
+    fun bindProgressTaskLocalDataSource(
+        source: ProgressTaskLocalDataSourceImpl
+    ): ProgressTaskLocalDataSource
 }

@@ -1,4 +1,4 @@
-package com.jae464.domain.usecase
+package com.jae464.domain.usecase.task
 
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.Task

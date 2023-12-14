@@ -1,17 +1,15 @@
 package com.jae464.presentation.tasks
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.Category
-import com.jae464.domain.usecase.AddCategoryUseCase
-import com.jae464.domain.usecase.GetAllCategoriesUseCase
-import com.jae464.domain.usecase.GetCategoryUseCase
-import com.jae464.domain.usecase.GetTaskUseCase
-import com.jae464.domain.usecase.SaveTaskUseCase
-import com.jae464.domain.usecase.UpdateTaskUseCase
+import com.jae464.domain.usecase.category.AddCategoryUseCase
+import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
+import com.jae464.domain.usecase.task.GetTaskUseCase
+import com.jae464.domain.usecase.task.SaveTaskUseCase
+import com.jae464.domain.usecase.task.UpdateTaskUseCase
 import com.jae464.presentation.model.AddTaskUIModel
 import com.jae464.presentation.model.toAddTaskUiModel
 import com.jae464.presentation.model.toTask
