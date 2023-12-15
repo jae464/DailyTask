@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,9 +30,12 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.ExperimentalMaterialApi
@@ -52,6 +56,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -77,6 +83,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jae464.domain.model.Category
+import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.model.TaskUiModel
 import com.jae464.presentation.sampledata.taskUiModels
 import kotlin.math.roundToInt
@@ -90,6 +98,9 @@ fun TaskListScreen(
 ) {
 
     val taskListUiState by viewModel.taskListUiState.collectAsStateWithLifecycle()
+    val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
+
     var showDeleteDialog by remember { mutableStateOf("") } // 삭제할 taskId 저장
 
     Surface(
@@ -109,12 +120,19 @@ fun TaskListScreen(
                 is TaskListUiState.Loading -> {
                     Text(text = "로딩중")
                 }
+
                 is TaskListUiState.Success -> {
                     TaskList(
+                        modifier = modifier,
                         taskListUiState = taskListUiState,
+                        categories = categories,
+                        filteredCategories = filteredCategories,
                         onClickTask = onClickTask,
-                        onClickDelete = { showDeleteDialog = it })
+                        onClickDelete = { showDeleteDialog = it },
+                        onChangedFilteredCategories = viewModel::filterCategories
+                    )
                 }
+
                 is TaskListUiState.Empty -> {
                     Text(
                         text = "새로운 일정을 추가해주세요.",
@@ -123,6 +141,7 @@ fun TaskListScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
+
                 else -> {}
             }
             FloatingActionButton(
@@ -140,16 +159,6 @@ fun TaskListScreen(
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
-//            IconButton(
-//                onClick = onClickAddTask,
-//                modifier = modifier.align(Alignment.BottomEnd)
-//            ) {
-//                Image(
-//                    imageVector = Icons.Rounded.AddCircle,
-//                    contentDescription = "add_task",
-//                    modifier = Modifier.size(128.dp)
-//                )
-//            }
 
             if (showDeleteDialog.isNotEmpty()) {
                 AlertDialog(
@@ -176,15 +185,24 @@ fun TaskListScreen(
 @Composable
 fun TaskList(
     modifier: Modifier = Modifier,
+    categories: List<Category>,
+    filteredCategories: List<Category>,
     taskListUiState: TaskListUiState,
     onClickTask: (String) -> Unit,
-    onClickDelete: (String) -> Unit
+    onClickDelete: (String) -> Unit,
+    onChangedFilteredCategories: (List<Category>) -> Unit
 ) {
     if (taskListUiState is TaskListUiState.Success) {
         LazyColumn(
-            modifier = Modifier.padding(top = 24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
+            item {
+                CategoryFilterChips(
+                    categories = categories,
+                    filteredCategories = filteredCategories,
+                    onChangedFilteredCategories = onChangedFilteredCategories
+                )
+            }
             items(
                 taskListUiState.taskUiModels,
                 key = { it.id }) { taskUiModel ->
@@ -194,9 +212,56 @@ fun TaskList(
                     onClickDelete = onClickDelete
                 )
             }
+
+        }
+
+
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CategoryFilterChips(
+    categories: List<Category>,
+    filteredCategories: List<Category>,
+    onChangedFilteredCategories: (List<Category>) -> Unit
+) {
+    LazyRow(
+        modifier = Modifier
+            .padding(start = 4.dp, end = 4.dp, top = 24.dp)
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        items(
+            categories,
+            key = { it.id }
+        ) {
+            RoundedFilterChip(
+                text = it.name,
+                checked = filteredCategories.contains(it),
+                onCheckedChanged = { checked ->
+                    if (checked) {
+                        onChangedFilteredCategories(filteredCategories + listOf(it))
+                    } else {
+                        onChangedFilteredCategories(filteredCategories.filter { category -> category != it })
+                    }
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    containerColor = Color.White,
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    borderColor = Color.White,
+                    disabledBorderColor = MaterialTheme.colorScheme.background
+                )
+
+            )
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -357,7 +422,11 @@ fun RoundedBackgroundText(
             .padding(1.dp),
         contentAlignment = Alignment.Center // 내용을 가운데로 정렬
     ) {
-        Text(text = text, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimary)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
     }
 }
 

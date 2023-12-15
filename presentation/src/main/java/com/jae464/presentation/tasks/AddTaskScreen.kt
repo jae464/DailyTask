@@ -47,6 +47,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -55,6 +56,8 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -81,6 +84,7 @@ import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.TaskType
+import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.model.AddTaskUiModel
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -89,7 +93,6 @@ import java.time.LocalTime
 const val addTaskScreenRoute = "add_task"
 private const val TAG = "AddTaskScreen"
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
     modifier: Modifier = Modifier,
@@ -286,6 +289,7 @@ fun AddTaskTopAppBar(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskBody(
     modifier: Modifier = Modifier,
@@ -503,7 +507,10 @@ fun TitleTextField(
         keyboardActions = KeyboardActions {
             focusManager.clearFocus()
         },
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedBorderColor = MaterialTheme.colorScheme.onSecondary
+        )
 
     )
 }
@@ -637,7 +644,6 @@ fun AddCategoryDialog(
             }
         },
         confirmButton = {
-            // TODO 위에서 카테고리 명 중복 확인 필요
             TextButton(onClick = {
                 onSaveCategory(categoryName)
                 onChangedShowDialog(false)
@@ -668,28 +674,6 @@ fun <T> TaskTypeRadioButton(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun RoundedFilterChip(
-    text: String,
-    checked: Boolean,
-    onCheckedChanged: (Boolean) -> Unit
-) {
-    FilterChip(
-        modifier = Modifier.wrapContentSize(),
-        selected = checked,
-        onClick = {
-            onCheckedChanged(!checked)
-        },
-        label = {
-            Text(text = text, style = MaterialTheme.typography.labelSmall)
-        },
-        shape = CircleShape
-    )
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentTextField(
     modifier: Modifier = Modifier,

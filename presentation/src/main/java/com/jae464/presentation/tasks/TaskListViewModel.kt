@@ -2,6 +2,7 @@ package com.jae464.presentation.tasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jae464.domain.model.Category
 import com.jae464.domain.usecase.task.DeleteTaskUseCase
 import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
 import com.jae464.domain.usecase.task.GetAllTasksUseCase
@@ -9,6 +10,7 @@ import com.jae464.presentation.home.ProgressingTaskManager
 import com.jae464.presentation.model.TaskUiModel
 import com.jae464.presentation.model.toTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -25,7 +27,7 @@ class TaskListViewModel @Inject constructor(
 
     private val progressingTaskManager = ProgressingTaskManager.getInstance()
 
-    private val categories = getAllCategoriesUseCase()
+    val categories = getAllCategoriesUseCase()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -39,25 +41,31 @@ class TaskListViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    private var _filteredCategories = MutableStateFlow<List<Category>>(emptyList())
+    val filteredCategories: StateFlow<List<Category>>
+        get() = _filteredCategories
+
     val taskListUiState: StateFlow<TaskListUiState> =
-        combine(categories, tasks) { categories, tasks ->
+        combine(categories, tasks, filteredCategories) { categories, tasks, filteredCategories ->
             if (categories.isNotEmpty()) {
                 if (tasks.isEmpty()) {
                     TaskListUiState.Empty
-                }
-                else {
-                    TaskListUiState.Success(tasks.map { task ->
+                } else {
+                    TaskListUiState.Success(tasks.filter {
+                        filteredCategories.isEmpty() || filteredCategories.map { fc -> fc.id }
+                            .contains(it.categoryId)
+                    }.map { task ->
                         task.toTaskUiModel(categories.first { it.id == task.categoryId }.name)
                     })
                 }
             } else {
                 TaskListUiState.Loading
             }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = TaskListUiState.Loading
-    )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = TaskListUiState.Loading
+        )
 
     fun deleteTask(taskId: String) {
         viewModelScope.launch {
@@ -67,6 +75,10 @@ class TaskListViewModel @Inject constructor(
             }
             deleteTaskUseCase(taskId)
         }
+    }
+
+    fun filterCategories(filteredCategories: List<Category>) {
+        _filteredCategories.value = filteredCategories
     }
 
 }
