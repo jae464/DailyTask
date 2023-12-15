@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -69,7 +70,7 @@ fun StatisticScreen(
         modifier = Modifier.windowInsetsPadding(
             WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
         ),
-        color = Color.White
+        color = MaterialTheme.colorScheme.background
     ) {
         Box(
             modifier = Modifier
@@ -357,7 +358,8 @@ fun ProgressTaskPieChart(progressTasks: List<ProgressTask>) {
         isAnimationEnable = true,
         showSliceLabels = true,
         activeSliceAlpha = 0.5f,
-        animationDuration = 1500
+        animationDuration = 1500,
+        backgroundColor = MaterialTheme.colorScheme.background
     )
 
     val colors = listOf(
@@ -398,7 +400,7 @@ fun ProgressTaskPieChart(progressTasks: List<ProgressTask>) {
         PieChart(
             modifier = Modifier
                 .width(400.dp)
-                .height(400.dp),
+                .wrapContentHeight(),
             pieChartData = pieChartData,
             pieChartConfig = pieChartConfig
         )
