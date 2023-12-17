@@ -31,6 +31,10 @@ hilt = "2.44"
 # YCharts
 ycharts = "2.1.0"
 
+# Collapsing Toolbar Compose
+toolbar-compose = "2.3.5"
+
+
 [libraries]
 #androidx
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx"}
@@ -65,6 +69,9 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 
 #ycharts
 ychart = { module = "co.yml:ycharts", version.ref = "ycharts"}
+
+#compose collapsing toolbar
+toolbar-compose = { module = "me.onebone:toolbar-compose", version.ref = "toolbar-compose"}
 
 #test
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" , version.ref = "kotlin-coroutine" }
