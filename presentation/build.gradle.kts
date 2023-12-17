@@ -84,4 +84,5 @@ dependencies {
 
     implementation(libs.ychart)
     implementation(libs.toolbar.compose)
+    implementation(libs.bottomsheetdialog.compose)
 }

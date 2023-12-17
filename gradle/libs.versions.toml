@@ -34,6 +34,9 @@ ycharts = "2.1.0"
 # Collapsing Toolbar Compose
 toolbar-compose = "2.3.5"
 
+# Bottom Sheet Dialog
+bottomsheetdialog-compose = "1.4.0"
+
 
 [libraries]
 #androidx
@@ -72,6 +75,9 @@ ychart = { module = "co.yml:ycharts", version.ref = "ycharts"}
 
 #compose collapsing toolbar
 toolbar-compose = { module = "me.onebone:toolbar-compose", version.ref = "toolbar-compose"}
+
+#bottom sheet dialog
+bottomsheetdialog-compose = { module = "com.holix.android:bottomsheetdialog-compose", version.ref = "bottomsheetdialog-compose"}
 
 #test
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" , version.ref = "kotlin-coroutine" }

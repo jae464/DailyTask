@@ -9,6 +9,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.ScrollableState
@@ -96,6 +97,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
 import com.jae464.domain.model.Category
 import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.model.TaskUiModel
@@ -121,9 +123,10 @@ fun TaskListScreen(
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
 
     var showDeleteDialog by remember { mutableStateOf("") } // 삭제할 taskId 저장
+    var showBottomSheetDialog by remember { mutableStateOf(false) }
 
     CollapsingToolbarScaffold(
-        modifier = Modifier
+        modifier = modifier
             .background(MaterialTheme.colorScheme.surface)
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
@@ -144,15 +147,16 @@ fun TaskListScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Box(
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
                                 .background(
-                                color = MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(16.dp)
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    shape = RoundedCornerShape(16.dp)
                                 )
                                 .padding(vertical = 8.dp, horizontal = 8.dp)
                             ,
@@ -168,7 +172,9 @@ fun TaskListScreen(
                     }
                     Row {
                         IconButton(
-                            onClick = { /*TODO*/ },
+                            onClick = {
+                                showBottomSheetDialog = true
+                            },
                             modifier = Modifier.padding(start = 8.dp)
 
                         ) {
@@ -235,6 +241,34 @@ fun TaskListScreen(
                         }
                     }
                 )
+            }
+
+            if (showBottomSheetDialog) {
+                BottomSheetDialog(
+                    onDismissRequest = {
+                        showBottomSheetDialog = false
+                    },
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .background(
+                                color = Color.White,
+                                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                            )
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = "BottomSheetDialog Test")
+                            Text(text = "BottomSheetDialog Test")
+                            Text(text = "BottomSheetDialog Test")
+                            Text(text = "BottomSheetDialog Test")
+                            Text(text = "BottomSheetDialog Test")
+                            Text(text = "BottomSheetDialog Test")
+                        }
+
+                    }
+                }
             }
         }
         FloatingActionButton(
