@@ -83,4 +83,5 @@ dependencies {
     androidTestImplementation(libs.androidx.work.testing)
 
     implementation(libs.ychart)
+    implementation(libs.toolbar.compose)
 }

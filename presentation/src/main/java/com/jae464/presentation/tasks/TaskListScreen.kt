@@ -7,8 +7,11 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollScope
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +28,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -35,6 +39,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.DismissDirection
@@ -43,7 +48,12 @@ import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.TextButton
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.rounded.AccessTimeFilled
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddCircle
@@ -73,8 +83,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -87,8 +100,13 @@ import com.jae464.domain.model.Category
 import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.model.TaskUiModel
 import com.jae464.presentation.sampledata.taskUiModels
+import me.onebone.toolbar.CollapsingToolbarScaffold
+import me.onebone.toolbar.ExperimentalToolbarApi
+import me.onebone.toolbar.ScrollStrategy
+import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalToolbarApi::class)
 @Composable
 fun TaskListScreen(
     modifier: Modifier = Modifier,
@@ -96,6 +114,7 @@ fun TaskListScreen(
     onClickTask: (String) -> Unit,
     viewModel: TaskListViewModel = hiltViewModel()
 ) {
+    val state = rememberCollapsingToolbarScaffoldState()
 
     val taskListUiState by viewModel.taskListUiState.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
@@ -103,19 +122,76 @@ fun TaskListScreen(
 
     var showDeleteDialog by remember { mutableStateOf("") } // 삭제할 taskId 저장
 
-    Surface(
+    CollapsingToolbarScaffold(
         modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface)
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             ),
-        color = MaterialTheme.colorScheme.surface
+        state = state,
+        toolbar = {
+            Box(modifier = Modifier
+                .background(
+                    color = Color.White,
+                    shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+                )
+                .padding(vertical = 16.dp)
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .pin()
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .background(
+                                color = MaterialTheme.colorScheme.secondary,
+                                shape = RoundedCornerShape(16.dp)
+                                )
+                                .padding(vertical = 8.dp, horizontal = 8.dp)
+                            ,
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "검색",
+                                tint = MaterialTheme.colorScheme.onSecondary,
+                            )
+                        }
+                    }
+                    Row {
+                        IconButton(
+                            onClick = { /*TODO*/ },
+                            modifier = Modifier.padding(start = 8.dp)
+
+                        ) {
+                            Icon(imageVector = Icons.Default.FilterList,
+                                contentDescription = "필터링",
+                            )
+                        }
+                        CategoryFilterChips(
+                            categories = categories,
+                            filteredCategories = filteredCategories,
+                            onChangedFilteredCategories = viewModel::filterCategories
+                        )
+                    }
+                }
+            }
+        },
+        scrollStrategy = ScrollStrategy.EnterAlwaysCollapsed
     ) {
-        Box(
+        Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-
             when (taskListUiState) {
                 is TaskListUiState.Loading -> {
                     Text(text = "로딩중")
@@ -125,11 +201,8 @@ fun TaskListScreen(
                     TaskList(
                         modifier = modifier,
                         taskListUiState = taskListUiState,
-                        categories = categories,
-                        filteredCategories = filteredCategories,
                         onClickTask = onClickTask,
-                        onClickDelete = { showDeleteDialog = it },
-                        onChangedFilteredCategories = viewModel::filterCategories
+                        onClickDelete = { showDeleteDialog = it }
                     )
                 }
 
@@ -143,21 +216,6 @@ fun TaskListScreen(
                 }
 
                 else -> {}
-            }
-            FloatingActionButton(
-                onClick = onClickAddTask,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(vertical = 16.dp),
-                backgroundColor = MaterialTheme.colorScheme.primary,
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Add,
-                    contentDescription = "add_task",
-                    modifier = Modifier
-                        .wrapContentSize(),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
             }
 
             if (showDeleteDialog.isNotEmpty()) {
@@ -179,30 +237,35 @@ fun TaskListScreen(
                 )
             }
         }
+        FloatingActionButton(
+            onClick = onClickAddTask,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(vertical = 16.dp, horizontal = 8.dp),
+            backgroundColor = MaterialTheme.colorScheme.primary,
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Add,
+                contentDescription = "add_task",
+                modifier = Modifier
+                    .wrapContentSize(),
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+        }
     }
 }
 
 @Composable
 fun TaskList(
     modifier: Modifier = Modifier,
-    categories: List<Category>,
-    filteredCategories: List<Category>,
     taskListUiState: TaskListUiState,
     onClickTask: (String) -> Unit,
     onClickDelete: (String) -> Unit,
-    onChangedFilteredCategories: (List<Category>) -> Unit
 ) {
     if (taskListUiState is TaskListUiState.Success) {
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            item {
-                CategoryFilterChips(
-                    categories = categories,
-                    filteredCategories = filteredCategories,
-                    onChangedFilteredCategories = onChangedFilteredCategories
-                )
-            }
             items(
                 taskListUiState.taskUiModels,
                 key = { it.id }) { taskUiModel ->
@@ -228,7 +291,7 @@ fun CategoryFilterChips(
 ) {
     LazyRow(
         modifier = Modifier
-            .padding(start = 4.dp, end = 4.dp, top = 24.dp)
+            .padding(start = 8.dp, end = 8.dp)
             .fillMaxWidth()
             .wrapContentHeight(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -249,12 +312,16 @@ fun CategoryFilterChips(
                 },
                 colors = FilterChipDefaults.filterChipColors(
                     containerColor = Color.White,
+                    labelColor = MaterialTheme.colorScheme.onSecondary,
                     selectedContainerColor = MaterialTheme.colorScheme.primary,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledContainerColor = MaterialTheme.colorScheme.onSecondary,
+                    disabledLabelColor = MaterialTheme.colorScheme.secondary
                 ),
                 border = FilterChipDefaults.filterChipBorder(
-                    borderColor = Color.White,
-                    disabledBorderColor = MaterialTheme.colorScheme.background
+                    borderColor = MaterialTheme.colorScheme.primary,
+                    disabledBorderColor = MaterialTheme.colorScheme.background,
+                    disabledSelectedBorderColor = MaterialTheme.colorScheme.onSecondary
                 )
 
             )
