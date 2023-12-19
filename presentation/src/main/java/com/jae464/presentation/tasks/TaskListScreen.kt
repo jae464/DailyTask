@@ -20,6 +20,7 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -384,7 +385,8 @@ fun TaskList(
                 TaskItem(
                     taskUIModel = taskUiModel,
                     onClickTask = onClickTask,
-                    onClickDelete = onClickDelete
+                    onClickDelete = onClickDelete,
+                    isScrolling = isScrollInProgress
                 )
             }
 
@@ -480,6 +482,7 @@ fun TaskItem(
     modifier: Modifier = Modifier,
     onClickTask: (String) -> Unit,
     onClickDelete: (String) -> Unit,
+    isScrolling: Boolean = false
 ) {
     val anchors = DraggableAnchors {
         DragValue.Start at -200.dp.value
@@ -498,6 +501,12 @@ fun TaskItem(
         animationSpec = tween(),
         anchors = anchors
     )}
+
+    LaunchedEffect(isScrolling) {
+        if (isScrolling && !state.isAnimationRunning) {
+            state.animateTo(DragValue.Center)
+        }
+    }
 
     Box(
         modifier = modifier
@@ -530,7 +539,11 @@ fun TaskItem(
         Card(
             modifier = modifier
                 .offset {
-                    IntOffset(state.requireOffset().roundToInt(), 0)
+                    IntOffset(
+                        state
+                            .requireOffset()
+                            .roundToInt(), 0
+                    )
                 }
                 .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
