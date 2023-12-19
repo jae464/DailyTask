@@ -1,19 +1,27 @@
 package com.jae464.presentation.tasks
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -82,7 +90,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -119,6 +129,7 @@ import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ExperimentalToolbarApi
 import me.onebone.toolbar.ScrollStrategy
 import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalToolbarApi::class)
@@ -180,7 +191,9 @@ fun TaskListScreen(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             SearchTextField(
-                                modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 16.dp),
                                 text = searchText,
                                 onValueChanged = viewModel::setSearchText,
                                 focusManager = focusManager
@@ -458,8 +471,9 @@ fun SwipeDismissItem(
         )
     }
 }
+enum class DragValue { Start, Center, End }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TaskItem(
     taskUIModel: TaskUiModel,
@@ -467,26 +481,31 @@ fun TaskItem(
     onClickTask: (String) -> Unit,
     onClickDelete: (String) -> Unit,
 ) {
-    val swipeableState = rememberSwipeableState(initialValue = 0)
-    val scope = rememberCoroutineScope()
+    val anchors = DraggableAnchors {
+        DragValue.Start at -200.dp.value
+        DragValue.Center at 0.dp.value
+//        DragValue.End at 200.dp.value
+    }
+
+    val state = remember { AnchoredDraggableState(
+        initialValue = DragValue.Center,
+        positionalThreshold = { distance: Float ->
+            distance * 0.5f
+        },
+        velocityThreshold = {
+            50.dp.value
+        },
+        animationSpec = tween(),
+        anchors = anchors
+    )}
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .fillMaxWidth()
             .wrapContentHeight()
-            .swipeable(
-                anchors = mapOf(
-                    0f to 0,
-                    (-200).dp.value to 1
-                ),
-                thresholds = { _, _ ->
-                    FractionalThreshold(0.3f)
-                },
-                state = swipeableState,
-                orientation = Orientation.Horizontal
-            )
-            .background(if (swipeableState.offset.value < 0) MaterialTheme.colorScheme.errorContainer else Color.White)
+            .anchoredDraggable(state, Orientation.Horizontal)
+            .background(if (state.offset < 0) MaterialTheme.colorScheme.errorContainer else Color.White)
 
     ) {
 
@@ -511,7 +530,7 @@ fun TaskItem(
         Card(
             modifier = modifier
                 .offset {
-                    IntOffset(swipeableState.offset.value.roundToInt(), 0)
+                    IntOffset(state.requireOffset().roundToInt(), 0)
                 }
                 .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
