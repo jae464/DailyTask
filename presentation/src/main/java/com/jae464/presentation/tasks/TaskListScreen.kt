@@ -126,6 +126,7 @@ import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.presentation.model.TaskUiModel
 import com.jae464.presentation.sampledata.taskUiModels
+import kotlinx.coroutines.launch
 import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ExperimentalToolbarApi
 import me.onebone.toolbar.ScrollStrategy
@@ -482,13 +483,15 @@ fun TaskItem(
     modifier: Modifier = Modifier,
     onClickTask: (String) -> Unit,
     onClickDelete: (String) -> Unit,
-    isScrolling: Boolean = false
+    isScrolling: Boolean = false,
 ) {
     val anchors = DraggableAnchors {
         DragValue.Start at -200.dp.value
         DragValue.Center at 0.dp.value
 //        DragValue.End at 200.dp.value
     }
+
+    val scope = rememberCoroutineScope()
 
     val state = remember { AnchoredDraggableState(
         initialValue = DragValue.Center,
@@ -504,7 +507,9 @@ fun TaskItem(
 
     LaunchedEffect(isScrolling) {
         if (isScrolling && !state.isAnimationRunning) {
-            state.animateTo(DragValue.Center)
+            scope.launch {
+                state.animateTo(DragValue.Center)
+            }
         }
     }
 
