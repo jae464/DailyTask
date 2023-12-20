@@ -12,15 +12,20 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.jae464.presentation.common.calendar.CustomCalendar
 
 @Composable
 fun SettingScreen() {
     Surface(
-        modifier = Modifier.windowInsetsPadding(
-            WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-        ).fillMaxSize(),
+        modifier = Modifier
+            .windowInsetsPadding(
+                WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
+            )
+            .fillMaxSize(),
         color = MaterialTheme.colorScheme.surface
     ) {
-
+        Box {
+            CustomCalendar()
+        }
     }
 }
