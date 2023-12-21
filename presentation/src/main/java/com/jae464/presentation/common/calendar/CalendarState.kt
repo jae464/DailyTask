@@ -72,11 +72,6 @@ class CalendarState constructor(
             _selectedMonth = value
         }
 
-
-
-
-
-
     companion object {
         internal val Saver: Saver<CalendarState, Any> = listSaver(
             save = {
