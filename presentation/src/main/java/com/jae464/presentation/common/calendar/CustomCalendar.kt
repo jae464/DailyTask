@@ -9,33 +9,35 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
-import java.time.Month
-import java.time.Year
 
 @Composable
 fun CustomCalendar(
@@ -101,7 +103,6 @@ fun DateSelector(
     currentFocus: CurrentFocus,
     onChangedFocus: (CurrentFocus) -> Unit
 ) {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -124,10 +125,21 @@ fun DateSelector(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(text = "시작날짜", style = MaterialTheme.typography.labelSmall)
-                Text(
-                    text = if (calendarState.startDate == null) "" else
-                        "${calendarState.startDate!!}"
-                )
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (calendarState.startDate == null) "" else
+                            "${calendarState.startDate!!}",
+                        modifier = Modifier.minimumInteractiveComponentSize()
+                    )
+                    if (currentFocus == CurrentFocus.START && calendarState.startDate != null) {
+                        IconButton(onClick = { calendarState.startDate = null }) {
+                            Icon(imageVector = Icons.Default.Cancel, contentDescription = "delete-start-date")
+                        }
+                    }
+                }
 
             }
         }
@@ -148,12 +160,23 @@ fun DateSelector(
             ) {
                 Text(text = "종료날짜", style = MaterialTheme.typography.labelSmall)
 
-                Text(
-                    text = if (calendarState.endDate == null) "" else
-                        "${calendarState.endDate!!}"
-                )
-
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (calendarState.endDate == null) "" else
+                            "${calendarState.endDate!!}",
+                        modifier = Modifier.minimumInteractiveComponentSize()
+                    )
+                    if (currentFocus == CurrentFocus.END && calendarState.endDate != null) {
+                        IconButton(onClick = { calendarState.endDate = null }) {
+                            Icon(imageVector = Icons.Default.Cancel, contentDescription = "delete-end-date")
+                        }
+                    }
+                }
             }
+
         }
     }
 }
@@ -288,23 +311,32 @@ fun DateCalendar(
     LazyVerticalGrid(
         columns = GridCells.Fixed(7),
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-//        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(
             days
         ) { day ->
             val localDate = LocalDate.of(calendarState.selectedYear, calendarState.selectedMonth, day)
+            val isOneSelected =
+                (calendarState.startDate != null && calendarState.endDate == null) ||
+                        (calendarState.startDate == null && calendarState.endDate != null)
             val isSelected =
                 (calendarState.startDate != null && localDate == calendarState.startDate) ||
                         (calendarState.endDate != null && localDate == calendarState.endDate)
+
             val isBetween =
                 (calendarState.startDate != null && calendarState.endDate != null && localDate > calendarState.startDate && localDate < calendarState.endDate)
             Box(
                 modifier = Modifier
                     .background(
-                        color = if(isSelected || isBetween) MaterialTheme.colorScheme.secondaryContainer else Color.White,
-                        shape = if (isBetween) RectangleShape else if (isSelected && localDate == calendarState.startDate) RoundedCornerShape(topStart = 32.dp, bottomStart = 32.dp) else if (isSelected && localDate == calendarState.endDate) RoundedCornerShape(topEnd = 32.dp, bottomEnd = 32.dp) else RoundedCornerShape(32.dp)
+                        color = if ((isSelected && !isOneSelected) || isBetween) MaterialTheme.colorScheme.secondaryContainer else Color.White,
+                        shape = if (isBetween) RectangleShape else if (isSelected && localDate == calendarState.startDate) RoundedCornerShape(
+                            topStart = 32.dp,
+                            bottomStart = 32.dp
+                        ) else if (isSelected && localDate == calendarState.endDate) RoundedCornerShape(
+                            topEnd = 32.dp,
+                            bottomEnd = 32.dp
+                        ) else CircleShape
                     )
                     .clickable {
                         if (currentFocus == CurrentFocus.START) {
@@ -313,26 +345,30 @@ fun DateCalendar(
                                 calendarState.endDate = null
                             }
                             onChangedFocus(CurrentFocus.END)
-                        }
-                        else {
+                        } else {
                             if (calendarState.startDate != null && localDate < calendarState.startDate) {
                                 calendarState.startDate = localDate
-                            }
-                            else {
+                            } else {
                                 calendarState.endDate = localDate
                             }
                         }
                     }
-                    .wrapContentWidth()
                     .wrapContentHeight()
+                    .wrapContentWidth()
             ) {
                 Text(
                     text = day.toString(), style = MaterialTheme.typography.labelSmall,
                     color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.background(
-                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                        shape = RoundedCornerShape(32.dp))
-                        .padding(16.dp)
+                    modifier = Modifier
+                        .background(
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            shape = CircleShape
+                        )
+                        .wrapContentHeight()
+                        .width(32.dp)
+                        .padding(8.dp)
+                        .align(Alignment.Center),
+                    textAlign = TextAlign.Center,
                 )
             }
         }
