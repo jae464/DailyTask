@@ -1,20 +1,29 @@
 package com.jae464.presentation.common.calendar
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,6 +50,7 @@ import java.time.LocalDate
 
 @Composable
 fun CustomCalendar(
+    modifier: Modifier = Modifier,
     calendarState: CalendarState = rememberCalendarState()
 ) {
     var currentFocus by remember { mutableStateOf(CurrentFocus.START) }
@@ -54,7 +64,10 @@ fun CustomCalendar(
             )
             .padding(8.dp)
     ) {
-        DateSelector(calendarState = calendarState, currentFocus = currentFocus, onChangedFocus = {currentFocus = it})
+        DateSelector(
+            calendarState = calendarState,
+            currentFocus = currentFocus,
+            onChangedFocus = { currentFocus = it })
         CalendarHeader(
             calendarState = calendarState,
             onChangedCalendarSelectState = { calendarSelectState ->
@@ -84,9 +97,10 @@ fun CustomCalendar(
 
             CalendarSelectState.DAY -> {
                 DateCalendar(
+                    modifier = modifier,
                     calendarState = calendarState,
                     currentFocus = currentFocus,
-                    onChangedFocus = {currentFocus = it}
+                    onChangedFocus = { currentFocus = it }
                 )
             }
         }
@@ -136,7 +150,10 @@ fun DateSelector(
                     )
                     if (currentFocus == CurrentFocus.START && calendarState.startDate != null) {
                         IconButton(onClick = { calendarState.startDate = null }) {
-                            Icon(imageVector = Icons.Default.Cancel, contentDescription = "delete-start-date")
+                            Icon(
+                                imageVector = Icons.Default.Cancel,
+                                contentDescription = "delete-start-date"
+                            )
                         }
                     }
                 }
@@ -171,7 +188,10 @@ fun DateSelector(
                     )
                     if (currentFocus == CurrentFocus.END && calendarState.endDate != null) {
                         IconButton(onClick = { calendarState.endDate = null }) {
-                            Icon(imageVector = Icons.Default.Cancel, contentDescription = "delete-end-date")
+                            Icon(
+                                imageVector = Icons.Default.Cancel,
+                                contentDescription = "delete-end-date"
+                            )
                         }
                     }
                 }
@@ -299,16 +319,177 @@ fun MonthCalendar(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DateCalendar(
+    modifier: Modifier = Modifier,
     calendarState: CalendarState,
     currentFocus: CurrentFocus,
     onChangedFocus: (CurrentFocus) -> Unit
 ) {
+    val prevYearMonth = if (calendarState.prevMonth == 12) {
+        Pair(calendarState.selectedYear - 1, calendarState.prevMonth)
+    } else {
+        Pair(calendarState.selectedYear, calendarState.prevMonth)
+    }
+
+    val nextYearMonth = if (calendarState.nextMonth == 1) {
+        Pair(calendarState.selectedYear + 1, calendarState.nextMonth)
+    }
+    else {
+        Pair(calendarState.selectedYear, calendarState.nextMonth)
+    }
+    val months = listOf(
+        prevYearMonth, Pair(calendarState.selectedYear, calendarState.selectedMonth), nextYearMonth
+    )
+
+    val snappingLayout = remember(calendarState.lazyListState) {
+        val provider = SnapLayoutInfoProvider(calendarState.lazyListState)
+        provider
+    }
+    val snapFlingBehavior = rememberSnapFlingBehavior(snappingLayout)
+
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth(),
+        flingBehavior = snapFlingBehavior
+    ) {
+        items(months) { (year, month) ->
+            CustomGridView(
+                calendarState = calendarState,
+                selectedYear = year,
+                selectedMonth = month,
+                currentFocus = currentFocus,
+                onChangedFocus = onChangedFocus
+            )
+        }
+    }
+
+}
+
+@Composable
+fun LazyItemScope.CustomGridView(
+    calendarState: CalendarState,
+    selectedYear: Int,
+    selectedMonth: Int,
+    currentFocus: CurrentFocus,
+    onChangedFocus: (CurrentFocus) -> Unit
+) {
+    Box(
+        modifier = Modifier.fillParentMaxWidth()
+    ) {
+        val dayLength =
+            LocalDate.of(selectedYear, selectedMonth, 1).lengthOfMonth()
+        val days = List(dayLength) { i -> i + 1 }.chunked(7)
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            days.forEachIndexed { index, ints ->
+                Row(
+                    modifier = Modifier.wrapContentWidth()
+                ) {
+                    ints.forEach { day ->
+                        DayBox(
+                            calendarState = calendarState,
+                            selectedYear = selectedYear,
+                            selectedMonth = selectedMonth,
+                            day = day,
+                            currentFocus = currentFocus,
+                            onChangedFocus = onChangedFocus
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun DayBox(
+    modifier: Modifier = Modifier,
+    calendarState: CalendarState,
+    selectedYear: Int,
+    selectedMonth: Int,
+    day: Int,
+    currentFocus: CurrentFocus,
+    onChangedFocus: (CurrentFocus) -> Unit
+) {
+    val localDate = LocalDate.of(selectedYear, selectedMonth, day)
+    val isOneSelected =
+        (calendarState.startDate != null && calendarState.endDate == null) ||
+                (calendarState.startDate == null && calendarState.endDate != null)
+    val isSelected =
+        (calendarState.startDate != null && localDate == calendarState.startDate) ||
+                (calendarState.endDate != null && localDate == calendarState.endDate)
+
+    val isBetween =
+        (calendarState.startDate != null && calendarState.endDate != null && localDate > calendarState.startDate && localDate < calendarState.endDate)
+    Box(
+        modifier = Modifier
+            .background(
+                color = if ((isSelected && !isOneSelected) || isBetween) MaterialTheme.colorScheme.secondaryContainer else Color.White,
+                shape = if (isBetween) RectangleShape else if (isSelected && localDate == calendarState.startDate) RoundedCornerShape(
+                    topStart = 32.dp,
+                    bottomStart = 32.dp
+                ) else if (isSelected && localDate == calendarState.endDate) RoundedCornerShape(
+                    topEnd = 32.dp,
+                    bottomEnd = 32.dp
+                ) else CircleShape
+            )
+            .clickable {
+                if (currentFocus == CurrentFocus.START) {
+                    calendarState.startDate = localDate
+                    if (calendarState.endDate != null && localDate > calendarState.endDate) {
+                        calendarState.endDate = null
+                    }
+                    onChangedFocus(CurrentFocus.END)
+                } else {
+                    if (calendarState.startDate != null && localDate < calendarState.startDate) {
+                        calendarState.startDate = localDate
+                    } else {
+                        calendarState.endDate = localDate
+                    }
+                }
+            }
+            .height(48.dp)
+            .width(48.dp)
+    ) {
+        Text(
+            text = day.toString(),
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier
+                .background(
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    shape = CircleShape
+                )
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(16.dp)
+                .align(Alignment.BottomCenter),
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+fun DateCalendarContent(
+    calendarState: CalendarState,
+    selectedYear: Int,
+    selectedMonth: Int,
+    currentFocus: CurrentFocus,
+    onChangedFocus: (CurrentFocus) -> Unit,
+) {
     val dayLength =
-        LocalDate.of(calendarState.selectedYear, calendarState.selectedMonth, 1).lengthOfMonth()
+        LocalDate.of(selectedYear, selectedMonth, 1).lengthOfMonth()
     val days = List(dayLength) { i -> i + 1 }
     LazyVerticalGrid(
+        modifier = Modifier
+            .background(Color.Transparent),
         columns = GridCells.Fixed(7),
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -316,7 +497,7 @@ fun DateCalendar(
         items(
             days
         ) { day ->
-            val localDate = LocalDate.of(calendarState.selectedYear, calendarState.selectedMonth, day)
+            val localDate = LocalDate.of(selectedYear, selectedMonth, day)
             val isOneSelected =
                 (calendarState.startDate != null && calendarState.endDate == null) ||
                         (calendarState.startDate == null && calendarState.endDate != null)
@@ -365,7 +546,8 @@ fun DateCalendar(
                             shape = CircleShape
                         )
                         .wrapContentHeight()
-                        .width(32.dp)
+                        .width(40.dp)
+//                        .height(40.dp)
                         .padding(8.dp)
                         .align(Alignment.Center),
                     textAlign = TextAlign.Center,
