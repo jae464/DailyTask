@@ -1,5 +1,9 @@
 package com.jae464.presentation.common.calendar
 
+import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.gestures.ScrollScope
+import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -36,7 +40,7 @@ class CalendarState constructor(
     selectState: CalendarSelectState = CalendarSelectState.DAY,
     selectedYear: Int = LocalDate.now().year,
     selectedMonth: Int = LocalDate.now().month.value,
-){
+): ScrollableState {
     private var _startDate by mutableStateOf(startDate)
     var startDate: LocalDate?
         get() = _startDate
@@ -72,6 +76,18 @@ class CalendarState constructor(
             _selectedMonth = value
         }
 
+    val prevMonth: Int
+        get() {
+            return LocalDate.of(selectedYear, selectedMonth, 1).minusMonths(1).monthValue
+        }
+
+    val nextMonth: Int
+        get() {
+            return LocalDate.of(selectedYear, selectedMonth, 1).plusMonths(1).monthValue
+        }
+
+    val lazyListState = LazyListState()
+
     companion object {
         internal val Saver: Saver<CalendarState, Any> = listSaver(
             save = {
@@ -93,6 +109,20 @@ class CalendarState constructor(
                 )
             }
         )
+    }
+
+    override val isScrollInProgress: Boolean
+        get() = lazyListState.isScrollInProgress
+
+    override fun dispatchRawDelta(delta: Float): Float {
+        return lazyListState.dispatchRawDelta(delta)
+    }
+
+    override suspend fun scroll(
+        scrollPriority: MutatePriority,
+        block: suspend ScrollScope.() -> Unit
+    ) {
+        lazyListState.scroll(scrollPriority, block)
     }
 }
 
