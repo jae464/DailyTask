@@ -1,5 +1,6 @@
 package com.jae464.presentation.common.calendar
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +25,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -36,10 +40,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,6 +54,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CustomCalendar(
     modifier: Modifier = Modifier,
@@ -96,11 +103,36 @@ fun CustomCalendar(
             }
 
             CalendarSelectState.DAY -> {
+                var beforePage by remember { mutableStateOf(50) }
+                val pagerState = rememberPagerState(
+                    initialPage = 50,
+                    pageCount = { 100 }
+                )
+                LaunchedEffect(pagerState) {
+                    snapshotFlow { pagerState.currentPage }.collect { page ->
+                        if (page > beforePage) {
+                            if (calendarState.nextMonth == 1) {
+                                calendarState.selectedYear = calendarState.selectedYear + 1
+                            }
+                            calendarState.selectedMonth = calendarState.nextMonth
+                            beforePage = page
+                        }
+                        else if (page < beforePage) {
+                            if (calendarState.prevMonth == 12) {
+                                calendarState.selectedYear = calendarState.selectedYear - 1
+                            }
+                            calendarState.selectedMonth = calendarState.prevMonth
+                            beforePage = page
+                        }
+
+                    }
+                }
                 DateCalendar(
                     modifier = modifier,
                     calendarState = calendarState,
                     currentFocus = currentFocus,
-                    onChangedFocus = { currentFocus = it }
+                    onChangedFocus = { currentFocus = it },
+                    pagerState = pagerState
                 )
             }
         }
@@ -325,7 +357,8 @@ fun DateCalendar(
     modifier: Modifier = Modifier,
     calendarState: CalendarState,
     currentFocus: CurrentFocus,
-    onChangedFocus: (CurrentFocus) -> Unit
+    onChangedFocus: (CurrentFocus) -> Unit,
+    pagerState: PagerState
 ) {
     val prevYearMonth = if (calendarState.prevMonth == 12) {
         Pair(calendarState.selectedYear - 1, calendarState.prevMonth)
@@ -349,21 +382,31 @@ fun DateCalendar(
     }
     val snapFlingBehavior = rememberSnapFlingBehavior(snappingLayout)
 
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth(),
-        flingBehavior = snapFlingBehavior
-    ) {
-        items(months) { (year, month) ->
-            CustomGridView(
-                calendarState = calendarState,
-                selectedYear = year,
-                selectedMonth = month,
-                currentFocus = currentFocus,
-                onChangedFocus = onChangedFocus
-            )
-        }
+    HorizontalPager(state = pagerState) { page ->
+        Log.d("CustomCalendar", "page : $page")
+        DateCalendarContent(
+            calendarState = calendarState,
+            selectedYear = calendarState.selectedYear,
+            selectedMonth = calendarState.selectedMonth,
+            currentFocus = currentFocus,
+            onChangedFocus = onChangedFocus,
+        )
     }
+//    LazyRow(
+//        modifier = Modifier
+//            .fillMaxWidth(),
+//        flingBehavior = snapFlingBehavior
+//    ) {
+//        items(months) { (year, month) ->
+//            CustomGridView(
+//                calendarState = calendarState,
+//                selectedYear = year,
+//                selectedMonth = month,
+//                currentFocus = currentFocus,
+//                onChangedFocus = onChangedFocus
+//            )
+//        }
+//    }
 
 }
 
