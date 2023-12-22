@@ -1,6 +1,7 @@
 package com.jae464.presentation.statistic
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,10 +35,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -47,6 +50,10 @@ import co.yml.charts.ui.piechart.charts.PieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
 import com.jae464.domain.model.ProgressTask
+import com.jae464.presentation.common.calendar.CalendarState
+import com.jae464.presentation.common.calendar.CustomCalendar
+import com.jae464.presentation.common.calendar.rememberCalendarState
+import kotlinx.coroutines.launch
 import java.time.DateTimeException
 import java.time.LocalDate
 
@@ -64,6 +71,9 @@ fun StatisticScreen(
     var yearMonthDay by remember { mutableStateOf(YearMonthDay(0, 0, 0)) }
     val progressTasks by viewModel.progressTasks.collectAsStateWithLifecycle()
 
+    val calendarState = rememberCalendarState()
+    val context = LocalContext.current
+
     Log.d(TAG, progressTasks.toString())
 
     Surface(
@@ -80,45 +90,20 @@ fun StatisticScreen(
             Column(
                 modifier = Modifier.padding(top = 16.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "구간지정", fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.width(16.dp))
-                    SelectPeriodRadioButton(
-                        selectPeriod = selectPeriod,
-                        onChangedSelectPeriod = { selectPeriod = it })
-                }
+                CustomCalendar(
+                    calendarState = calendarState
+                )
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "기간", fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.width(16.dp))
-                    if (selectPeriod) {
-
-                    } else {
-                        SelectYearMonthDay(
-                            yearMonthDay = yearMonthDay,
-                            onChangedYear = {
-                                yearMonthDay = if (it == 0) {
-                                    yearMonthDay.copy(year = 0, month = 0, day = 0)
-                                } else {
-                                    yearMonthDay.copy(year = it)
-                                }
-                            },
-                            onChangedMonth = {
-                                yearMonthDay = if (it == 0) yearMonthDay.copy(
-                                    month = 0,
-                                    day = 0
-                                ) else yearMonthDay.copy(month = it)
-                            },
-                            onChangedDay = { yearMonthDay = yearMonthDay.copy(day = it) }
-                        )
+                LoadPieChartButton(
+                    calendarState = calendarState,
+                    onClickLoad = { startDate, endDate ->
+                        if (startDate == null || endDate == null) {
+                            val msg = if (startDate == null) "시작" else "종료"
+                            Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT).show()
+                            return@LoadPieChartButton
+                        }
+                        viewModel.getProgressTasks(startDate, endDate)
                     }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                GetStatisticButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    selectPeriod = selectPeriod,
-                    yearMonthDay = yearMonthDay,
-                    viewModel = viewModel
                 )
                 ProgressTaskPieChart(progressTasks = progressTasks)
             }
@@ -318,6 +303,21 @@ fun <T> Spinner(
     }
 }
 
+@Composable
+fun LoadPieChartButton(
+    calendarState: CalendarState,
+    onClickLoad: (LocalDate?, LocalDate?) -> Unit
+) {
+    Button(
+        modifier = Modifier,
+        onClick = {
+            Log.d("StatisticScreen", "startDate : ${calendarState.startDate} endDate : ${calendarState.endDate}")
+            onClickLoad(calendarState.startDate, calendarState.endDate)
+        }
+    ) {
+        Text(text = "불러오기")
+    }
+}
 @Composable
 fun GetStatisticButton(
     modifier: Modifier = Modifier,
