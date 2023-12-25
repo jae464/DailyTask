@@ -31,7 +31,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -44,6 +47,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -52,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -61,6 +66,13 @@ fun CustomCalendar(
     calendarState: CalendarState = rememberCalendarState()
 ) {
     var currentFocus by remember { mutableStateOf(CurrentFocus.START) }
+    var beforePage by remember { mutableStateOf(50) }
+    val pagerState = rememberPagerState(
+        initialPage = 50,
+        pageCount = { 100 }
+    )
+
+    Log.d("CustomCalendar", "calendarState changed : $calendarState")
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -75,11 +87,13 @@ fun CustomCalendar(
             calendarState = calendarState,
             currentFocus = currentFocus,
             onChangedFocus = { currentFocus = it })
+
         CalendarHeader(
             calendarState = calendarState,
             onChangedCalendarSelectState = { calendarSelectState ->
                 calendarState.selectState = calendarSelectState
-            }
+            },
+            pagerState = pagerState
         )
         when (calendarState.selectState) {
             CalendarSelectState.YEAR -> {
@@ -103,27 +117,23 @@ fun CustomCalendar(
             }
 
             CalendarSelectState.DAY -> {
-                var beforePage by remember { mutableStateOf(50) }
-                val pagerState = rememberPagerState(
-                    initialPage = 50,
-                    pageCount = { 100 }
-                )
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.currentPage }.collect { page ->
+                        Log.d("CustomCalendar", "pagerState Changed Logic Start")
                         if (page > beforePage) {
                             if (calendarState.nextMonth == 1) {
                                 calendarState.selectedYear = calendarState.selectedYear + 1
                             }
                             calendarState.selectedMonth = calendarState.nextMonth
                             beforePage = page
-                        }
-                        else if (page < beforePage) {
+                        } else if (page < beforePage) {
                             if (calendarState.prevMonth == 12) {
                                 calendarState.selectedYear = calendarState.selectedYear - 1
                             }
                             calendarState.selectedMonth = calendarState.prevMonth
                             beforePage = page
                         }
+                        Log.d("CustomCalendar", "pagerState Changed Logic End")
 
                     }
                 }
@@ -233,11 +243,14 @@ fun DateSelector(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CalendarHeader(
     calendarState: CalendarState,
-    onChangedCalendarSelectState: (CalendarSelectState) -> Unit
+    onChangedCalendarSelectState: (CalendarSelectState) -> Unit,
+    pagerState: PagerState,
 ) {
+    val scope = rememberCoroutineScope()
     when (calendarState.selectState) {
         CalendarSelectState.YEAR -> {
             Button(
@@ -270,19 +283,57 @@ fun CalendarHeader(
         }
 
         CalendarSelectState.DAY -> {
-            Button(
-                onClick = {
-                    onChangedCalendarSelectState(CalendarSelectState.MONTH)
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = MaterialTheme.colorScheme.primary
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "${calendarState.selectedYear}년 ${calendarState.selectedMonth}월",
-                    style = MaterialTheme.typography.titleMedium
-                )
+                Button(
+                    onClick = {
+                        onChangedCalendarSelectState(CalendarSelectState.MONTH)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(
+                        text = "${calendarState.selectedYear}년 ${calendarState.selectedMonth}월",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                Row {
+                    IconButton(onClick = {
+                        scope.launch {
+                            if (pagerState.currentPage > 0) {
+                                pagerState.animateScrollToPage(
+                                    pagerState.currentPage - 1
+                                )
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowLeft,
+                            contentDescription = "left",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(onClick = {
+                        if (pagerState.currentPage < pagerState.pageCount) {
+                            scope.launch {
+                                pagerState.animateScrollToPage(
+                                    pagerState.currentPage + 1
+                                )
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = "right",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
             }
         }
     }
@@ -360,6 +411,7 @@ fun DateCalendar(
     onChangedFocus: (CurrentFocus) -> Unit,
     pagerState: PagerState
 ) {
+    Log.d("CustomCalendar", "DateCalendar Rendered")
     val prevYearMonth = if (calendarState.prevMonth == 12) {
         Pair(calendarState.selectedYear - 1, calendarState.prevMonth)
     } else {
@@ -368,8 +420,7 @@ fun DateCalendar(
 
     val nextYearMonth = if (calendarState.nextMonth == 1) {
         Pair(calendarState.selectedYear + 1, calendarState.nextMonth)
-    }
-    else {
+    } else {
         Pair(calendarState.selectedYear, calendarState.nextMonth)
     }
     val months = listOf(
