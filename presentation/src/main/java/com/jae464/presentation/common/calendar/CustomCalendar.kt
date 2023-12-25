@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -63,7 +64,8 @@ import java.time.LocalDate
 @Composable
 fun CustomCalendar(
     modifier: Modifier = Modifier,
-    calendarState: CalendarState = rememberCalendarState()
+    calendarState: CalendarState = rememberCalendarState(),
+    showCalendar: Boolean = true
 ) {
     var currentFocus by remember { mutableStateOf(CurrentFocus.START) }
     var beforePage by remember { mutableStateOf(50) }
@@ -86,64 +88,66 @@ fun CustomCalendar(
         DateSelector(
             calendarState = calendarState,
             currentFocus = currentFocus,
-            onChangedFocus = { currentFocus = it })
-
-        CalendarHeader(
-            calendarState = calendarState,
-            onChangedCalendarSelectState = { calendarSelectState ->
-                calendarState.selectState = calendarSelectState
-            },
-            pagerState = pagerState
+            onChangedFocus = { currentFocus = it }
         )
-        when (calendarState.selectState) {
-            CalendarSelectState.YEAR -> {
-                YearCalendar(
-                    calendarState = calendarState,
-                    onChangedYear = {
-                        calendarState.selectedYear = it
-                        calendarState.selectState = CalendarSelectState.MONTH
-                    }
-                )
-            }
-
-            CalendarSelectState.MONTH -> {
-                MonthCalendar(
-                    calendarState = calendarState,
-                    onChangedMonth = {
-                        calendarState.selectedMonth = it
-                        calendarState.selectState = CalendarSelectState.DAY
-                    }
-                )
-            }
-
-            CalendarSelectState.DAY -> {
-                LaunchedEffect(pagerState) {
-                    snapshotFlow { pagerState.currentPage }.collect { page ->
-                        Log.d("CustomCalendar", "pagerState Changed Logic Start")
-                        if (page > beforePage) {
-                            if (calendarState.nextMonth == 1) {
-                                calendarState.selectedYear = calendarState.selectedYear + 1
-                            }
-                            calendarState.selectedMonth = calendarState.nextMonth
-                            beforePage = page
-                        } else if (page < beforePage) {
-                            if (calendarState.prevMonth == 12) {
-                                calendarState.selectedYear = calendarState.selectedYear - 1
-                            }
-                            calendarState.selectedMonth = calendarState.prevMonth
-                            beforePage = page
+        if (showCalendar) {
+            CalendarHeader(
+                calendarState = calendarState,
+                onChangedCalendarSelectState = { calendarSelectState ->
+                    calendarState.selectState = calendarSelectState
+                },
+                pagerState = pagerState
+            )
+            when (calendarState.selectState) {
+                CalendarSelectState.YEAR -> {
+                    YearCalendar(
+                        calendarState = calendarState,
+                        onChangedYear = {
+                            calendarState.selectedYear = it
+                            calendarState.selectState = CalendarSelectState.MONTH
                         }
-                        Log.d("CustomCalendar", "pagerState Changed Logic End")
-
-                    }
+                    )
                 }
-                DateCalendar(
-                    modifier = modifier,
-                    calendarState = calendarState,
-                    currentFocus = currentFocus,
-                    onChangedFocus = { currentFocus = it },
-                    pagerState = pagerState
-                )
+
+                CalendarSelectState.MONTH -> {
+                    MonthCalendar(
+                        calendarState = calendarState,
+                        onChangedMonth = {
+                            calendarState.selectedMonth = it
+                            calendarState.selectState = CalendarSelectState.DAY
+                        }
+                    )
+                }
+
+                CalendarSelectState.DAY -> {
+                    LaunchedEffect(pagerState) {
+                        snapshotFlow { pagerState.currentPage }.collect { page ->
+                            Log.d("CustomCalendar", "pagerState Changed Logic Start")
+                            if (page > beforePage) {
+                                if (calendarState.nextMonth == 1) {
+                                    calendarState.selectedYear = calendarState.selectedYear + 1
+                                }
+                                calendarState.selectedMonth = calendarState.nextMonth
+                                beforePage = page
+                            } else if (page < beforePage) {
+                                if (calendarState.prevMonth == 12) {
+                                    calendarState.selectedYear = calendarState.selectedYear - 1
+                                }
+                                calendarState.selectedMonth = calendarState.prevMonth
+                                beforePage = page
+                            }
+                            Log.d("CustomCalendar", "pagerState Changed Logic End")
+
+                        }
+                    }
+                    DateCalendar(
+                        modifier = modifier,
+                        calendarState = calendarState,
+                        currentFocus = currentFocus,
+                        onChangedFocus = { currentFocus = it },
+                        pagerState = pagerState
+                    )
+                }
             }
         }
     }
@@ -349,6 +353,7 @@ fun YearCalendar(
         years.add(i)
     }
     LazyVerticalGrid(
+        modifier = Modifier.heightIn(max = 400.dp),
         columns = GridCells.Fixed(3),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -380,7 +385,8 @@ fun MonthCalendar(
 ) {
     val months = List(12) { i -> i + 1 }
     LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
+        modifier = Modifier.heightIn(max = 400.dp),
+        columns = GridCells.Fixed(4),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -412,27 +418,6 @@ fun DateCalendar(
     pagerState: PagerState
 ) {
     Log.d("CustomCalendar", "DateCalendar Rendered")
-    val prevYearMonth = if (calendarState.prevMonth == 12) {
-        Pair(calendarState.selectedYear - 1, calendarState.prevMonth)
-    } else {
-        Pair(calendarState.selectedYear, calendarState.prevMonth)
-    }
-
-    val nextYearMonth = if (calendarState.nextMonth == 1) {
-        Pair(calendarState.selectedYear + 1, calendarState.nextMonth)
-    } else {
-        Pair(calendarState.selectedYear, calendarState.nextMonth)
-    }
-    val months = listOf(
-        prevYearMonth, Pair(calendarState.selectedYear, calendarState.selectedMonth), nextYearMonth
-    )
-
-    val snappingLayout = remember(calendarState.lazyListState) {
-        val provider = SnapLayoutInfoProvider(calendarState.lazyListState)
-        provider
-    }
-    val snapFlingBehavior = rememberSnapFlingBehavior(snappingLayout)
-
     HorizontalPager(state = pagerState) { page ->
         Log.d("CustomCalendar", "page : $page")
         DateCalendarContent(
@@ -443,21 +428,6 @@ fun DateCalendar(
             onChangedFocus = onChangedFocus,
         )
     }
-//    LazyRow(
-//        modifier = Modifier
-//            .fillMaxWidth(),
-//        flingBehavior = snapFlingBehavior
-//    ) {
-//        items(months) { (year, month) ->
-//            CustomGridView(
-//                calendarState = calendarState,
-//                selectedYear = year,
-//                selectedMonth = month,
-//                currentFocus = currentFocus,
-//                onChangedFocus = onChangedFocus
-//            )
-//        }
-//    }
 
 }
 
@@ -583,7 +553,8 @@ fun DateCalendarContent(
     val days = List(dayLength) { i -> i + 1 }
     LazyVerticalGrid(
         modifier = Modifier
-            .background(Color.Transparent),
+            .background(Color.Transparent)
+            .heightIn(max = 400.dp),
         columns = GridCells.Fixed(7),
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
