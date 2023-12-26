@@ -2,6 +2,7 @@ package com.jae464.presentation.statistic
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollable
@@ -24,6 +25,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -38,6 +41,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -62,6 +68,7 @@ import com.jae464.domain.model.ProgressTask
 import com.jae464.presentation.common.calendar.CalendarState
 import com.jae464.presentation.common.calendar.CustomCalendar
 import com.jae464.presentation.common.calendar.rememberCalendarState
+import com.jae464.presentation.statistic.model.StatisticViewMode
 import kotlinx.coroutines.launch
 import java.time.DateTimeException
 import java.time.LocalDate
@@ -72,16 +79,11 @@ private const val TAG = "StatisticScreen"
 fun StatisticScreen(
     viewModel: StatisticViewModel = hiltViewModel()
 ) {
-
-    var selectPeriod by remember { mutableStateOf(false) }
-    var fromLocalDate by remember { mutableStateOf(LocalDate.now()) }
-    var toLocalDate by remember { mutableStateOf(LocalDate.now()) }
-
-    var yearMonthDay by remember { mutableStateOf(YearMonthDay(0, 0, 0)) }
     val progressTasks by viewModel.progressTasks.collectAsStateWithLifecycle()
     var showCalendar by remember { mutableStateOf(true) }
     val calendarState = rememberCalendarState()
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
     Log.d(TAG, progressTasks.toString())
 
@@ -99,7 +101,7 @@ fun StatisticScreen(
             Column(
                 modifier = Modifier
                     .padding(top = 16.dp)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
             ) {
                 Row(
                     modifier = Modifier
@@ -130,216 +132,82 @@ fun StatisticScreen(
                         }
                     }
                 }
-//                Spacer(modifier = Modifier.height(16.dp))
                 CustomCalendar(
                     calendarState = calendarState,
                     showCalendar = showCalendar
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                LoadPieChartButton(
-                    calendarState = calendarState,
-                    onClickLoad = { startDate, endDate ->
-                        if (startDate == null || endDate == null) {
-                            val msg = if (startDate == null) "시작" else "종료"
-                            Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT).show()
-                            return@LoadPieChartButton
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    LoadPieChartButton(
+                        calendarState = calendarState,
+                        onClickLoad = { startDate, endDate ->
+                            if (startDate == null || endDate == null) {
+                                val msg = if (startDate == null) "시작" else "종료"
+                                Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT).show()
+                                return@LoadPieChartButton
+                            }
+                            viewModel.getProgressTasks(startDate, endDate)
                         }
-                        viewModel.getProgressTasks(startDate, endDate)
-                    }
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                StatisticTabLayout(
+                    progressTasks = progressTasks
                 )
-                ProgressTaskPieChart(progressTasks = progressTasks)
             }
+
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SelectPeriodRadioButton(
-    selectPeriod: Boolean,
-    onChangedSelectPeriod: (Boolean) -> Unit
+fun StatisticTabLayout(
+    progressTasks: List<ProgressTask>
 ) {
-    Text(text = "안함")
-    RadioButton(selected = !selectPeriod, onClick = { onChangedSelectPeriod(false) })
-    Text(text = "함")
-    RadioButton(selected = selectPeriod, onClick = { onChangedSelectPeriod(true) })
-}
-
-@Composable
-fun SelectYearMonthDay(
-    yearMonthDay: YearMonthDay,
-    onChangedYear: (Int) -> Unit,
-    onChangedMonth: (Int) -> Unit,
-    onChangedDay: (Int) -> Unit
-) {
-    val years = mutableListOf<Int>()
-    years.add(0)
-    for (i in 2023 downTo 2000) {
-        years.add(i)
-    }
-    val months = mutableListOf<Int>()
-    for (i in 0..12) {
-        months.add(i)
-    }
-    val days = mutableListOf<Int>()
-    for (i in 0..31) {
-        days.add(i)
-    }
-
-    Spinner(
-        modifier = Modifier.wrapContentSize(),
-        dropDownModifier = Modifier.height(200.dp),
-        items = years,
-        selectedItem = yearMonthDay.year,
-        onItemSelected = onChangedYear,
-        selectedItemFactory = { modifier, item ->
-            Row(
-                modifier = modifier.wrapContentSize(),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                if (item == 0) {
-                    Text(
-                        text = "전체",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                    )
-                } else {
-                    Text(
-                        text = item.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                    )
-                }
-            }
-        },
-        dropDownItemFactory = { item, _ ->
-            if (item == 0) {
-                Text(text = "전체")
-            } else {
-                Text(text = item.toString())
-            }
-        }
+    val pages = StatisticViewMode.values()
+    val pagerState = rememberPagerState(
+        pageCount = { 2 }
     )
-    Spacer(modifier = Modifier.width(4.dp))
-    Text(text = "년")
 
-    if (yearMonthDay.year != 0) {
-        Spacer(modifier = Modifier.width(16.dp))
-        Spinner(
-            modifier = Modifier.wrapContentSize(),
-            dropDownModifier = Modifier.height(200.dp),
-            items = months,
-            selectedItem = yearMonthDay.month,
-            onItemSelected = onChangedMonth,
-            selectedItemFactory = { modifier, item ->
-                Row(
-                    modifier = modifier.wrapContentSize(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    if (item == 0) {
-                        Text(
-                            text = "전체",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                        )
-                    } else {
-                        Text(
-                            text = item.toString(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                        )
+    val scope = rememberCoroutineScope()
+    
+    Text(
+        text = "일정통계",
+        style = MaterialTheme.typography.titleLarge,
+        modifier = Modifier.padding(16.dp),
+        fontWeight = FontWeight.Bold
+    )
+    
+    Spacer(modifier = Modifier.height(16.dp))
+
+    TabRow(
+        containerColor = Color.White,
+        selectedTabIndex = pagerState.currentPage
+    ) {
+        pages.forEachIndexed { index, page ->
+            Tab(
+                selected = pagerState.currentPage == index,
+                onClick = {
+                    scope.launch {
+                        pagerState.scrollToPage(index)
                     }
-                }
-            },
-            dropDownItemFactory = { item, _ ->
-                if (item == 0) {
-                    Text(text = "전체")
-                } else {
-                    Text(text = item.toString())
-                }
-            }
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(text = "월")
-    }
-    if (yearMonthDay.month != 0 && yearMonthDay.year != 0) {
-        Spacer(modifier = Modifier.width(16.dp))
-        Spinner(
-            modifier = Modifier.wrapContentSize(),
-            dropDownModifier = Modifier.height(200.dp),
-            items = days.filter {
-                it <= LocalDate.of(yearMonthDay.year, yearMonthDay.month, 1).lengthOfMonth()
-            },
-            selectedItem = yearMonthDay.day,
-            onItemSelected = onChangedDay,
-            selectedItemFactory = { modifier, item ->
-                Row(
-                    modifier = modifier.wrapContentSize(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    if (item == 0) {
-                        Text(
-                            text = "전체",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                        )
-                    } else {
-                        Text(
-                            text = item.toString(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                        )
-                    }
-                }
-            },
-            dropDownItemFactory = { item, _ ->
-                if (item == 0) {
-                    Text(text = "전체")
-                } else {
-                    Text(text = item.toString())
-                }
-            }
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(text = "일")
+                },
+                text = { Text(text = page.title)}
+            )
+        }
     }
 
-
-}
-
-
-@Composable
-fun <T> Spinner(
-    modifier: Modifier,
-    dropDownModifier: Modifier = Modifier,
-    items: List<T>,
-    selectedItem: T,
-    onItemSelected: (T) -> Unit,
-    selectedItemFactory: @Composable (Modifier, T) -> Unit,
-    dropDownItemFactory: @Composable (T, Int) -> Unit
-) {
-    var expanded: Boolean by remember { mutableStateOf(false) }
-
-    Box(modifier = modifier.wrapContentSize(Alignment.TopStart)) {
-        selectedItemFactory(
-            Modifier
-                .background(color = MaterialTheme.colorScheme.secondaryContainer, CircleShape)
-                .clickable { expanded = true },
-            selectedItem
-        )
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = dropDownModifier
-        ) {
-            items.forEachIndexed { index, element ->
-                DropdownMenuItem(
-                    text = { dropDownItemFactory(element, index) },
-                    onClick = {
-                        onItemSelected(items[index])
-                        expanded = false
-                        Log.d(TAG, selectedItem.toString())
-                    })
+    HorizontalPager(state = pagerState) {
+        when(pagerState.currentPage) {
+            0 -> {
+                Text(text = "리스트 준비중")
+            }
+            1 -> {
+                ProgressTaskPieChart(progressTasks = progressTasks)
             }
         }
     }
@@ -361,39 +229,6 @@ fun LoadPieChartButton(
         }
     ) {
         Text(text = "불러오기")
-    }
-}
-
-@Composable
-fun GetStatisticButton(
-    modifier: Modifier = Modifier,
-    selectPeriod: Boolean,
-    yearMonthDay: YearMonthDay,
-    viewModel: StatisticViewModel
-) {
-    if (!selectPeriod) {
-        val fromYear = if (yearMonthDay.year == 0) 2000 else yearMonthDay.year
-        val fromMonth = if (yearMonthDay.month == 0) 1 else yearMonthDay.month
-        val fromDay = if (yearMonthDay.day == 0) 1 else yearMonthDay.day
-        val toYear = if (yearMonthDay.year == 0) 2023 else yearMonthDay.year
-        val toMonth = if (yearMonthDay.month == 0) 12 else yearMonthDay.month
-        val toDay = if (yearMonthDay.day == 0) LocalDate.of(toYear, toMonth, 1)
-            .lengthOfMonth() else yearMonthDay.day
-        val fromLocalDate = LocalDate.of(fromYear, fromMonth, fromDay)
-        val toLocalDate = LocalDate.of(toYear, toMonth, toDay)
-        Log.d(TAG, "$fromLocalDate $toLocalDate")
-        Button(
-            modifier = modifier,
-            onClick = {
-                viewModel.getProgressTasks(
-                    fromLocalDate ?: LocalDate.now(),
-                    toLocalDate ?: LocalDate.now()
-                )
-            }) {
-            Text(text = "불러오기")
-        }
-
-
     }
 }
 
