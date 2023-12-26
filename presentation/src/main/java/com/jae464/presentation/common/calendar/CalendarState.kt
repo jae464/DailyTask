@@ -16,8 +16,8 @@ import java.time.LocalDate
 
 @Composable
 fun rememberCalendarState(
-    startDate: LocalDate? = null,
-    endDate: LocalDate? = null,
+    startDate: LocalDate = LocalDate.now().minusYears(1),
+    endDate: LocalDate = LocalDate.now(),
     selectState: CalendarSelectState = CalendarSelectState.DAY,
     selectedYear: Int = LocalDate.now().year,
     selectedMonth: Int = LocalDate.now().month.value,
