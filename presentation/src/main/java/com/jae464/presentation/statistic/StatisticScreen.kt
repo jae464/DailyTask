@@ -29,6 +29,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -53,6 +54,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -91,75 +93,94 @@ fun StatisticScreen(
         modifier = Modifier.windowInsetsPadding(
             WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
         ),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surface
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .background(Color.Transparent)
         ) {
             Column(
                 modifier = Modifier
-                    .padding(top = 16.dp)
-                    .verticalScroll(scrollState)
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .verticalScroll(scrollState),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .background(
+                            color = Color.White,
+                            shape = RoundedCornerShape(16.dp)
+                        )
                 ) {
-                    Text(
-                        text = "구간선택",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(16.dp),
-                        fontWeight = FontWeight.Bold
-                    )
-                    IconButton(onClick = {
-                        showCalendar = !showCalendar
-                    }) {
-                        if (showCalendar) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = "drop-down"
-                            )
-                        }
-                        else {
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropUp,
-                                contentDescription = "drop-up"
-                            )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "구간선택",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.padding(16.dp),
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(onClick = {
+                            showCalendar = !showCalendar
+                        }) {
+                            if (showCalendar) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = "drop-down"
+                                )
+                            }
+                            else {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropUp,
+                                    contentDescription = "drop-up"
+                                )
+                            }
                         }
                     }
-                }
-                CustomCalendar(
-                    calendarState = calendarState,
-                    showCalendar = showCalendar
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    LoadPieChartButton(
+                    CustomCalendar(
                         calendarState = calendarState,
-                        onClickLoad = { startDate, endDate ->
-                            if (startDate == null || endDate == null) {
-                                val msg = if (startDate == null) "시작" else "종료"
-                                Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT).show()
-                                return@LoadPieChartButton
+                        showCalendar = showCalendar
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = 16.dp, bottom = 16.dp, top = 16.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        LoadPieChartButton(
+                            calendarState = calendarState,
+                            onClickLoad = { startDate, endDate ->
+                                if (startDate == null || endDate == null) {
+                                    val msg = if (startDate == null) "시작" else "종료"
+                                    Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT).show()
+                                    return@LoadPieChartButton
+                                }
+                                viewModel.getProgressTasks(startDate, endDate)
                             }
-                            viewModel.getProgressTasks(startDate, endDate)
-                        }
+                        )
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .background(
+                            color = Color.White,
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                ) {
+                    StatisticTabLayout(
+                        progressTasks = progressTasks
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                StatisticTabLayout(
-                    progressTasks = progressTasks
-                )
-            }
 
+            }
         }
+
     }
 }
 

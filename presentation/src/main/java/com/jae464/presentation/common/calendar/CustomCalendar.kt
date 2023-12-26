@@ -76,11 +76,11 @@ fun CustomCalendar(
 
     Log.d("CustomCalendar", "calendarState changed : $calendarState")
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .background(
-                color = Color.White,
+                color = Color.Transparent,
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(8.dp)
@@ -428,7 +428,6 @@ fun DateCalendar(
             onChangedFocus = onChangedFocus,
         )
     }
-
 }
 
 @Composable
@@ -575,7 +574,7 @@ fun DateCalendarContent(
             Box(
                 modifier = Modifier
                     .background(
-                        color = if ((isSelected && !isOneSelected) || isBetween) MaterialTheme.colorScheme.secondaryContainer else Color.White,
+                        color = if ((isSelected && !isOneSelected) || isBetween) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
                         shape = if (isBetween) RectangleShape else if (isSelected && localDate == calendarState.startDate) RoundedCornerShape(
                             topStart = 32.dp,
                             bottomStart = 32.dp
