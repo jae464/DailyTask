@@ -187,6 +187,7 @@ fun StatisticScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StatisticTabLayout(
+    modifier: Modifier = Modifier,
     progressTasks: List<ProgressTask>
 ) {
     val pages = StatisticViewMode.values()
@@ -222,7 +223,7 @@ fun StatisticTabLayout(
         }
     }
 
-    HorizontalPager(state = pagerState) {
+    HorizontalPager(state = pagerState, modifier = Modifier.padding(bottom = 16.dp)) {
         when(pagerState.currentPage) {
             0 -> {
                 Text(text = "리스트 준비중")
