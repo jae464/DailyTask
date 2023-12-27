@@ -2,6 +2,7 @@ package com.jae464.presentation.statistic
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -89,6 +90,7 @@ fun StatisticScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Transparent)
+                .animateContentSize()
         ) {
             Column(
                 modifier = Modifier
@@ -162,6 +164,8 @@ fun StatisticScreen(
                             color = Color.White,
                             shape = RoundedCornerShape(16.dp)
                         )
+                        .wrapContentHeight()
+                        .animateContentSize()
                 ) {
                     StatisticTabLayout(
                         totalProgressTasksUiState = totalProgressTasksUiState
@@ -213,7 +217,7 @@ fun StatisticTabLayout(
         }
     }
 
-    HorizontalPager(state = pagerState, modifier = Modifier.padding(bottom = 16.dp).wrapContentHeight()) {
+    HorizontalPager(state = pagerState, modifier = Modifier.padding(bottom = 16.dp).wrapContentHeight().animateContentSize()) {
         when(pagerState.currentPage) {
             0 -> {
                 TotalProgressTaskList(totalProgressTasksUiState = totalProgressTasksUiState)
@@ -248,7 +252,7 @@ fun TotalProgressTaskList(
                 // 방법 1. HorizontalPager 사용
 //                HorizontalPager(
 //                    state = pagerState,
-//                    verticalAlignment = Alignment.Top
+//                    verticalAlignment = Alignment.Top,
 //                ) {
 //                    Column(
 //                        modifier = Modifier
