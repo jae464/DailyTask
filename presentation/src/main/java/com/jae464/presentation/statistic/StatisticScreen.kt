@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,19 +13,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -43,16 +40,23 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -79,6 +83,7 @@ fun StatisticScreen(
     val calendarState = rememberCalendarState()
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+    var toYOffset by remember { mutableStateOf(0) }
 
     Surface(
         modifier = Modifier.windowInsetsPadding(
@@ -105,6 +110,9 @@ fun StatisticScreen(
                             color = Color.White,
                             shape = RoundedCornerShape(16.dp)
                         )
+                        .onSizeChanged {
+                            toYOffset = it.height
+                        }
                 ) {
                     Row(
                         modifier = Modifier
@@ -126,8 +134,7 @@ fun StatisticScreen(
                                     imageVector = Icons.Default.ArrowDropDown,
                                     contentDescription = "drop-down"
                                 )
-                            }
-                            else {
+                            } else {
                                 Icon(
                                     imageVector = Icons.Default.ArrowDropUp,
                                     contentDescription = "drop-up"
@@ -150,11 +157,14 @@ fun StatisticScreen(
                             onClickLoad = { startDate, endDate ->
                                 if (startDate == null || endDate == null) {
                                     val msg = if (startDate == null) "시작" else "종료"
-                                    Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT)
+                                        .show()
                                     return@LoadPieChartButton
                                 }
                                 viewModel.getProgressTasks(startDate, endDate)
-                            }
+                            },
+                            scrollState = scrollState,
+                            toYOffset = toYOffset
                         )
                     }
                 }
@@ -164,11 +174,9 @@ fun StatisticScreen(
                             color = Color.White,
                             shape = RoundedCornerShape(16.dp)
                         )
-                        .wrapContentHeight()
-                        .animateContentSize()
                 ) {
                     StatisticTabLayout(
-                        totalProgressTasksUiState = totalProgressTasksUiState
+                        totalProgressTasksUiState = totalProgressTasksUiState,
                     )
                 }
 
@@ -182,7 +190,7 @@ fun StatisticScreen(
 @Composable
 fun StatisticTabLayout(
     modifier: Modifier = Modifier,
-    totalProgressTasksUiState: TotalProgressTasksUiState
+    totalProgressTasksUiState: TotalProgressTasksUiState,
 ) {
     val pages = StatisticViewMode.values()
     val pagerState = rememberPagerState(
@@ -190,14 +198,20 @@ fun StatisticTabLayout(
     )
 
     val scope = rememberCoroutineScope()
-    
+    val density = LocalDensity.current
+
     Text(
         text = "일정통계",
         style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier
+            .padding(16.dp)
+            .onPlaced {
+//                toYOffset = it.positionInWindow().y.toInt()
+//                Log.d(TAG, toYOffset.toString())
+            },
         fontWeight = FontWeight.Bold
     )
-    
+
     Spacer(modifier = Modifier.height(16.dp))
 
     TabRow(
@@ -212,16 +226,28 @@ fun StatisticTabLayout(
                         pagerState.scrollToPage(index)
                     }
                 },
-                text = { Text(text = page.title)}
+                text = { Text(text = page.title) }
             )
         }
     }
 
-    HorizontalPager(state = pagerState, modifier = Modifier.padding(bottom = 16.dp).wrapContentHeight().animateContentSize()) {
-        when(pagerState.currentPage) {
-            0 -> {
-                TotalProgressTaskList(totalProgressTasksUiState = totalProgressTasksUiState)
+    HorizontalPager(
+        state = pagerState, modifier = Modifier
+            .padding(bottom = 16.dp)
+            .onSizeChanged {
+                val size = density.run { DpSize(it.width.toDp(), it.height.toDp()) }
+                Log.d("StatisticScreen", "Tab Height : $size")
             }
+            .wrapContentHeight(),
+        verticalAlignment = Alignment.Top
+    ) {
+        when (it) {
+            0 -> {
+                TotalProgressTaskList(
+                    totalProgressTasksUiState = totalProgressTasksUiState,
+                )
+            }
+
             1 -> {
                 TotalProgressTaskPieChart(totalProgressTasksUiState = totalProgressTasksUiState)
             }
@@ -232,22 +258,22 @@ fun StatisticTabLayout(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TotalProgressTaskList(
-    totalProgressTasksUiState: TotalProgressTasksUiState
+    totalProgressTasksUiState: TotalProgressTasksUiState,
 ) {
-    when(totalProgressTasksUiState) {
+    when (totalProgressTasksUiState) {
         is TotalProgressTasksUiState.Success -> {
-            val filteredTotalProgressTask = totalProgressTasksUiState.totalProgressTasks.filter { it.totalProgressedTime > 60 }
+            val filteredTotalProgressTask =
+                totalProgressTasksUiState.totalProgressTasks.filter { it.totalProgressedTime > 60 }
             if (filteredTotalProgressTask.isEmpty()) {
                 Text(
                     text = "해당 기간에 진행된 일정이 없습니다.",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(16.dp)
                 )
-            }
-            else {
+            } else {
                 val chunkedTotalProgressTask = filteredTotalProgressTask.chunked(4)
                 val pagerState = rememberPagerState(
-                    pageCount = {chunkedTotalProgressTask.size}
+                    pageCount = { chunkedTotalProgressTask.size }
                 )
                 // 방법 1. HorizontalPager 사용
 //                HorizontalPager(
@@ -308,6 +334,7 @@ fun TotalProgressTaskList(
 //                }
             }
         }
+
         is TotalProgressTasksUiState.Empty -> {
             Text(
                 text = "해당 기간에 진행된 일정이 없습니다.",
@@ -315,6 +342,7 @@ fun TotalProgressTaskList(
                 modifier = Modifier.padding(16.dp)
             )
         }
+
         else -> {}
     }
 
@@ -347,8 +375,11 @@ fun TotalProgressTaskItem(
 @Composable
 fun LoadPieChartButton(
     calendarState: CalendarState,
-    onClickLoad: (LocalDate?, LocalDate?) -> Unit
+    onClickLoad: (LocalDate?, LocalDate?) -> Unit,
+    scrollState: ScrollState,
+    toYOffset: Int
 ) {
+    val scope = rememberCoroutineScope()
     Button(
         modifier = Modifier,
         onClick = {
@@ -357,6 +388,11 @@ fun LoadPieChartButton(
                 "startDate : ${calendarState.startDate} endDate : ${calendarState.endDate}"
             )
             onClickLoad(calendarState.startDate, calendarState.endDate)
+            scope.launch {
+                if (!scrollState.isScrollInProgress) {
+                    scrollState.animateScrollTo(toYOffset)
+                }
+            }
         }
     ) {
         Text(text = "불러오기")
@@ -387,18 +423,25 @@ fun TotalProgressTaskPieChart(totalProgressTasksUiState: TotalProgressTasksUiSta
         Color(0xFFFFE4C4)
     )
 
-    when(totalProgressTasksUiState) {
+    when (totalProgressTasksUiState) {
         is TotalProgressTasksUiState.Success -> {
-            val sumOfTotalProgressedTime = totalProgressTasksUiState.totalProgressTasks.sumOf { it.totalProgressedTime}.toFloat()
-            val pieChartSlices = totalProgressTasksUiState.totalProgressTasks.mapIndexed { index, totalProgressTaskUiModel ->
-                val title = if (totalProgressTaskUiModel.title.length >= 10) totalProgressTaskUiModel.title.substring(0, 10) + "..." else totalProgressTaskUiModel.title
-                val totalProgressedTime = totalProgressTaskUiModel.totalProgressedTime.toFloat()
-                PieChartData.Slice(
-                    title,
-                    (totalProgressedTime / sumOfTotalProgressedTime),
-                    colors[index % colors.size]
-                )
-            }.filter { it.value > 0f }
+            val sumOfTotalProgressedTime =
+                totalProgressTasksUiState.totalProgressTasks.sumOf { it.totalProgressedTime }
+                    .toFloat()
+            val pieChartSlices =
+                totalProgressTasksUiState.totalProgressTasks.mapIndexed { index, totalProgressTaskUiModel ->
+                    val title =
+                        if (totalProgressTaskUiModel.title.length >= 10) totalProgressTaskUiModel.title.substring(
+                            0,
+                            10
+                        ) + "..." else totalProgressTaskUiModel.title
+                    val totalProgressedTime = totalProgressTaskUiModel.totalProgressedTime.toFloat()
+                    PieChartData.Slice(
+                        title,
+                        (totalProgressedTime / sumOfTotalProgressedTime),
+                        colors[index % colors.size]
+                    )
+                }.filter { it.value > 0f }
 
             Log.d(TAG, "pieChartSlices : $pieChartSlices")
 
@@ -417,12 +460,15 @@ fun TotalProgressTaskPieChart(totalProgressTasksUiState: TotalProgressTasksUiSta
                 )
             }
         }
+
         is TotalProgressTasksUiState.Empty -> {
-            Text(text = "해당 기간에 진행된 일정이 없습니다.",
+            Text(
+                text = "해당 기간에 진행된 일정이 없습니다.",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(16.dp)
-                )
+            )
         }
+
         else -> {}
     }
 }
