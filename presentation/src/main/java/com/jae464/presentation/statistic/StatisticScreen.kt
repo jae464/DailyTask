@@ -28,6 +28,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
@@ -229,17 +230,33 @@ fun TotalProgressTaskList(
 ) {
     when(totalProgressTasksUiState) {
         is TotalProgressTasksUiState.Success -> {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-                    .heightIn(max = 400.dp)
-            ) {
-                items(
-                    totalProgressTasksUiState.totalProgressTasks,
-                    key = {it.title}
-                ) { totalProgressTask ->
-                    TotalProgressTaskItem(totalProgressTaskUiModel = totalProgressTask)
+            val filteredTotalProgressTask = totalProgressTasksUiState.totalProgressTasks.filter { it.totalProgressedTime > 60 }
+            if (filteredTotalProgressTask.isEmpty()) {
+                Text(
+                    text = "해당 기간에 진행된 일정이 없습니다.",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            else {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(
+                        totalProgressTasksUiState.totalProgressTasks.filter { it.totalProgressedTime > 60 },
+                        key = {it.title}
+                    ) { totalProgressTask ->
+                        TotalProgressTaskItem(totalProgressTaskUiModel = totalProgressTask)
+                        Divider(
+                            modifier = Modifier.padding(top = 16.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            thickness = 1.dp
+                        )
+                    }
                 }
             }
         }
@@ -260,9 +277,22 @@ fun TotalProgressTaskItem(
     totalProgressTaskUiModel: TotalProgressTaskUiModel
 ) {
     Column {
-        Text(text = totalProgressTaskUiModel.category.name)
-        Text(text = totalProgressTaskUiModel.title)
-        Text(text = "진행한 시간 : ${totalProgressTaskUiModel.totalProgressedTimeStr}")
+        Text(
+            text = totalProgressTaskUiModel.category.name,
+            color = MaterialTheme.colorScheme.onSecondary,
+            style = MaterialTheme.typography.bodySmall
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = totalProgressTaskUiModel.title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "총 진행한 시간 : ${totalProgressTaskUiModel.totalProgressedTimeStr}",
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 
@@ -308,20 +338,6 @@ fun TotalProgressTaskPieChart(totalProgressTasksUiState: TotalProgressTasksUiSta
         Color(0xFFADD8E6),
         Color(0xFFFFE4C4)
     )
-
-//    val group = progressTasks.groupBy { it.title }
-//    val totalProgressedTime = progressTasks.sumOf { it.progressedTime }.toFloat() // 전체 진행된 시간
-//
-//    val pieChartSlices = group.keys.mapIndexed { index, s ->
-//        val title = if (s.length >= 10) s.substring(0, 10) + "..." else s
-//        val progressedTime = group[s]?.sumOf { it.progressedTime }?.toFloat() ?: 0f
-//
-//        PieChartData.Slice(
-//            title,
-//            (progressedTime / totalProgressedTime),
-//            colors[index % colors.size]
-//        )
-//    }.filter { it.value > 0f }
 
     when(totalProgressTasksUiState) {
         is TotalProgressTasksUiState.Success -> {
