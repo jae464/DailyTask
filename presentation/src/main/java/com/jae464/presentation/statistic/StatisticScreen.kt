@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -212,7 +213,7 @@ fun StatisticTabLayout(
         }
     }
 
-    HorizontalPager(state = pagerState, modifier = Modifier.padding(bottom = 16.dp)) {
+    HorizontalPager(state = pagerState, modifier = Modifier.padding(bottom = 16.dp).wrapContentHeight()) {
         when(pagerState.currentPage) {
             0 -> {
                 TotalProgressTaskList(totalProgressTasksUiState = totalProgressTasksUiState)
@@ -224,6 +225,7 @@ fun StatisticTabLayout(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TotalProgressTaskList(
     totalProgressTasksUiState: TotalProgressTasksUiState
@@ -239,18 +241,41 @@ fun TotalProgressTaskList(
                 )
             }
             else {
-                LazyColumn(
+                val chunkedTotalProgressTask = filteredTotalProgressTask.chunked(4)
+                val pagerState = rememberPagerState(
+                    pageCount = {chunkedTotalProgressTask.size}
+                )
+                // 방법 1. HorizontalPager 사용
+//                HorizontalPager(
+//                    state = pagerState,
+//                    verticalAlignment = Alignment.Top
+//                ) {
+//                    Column(
+//                        modifier = Modifier
+//                            .padding(16.dp)
+//                            .fillMaxWidth(),
+//                        verticalArrangement = Arrangement.spacedBy(16.dp)
+//                    ) {
+//                        chunkedTotalProgressTask[it].forEach { totalProgressTaskUiModel ->
+//                            TotalProgressTaskItem(totalProgressTaskUiModel = totalProgressTaskUiModel)
+//                            Divider(
+//                                modifier = Modifier.padding(top = 16.dp),
+//                                color = MaterialTheme.colorScheme.surface,
+//                                thickness = 1.dp
+//                            )
+//                        }
+//                    }
+//                }
+
+                // 방법 2. Column 사용
+                Column(
                     modifier = Modifier
                         .padding(16.dp)
-                        .fillMaxWidth()
-                        .heightIn(max = 400.dp),
+                        .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(
-                        totalProgressTasksUiState.totalProgressTasks.filter { it.totalProgressedTime > 60 },
-                        key = {it.title}
-                    ) { totalProgressTask ->
-                        TotalProgressTaskItem(totalProgressTaskUiModel = totalProgressTask)
+                    filteredTotalProgressTask.forEach {
+                        TotalProgressTaskItem(totalProgressTaskUiModel = it)
                         Divider(
                             modifier = Modifier.padding(top = 16.dp),
                             color = MaterialTheme.colorScheme.surface,
@@ -258,6 +283,25 @@ fun TotalProgressTaskList(
                         )
                     }
                 }
+//                LazyColumn(
+//                    modifier = Modifier
+//                        .padding(16.dp)
+//                        .fillMaxWidth()
+//                        .wrapContentHeight(),
+//                    verticalArrangement = Arrangement.spacedBy(16.dp)
+//                ) {
+//                    items(
+//                        totalProgressTasksUiState.totalProgressTasks.filter { it.totalProgressedTime > 60 },
+//                        key = {it.title}
+//                    ) { totalProgressTask ->
+//                        TotalProgressTaskItem(totalProgressTaskUiModel = totalProgressTask)
+//                        Divider(
+//                            modifier = Modifier.padding(top = 16.dp),
+//                            color = MaterialTheme.colorScheme.surface,
+//                            thickness = 1.dp
+//                        )
+//                    }
+//                }
             }
         }
         is TotalProgressTasksUiState.Empty -> {
@@ -276,7 +320,7 @@ fun TotalProgressTaskList(
 fun TotalProgressTaskItem(
     totalProgressTaskUiModel: TotalProgressTaskUiModel
 ) {
-    Column {
+    Column(modifier = Modifier.wrapContentHeight()) {
         Text(
             text = totalProgressTaskUiModel.category.name,
             color = MaterialTheme.colorScheme.onSecondary,
