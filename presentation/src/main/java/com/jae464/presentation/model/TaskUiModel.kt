@@ -17,7 +17,6 @@ data class TaskUiModel(
 ) {
     val header = taskType.taskName + " / " + category
     val progressTimeStr = "%2d시간 %02d분".format(progressTime / 3600, progressTime % 3600 / 60)
-//    val progressTime = "%2d시간 %02d분".format(timeHour, timeMinute)
     val alarmTime = "%2d시 %02d분".format(alarmHour, alarmMinute)
 }
 
