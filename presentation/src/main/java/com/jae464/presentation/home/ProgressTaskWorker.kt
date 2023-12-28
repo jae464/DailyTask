@@ -13,6 +13,8 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import com.jae464.domain.repository.ProgressTaskRepository
+import com.jae464.domain.usecase.progresstask.UpdateProgressedTimeUseCase
 import com.jae464.presentation.MainActivity
 import com.jae464.presentation.R
 import dagger.assisted.Assisted
@@ -22,7 +24,8 @@ import kotlinx.coroutines.delay
 @HiltWorker
 class ProgressTaskWorker @AssistedInject constructor(
     @Assisted private val context: Context,
-    @Assisted params: WorkerParameters
+    @Assisted params: WorkerParameters,
+    private val updateProgressedTimeUseCase: UpdateProgressedTimeUseCase
 ): CoroutineWorker(context, params){
 
     private val progressingTaskManager = ProgressingTaskManager.getInstance()
@@ -34,8 +37,14 @@ class ProgressTaskWorker @AssistedInject constructor(
                 if (progressingTaskManager.progressingState.value is ProgressingState.Ready) {
                     break
                 }
-                delay(1000)
-                progressingTaskManager.tick()
+                else if (progressingTaskManager.progressingState.value is ProgressingState.Progressing) {
+                    val progressingTask = (progressingTaskManager.progressingState.value as ProgressingState.Progressing).progressTask
+                    if (progressingTask.progressedTime % 10 == 0) {
+                        updateProgressedTimeUseCase(progressingTask.id, progressingTask.progressedTime)
+                    }
+                    delay(1000)
+                    progressingTaskManager.tick()
+                }
             }
             Result.success()
         } else {
