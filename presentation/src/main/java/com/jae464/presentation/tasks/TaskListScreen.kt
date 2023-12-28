@@ -90,6 +90,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
 import com.jae464.domain.model.Category
+import com.jae464.presentation.common.CategoryFilterChips
 import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.presentation.model.TaskUiModel
@@ -363,52 +364,51 @@ fun TaskList(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CategoryFilterChips(
-    categories: List<Category>,
-    filteredCategories: List<Category>,
-    onChangedFilteredCategories: (List<Category>) -> Unit
-) {
-    LazyRow(
-        modifier = Modifier
-            .padding(start = 8.dp, end = 8.dp)
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        items(
-            categories,
-            key = { it.id }
-        ) {
-            RoundedFilterChip(
-                text = it.name,
-                checked = filteredCategories.contains(it),
-                onCheckedChanged = { checked ->
-                    if (checked) {
-                        onChangedFilteredCategories(filteredCategories + listOf(it))
-                    } else {
-                        onChangedFilteredCategories(filteredCategories.filter { category -> category != it })
-                    }
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    containerColor = Color.White,
-                    labelColor = MaterialTheme.colorScheme.onSecondary,
-                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    disabledContainerColor = MaterialTheme.colorScheme.onSecondary,
-                    disabledLabelColor = MaterialTheme.colorScheme.secondary
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    borderColor = MaterialTheme.colorScheme.primary,
-                    disabledBorderColor = MaterialTheme.colorScheme.background,
-                    disabledSelectedBorderColor = MaterialTheme.colorScheme.onSecondary
-                )
-
-            )
-        }
-    }
-}
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun CategoryFilterChips(
+//    categories: List<Category>,
+//    filteredCategories: List<Category>,
+//    onChangedFilteredCategories: (List<Category>) -> Unit
+//) {
+//    LazyRow(
+//        modifier = Modifier
+//            .padding(start = 8.dp, end = 8.dp)
+//            .fillMaxWidth()
+//            .wrapContentHeight(),
+//        horizontalArrangement = Arrangement.spacedBy(16.dp),
+//    ) {
+//        items(
+//            categories,
+//            key = { it.id }
+//        ) {
+//            RoundedFilterChip(
+//                text = it.name,
+//                checked = filteredCategories.contains(it),
+//                onCheckedChanged = { checked ->
+//                    if (checked) {
+//                        onChangedFilteredCategories(filteredCategories + listOf(it))
+//                    } else {
+//                        onChangedFilteredCategories(filteredCategories.filter { category -> category != it })
+//                    }
+//                },
+//                colors = FilterChipDefaults.filterChipColors(
+//                    containerColor = Color.White,
+//                    labelColor = MaterialTheme.colorScheme.onSecondary,
+//                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+//                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+//                    disabledContainerColor = MaterialTheme.colorScheme.onSecondary,
+//                    disabledLabelColor = MaterialTheme.colorScheme.secondary
+//                ),
+//                border = FilterChipDefaults.filterChipBorder(
+//                    borderColor = MaterialTheme.colorScheme.primary,
+//                    disabledBorderColor = MaterialTheme.colorScheme.background,
+//                    disabledSelectedBorderColor = MaterialTheme.colorScheme.onSecondary
+//                )
+//            )
+//        }
+//    }
+//}
 
 
 @OptIn(ExperimentalMaterialApi::class)

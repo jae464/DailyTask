@@ -42,7 +42,7 @@ interface ProgressTaskDao {
                     THEN task_id IN
                         (
                             SELECT id FROM tasks
-                            WHERE category_id = :filterCategoryIds
+                            WHERE category_id IN (:filterCategoryIds)
                         )
                     ELSE 1
                 END
