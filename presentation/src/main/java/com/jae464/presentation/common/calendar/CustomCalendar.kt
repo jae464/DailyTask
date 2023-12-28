@@ -592,7 +592,8 @@ fun DateCalendarContent(
                     text = it,
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.align(Alignment.Center),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = if (it == "토") MaterialTheme.colorScheme.primary else if (it == "일") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                 )
             }
         }
