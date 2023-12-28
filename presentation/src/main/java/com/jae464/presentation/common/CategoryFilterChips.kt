@@ -18,13 +18,14 @@ import com.jae464.domain.model.Category
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryFilterChips(
+    modifier: Modifier = Modifier,
     categories: List<Category>,
     filteredCategories: List<Category>,
     onChangedFilteredCategories: (List<Category>) -> Unit
 ) {
     LazyRow(
-        modifier = Modifier
-            .padding(start = 8.dp, end = 8.dp)
+        modifier = modifier
+//            .padding(start = 8.dp, end = 8.dp)
             .fillMaxWidth()
             .wrapContentHeight(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),

@@ -198,6 +198,7 @@ fun TaskListScreen(
                             )
                         }
                         CategoryFilterChips(
+                            modifier = Modifier.padding(horizontal = 8.dp),
                             categories = categories,
                             filteredCategories = filteredCategories,
                             onChangedFilteredCategories = viewModel::filterCategories

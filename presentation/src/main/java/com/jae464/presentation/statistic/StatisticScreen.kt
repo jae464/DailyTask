@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -85,6 +86,7 @@ import com.jae464.presentation.common.calendar.CustomCalendar
 import com.jae464.presentation.common.calendar.rememberCalendarState
 import com.jae464.presentation.statistic.model.StatisticViewMode
 import com.jae464.presentation.statistic.model.TotalProgressTaskUiModel
+import com.jae464.presentation.utils.noRippleClickable
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -148,7 +150,7 @@ fun StatisticScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .wrapContentHeight()
-                            .clickable {
+                            .noRippleClickable {
                                 showCalendar = !showCalendar
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -194,8 +196,6 @@ fun StatisticScreen(
                     showFilterOption = showFilterOption,
                     onChangedShowFilterOption = {
                         showFilterOption = it
-//                        if (showFilterOption) {
-//                        }
                         scope.launch {
                             scrollState.animateScrollTo(calendarHeight)
                         }
@@ -257,12 +257,13 @@ fun FilterOption(
                 onChangedSize(it.height)
             }
             .fillMaxWidth()
-            .animateContentSize()
+            .animateContentSize(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable {
+                .noRippleClickable {
                     onChangedShowFilterOption(!showFilterOption)
                 },
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -300,12 +301,12 @@ fun FilterOption(
                     fontWeight = FontWeight.Bold
                 )
                 CategoryFilterChips(
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     categories = categories,
                     filteredCategories = filteredCategories,
                     onChangedFilteredCategories = onChangedFilteredCategories
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
             Column {
                 Text(
                     text = "정기 / 비정기",
@@ -352,7 +353,20 @@ fun FilterOption(
                                 } else {
                                     onChangedFilteredDayOfWeeks(filteredDayOfWeeks.filter { day -> day != dayOfWeek })
                                 }
-                            }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = Color.White,
+                                labelColor = MaterialTheme.colorScheme.onSecondary,
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                disabledContainerColor = MaterialTheme.colorScheme.onSecondary,
+                                disabledLabelColor = MaterialTheme.colorScheme.secondary
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                borderColor = MaterialTheme.colorScheme.primary,
+                                disabledBorderColor = MaterialTheme.colorScheme.background,
+                                disabledSelectedBorderColor = MaterialTheme.colorScheme.onSecondary
+                            )
                         )
                     }
                 }
@@ -615,8 +629,12 @@ fun LoadPieChartButton(
     toYOffset: Int
 ) {
     val scope = rememberCoroutineScope()
+    var buttonHeight by remember { mutableIntStateOf(0) }
     Button(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth()
+            .onSizeChanged {
+               buttonHeight = it.height
+            },
         onClick = {
             Log.d(
                 "StatisticScreen",
@@ -625,7 +643,7 @@ fun LoadPieChartButton(
             onClickLoad(calendarState.startDate, calendarState.endDate)
             scope.launch {
                 if (!scrollState.isScrollInProgress) {
-                    scrollState.animateScrollTo(toYOffset)
+                    scrollState.animateScrollTo(toYOffset + buttonHeight)
                 }
             }
         }
