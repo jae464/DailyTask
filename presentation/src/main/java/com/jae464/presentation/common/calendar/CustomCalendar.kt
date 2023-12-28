@@ -66,7 +66,6 @@ import java.time.LocalDate
 fun CustomCalendar(
     modifier: Modifier = Modifier,
     calendarState: CalendarState = rememberCalendarState(),
-    showCalendar: Boolean = true
 ) {
     var currentFocus by remember { mutableStateOf(CurrentFocus.START) }
     var beforePage by remember { mutableStateOf(50) }
@@ -87,70 +86,69 @@ fun CustomCalendar(
             .padding(8.dp)
             .animateContentSize()
     ) {
-        if (showCalendar) {
-            DateSelector(
-                calendarState = calendarState,
-                currentFocus = currentFocus,
-                onChangedFocus = { currentFocus = it }
-            )
-            CalendarHeader(
-                calendarState = calendarState,
-                onChangedCalendarSelectState = { calendarSelectState ->
-                    calendarState.selectState = calendarSelectState
-                },
-                pagerState = pagerState
-            )
-            when (calendarState.selectState) {
-                CalendarSelectState.YEAR -> {
-                    YearCalendar(
-                        calendarState = calendarState,
-                        onChangedYear = {
-                            calendarState.selectedYear = it
-                            calendarState.selectState = CalendarSelectState.MONTH
-                        }
-                    )
-                }
-
-                CalendarSelectState.MONTH -> {
-                    MonthCalendar(
-                        calendarState = calendarState,
-                        onChangedMonth = {
-                            calendarState.selectedMonth = it
-                            calendarState.selectState = CalendarSelectState.DAY
-                        }
-                    )
-                }
-
-                CalendarSelectState.DAY -> {
-                    LaunchedEffect(pagerState) {
-                        snapshotFlow { pagerState.currentPage }.collect { page ->
-                            Log.d("CustomCalendar", "pagerState Changed Logic Start")
-                            if (page > beforePage) {
-                                if (calendarState.nextMonth == 1) {
-                                    calendarState.selectedYear = calendarState.selectedYear + 1
-                                }
-                                calendarState.selectedMonth = calendarState.nextMonth
-                                beforePage = page
-                            } else if (page < beforePage) {
-                                if (calendarState.prevMonth == 12) {
-                                    calendarState.selectedYear = calendarState.selectedYear - 1
-                                }
-                                calendarState.selectedMonth = calendarState.prevMonth
-                                beforePage = page
-                            }
-                            Log.d("CustomCalendar", "pagerState Changed Logic End")
-
-                        }
+        DateSelector(
+            calendarState = calendarState,
+            currentFocus = currentFocus,
+            onChangedFocus = { currentFocus = it }
+        )
+        CalendarHeader(
+            calendarState = calendarState,
+            onChangedCalendarSelectState = { calendarSelectState ->
+                calendarState.selectState = calendarSelectState
+            },
+            pagerState = pagerState
+        )
+        when (calendarState.selectState) {
+            CalendarSelectState.YEAR -> {
+                YearCalendar(
+                    calendarState = calendarState,
+                    onChangedYear = {
+                        calendarState.selectedYear = it
+                        calendarState.selectState = CalendarSelectState.MONTH
                     }
-                    DateCalendar(
-                        modifier = modifier,
-                        calendarState = calendarState,
-                        currentFocus = currentFocus,
-                        onChangedFocus = { currentFocus = it },
-                        pagerState = pagerState
-                    )
-                }
+                )
             }
+
+            CalendarSelectState.MONTH -> {
+                MonthCalendar(
+                    calendarState = calendarState,
+                    onChangedMonth = {
+                        calendarState.selectedMonth = it
+                        calendarState.selectState = CalendarSelectState.DAY
+                    }
+                )
+            }
+
+            CalendarSelectState.DAY -> {
+                LaunchedEffect(pagerState) {
+                    snapshotFlow { pagerState.currentPage }.collect { page ->
+                        Log.d("CustomCalendar", "pagerState Changed Logic Start")
+                        if (page > beforePage) {
+                            if (calendarState.nextMonth == 1) {
+                                calendarState.selectedYear = calendarState.selectedYear + 1
+                            }
+                            calendarState.selectedMonth = calendarState.nextMonth
+                            beforePage = page
+                        } else if (page < beforePage) {
+                            if (calendarState.prevMonth == 12) {
+                                calendarState.selectedYear = calendarState.selectedYear - 1
+                            }
+                            calendarState.selectedMonth = calendarState.prevMonth
+                            beforePage = page
+                        }
+                        Log.d("CustomCalendar", "pagerState Changed Logic End")
+
+                    }
+                }
+                DateCalendar(
+                    modifier = modifier,
+                    calendarState = calendarState,
+                    currentFocus = currentFocus,
+                    onChangedFocus = { currentFocus = it },
+                    pagerState = pagerState
+                )
+            }
+
         }
     }
 }
