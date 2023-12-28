@@ -87,12 +87,12 @@ fun CustomCalendar(
             .padding(8.dp)
             .animateContentSize()
     ) {
-        DateSelector(
-            calendarState = calendarState,
-            currentFocus = currentFocus,
-            onChangedFocus = { currentFocus = it }
-        )
         if (showCalendar) {
+            DateSelector(
+                calendarState = calendarState,
+                currentFocus = currentFocus,
+                onChangedFocus = { currentFocus = it }
+            )
             CalendarHeader(
                 calendarState = calendarState,
                 onChangedCalendarSelectState = { calendarSelectState ->
