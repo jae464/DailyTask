@@ -20,9 +20,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -97,10 +99,10 @@ fun StatisticScreen(
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
     val filteredTaskType by viewModel.filteredTaskType.collectAsStateWithLifecycle()
     val filteredDayOfWeeks by viewModel.filteredDayOfWeeks.collectAsStateWithLifecycle()
-    
+
     val calendarState = rememberCalendarState()
     val context = LocalContext.current
-    
+
     val scrollState = rememberScrollState()
     var calendarHeight by remember { mutableIntStateOf(0) }
     var filterHeight by remember { mutableIntStateOf(0) }
@@ -188,14 +190,14 @@ fun StatisticScreen(
                     onChangedFilteredTaskType = viewModel::filterTaskType,
                     filteredDayOfWeeks = filteredDayOfWeeks,
                     onChangedFilteredDayOfWeeks = viewModel::filterDayOfWeeks,
-                    onChangedSize = {filterHeight = it},
+                    onChangedSize = { filterHeight = it },
                     showFilterOption = showFilterOption,
                     onChangedShowFilterOption = {
                         showFilterOption = it
-                        if (showFilterOption) {
-                            scope.launch {
-                                scrollState.animateScrollTo(calendarHeight)
-                            }
+//                        if (showFilterOption) {
+//                        }
+                        scope.launch {
+                            scrollState.animateScrollTo(calendarHeight)
                         }
                     },
                 )
@@ -245,7 +247,6 @@ fun FilterOption(
     onChangedShowFilterOption: (Boolean) -> Unit = {},
 ) {
     val dayOfWeeks = DayOfWeek.values()
-    val scope = rememberCoroutineScope()
     Column(
         modifier = Modifier
             .background(
@@ -292,9 +293,12 @@ fun FilterOption(
             }
         }
         if (showFilterOption) {
-            // TODO 카테고리 필터링
             Column {
-                Text(text = "카테고리", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), fontWeight = FontWeight.Bold)
+                Text(
+                    text = "카테고리",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    fontWeight = FontWeight.Bold
+                )
                 CategoryFilterChips(
                     categories = categories,
                     filteredCategories = filteredCategories,
@@ -302,9 +306,12 @@ fun FilterOption(
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            // TODO 정기, 비정기 필터링
             Column {
-                Text(text = "정기 / 비정기", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), fontWeight = FontWeight.Bold)
+                Text(
+                    text = "정기 / 비정기",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    fontWeight = FontWeight.Bold
+                )
                 Row(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
@@ -313,14 +320,19 @@ fun FilterOption(
                             text = it.taskName,
                             selected = it == filteredTaskType,
                             onOptionSelected = onChangedFilteredTaskType,
-                            item = it)
+                            item = it
+                        )
                     }
                 }
             }
 
             // TODO 요일 필터링
             Column {
-                Text(text = "요일", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), fontWeight = FontWeight.Bold)
+                Text(
+                    text = "요일",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    fontWeight = FontWeight.Bold
+                )
                 LazyRow(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -332,7 +344,11 @@ fun FilterOption(
                             checked = filteredDayOfWeeks.contains(dayOfWeek),
                             onCheckedChanged = { checked ->
                                 if (checked) {
-                                    onChangedFilteredDayOfWeeks((filteredDayOfWeeks + listOf(dayOfWeek)).sorted())
+                                    onChangedFilteredDayOfWeeks(
+                                        (filteredDayOfWeeks + listOf(
+                                            dayOfWeek
+                                        )).sorted()
+                                    )
                                 } else {
                                     onChangedFilteredDayOfWeeks(filteredDayOfWeeks.filter { day -> day != dayOfWeek })
                                 }
@@ -346,6 +362,7 @@ fun FilterOption(
 
     }
 }
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StatisticTabLayout(
@@ -462,9 +479,10 @@ fun TotalProgressTaskList(
                     modifier = Modifier
                         .padding(16.dp)
                         .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+//                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     filteredTotalProgressTask.forEach {
+                        Spacer(modifier = Modifier.height(16.dp))
                         TotalProgressTaskItem(totalProgressTaskUiModel = it)
                         Divider(
                             modifier = Modifier.padding(top = 16.dp),
@@ -512,23 +530,80 @@ fun TotalProgressTaskList(
 fun TotalProgressTaskItem(
     totalProgressTaskUiModel: TotalProgressTaskUiModel
 ) {
-    Column(modifier = Modifier.wrapContentHeight()) {
-        Text(
-            text = totalProgressTaskUiModel.category.name,
-            color = MaterialTheme.colorScheme.onSecondary,
-            style = MaterialTheme.typography.bodySmall
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = totalProgressTaskUiModel.title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "총 진행한 시간 : ${totalProgressTaskUiModel.totalProgressedTimeStr}",
-            style = MaterialTheme.typography.bodyMedium
-        )
+    val sumOfTotalTime = totalProgressTaskUiModel.totalTime.toFloat()
+    val sumOfProgressedTime = totalProgressTaskUiModel.totalProgressedTime.toFloat()
+    val sumOfNotProgressedTime = (sumOfTotalTime - sumOfProgressedTime).coerceAtLeast(0f)
+
+    val progressedTimeSlice = PieChartData.Slice(
+        "",
+        (sumOfProgressedTime / sumOfTotalTime),
+        MaterialTheme.colorScheme.tertiary
+    )
+
+    val notProgressedTimeSlice = PieChartData.Slice(
+        "",
+        (sumOfNotProgressedTime / sumOfTotalTime),
+        MaterialTheme.colorScheme.error
+    )
+
+    val pieChartData = PieChartData(
+        slices = listOf(progressedTimeSlice, notProgressedTimeSlice),
+        plotType = PlotType.Pie
+    )
+
+    val pieChartConfig = PieChartConfig(
+        sliceLabelTextColor = Color(0xFF333333),
+        isAnimationEnable = false,
+        showSliceLabels = false,
+        activeSliceAlpha = 0.5f,
+        animationDuration = 1500,
+        backgroundColor = Color.White
+    )
+
+    Column(
+        modifier = Modifier
+            .wrapContentHeight()
+            .fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = totalProgressTaskUiModel.category.name,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = totalProgressTaskUiModel.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "총 진행한 시간 : ${totalProgressTaskUiModel.totalProgressedTimeStr}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                PieChart(
+                    modifier = Modifier
+                        .size(56.dp),
+                    pieChartData = pieChartData,
+                    pieChartConfig = pieChartConfig
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "${((sumOfProgressedTime / sumOfTotalTime) * 100).toInt()}%",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
     }
 }
 
@@ -567,7 +642,7 @@ fun TotalProgressTaskPieChart(totalProgressTasksUiState: TotalProgressTasksUiSta
         showSliceLabels = true,
         activeSliceAlpha = 0.5f,
         animationDuration = 1500,
-        backgroundColor = MaterialTheme.colorScheme.background
+        backgroundColor = Color.White
     )
 
     val colors = listOf(
