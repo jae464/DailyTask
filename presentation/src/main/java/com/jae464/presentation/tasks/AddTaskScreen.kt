@@ -32,6 +32,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Save
@@ -151,7 +152,7 @@ fun AddTaskScreen(
 
     Log.d(TAG, "AddTaskScreen Rendered()")
     Scaffold(
-        containerColor = Color.Transparent,
+        containerColor = Color.White,
         modifier = Modifier
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
@@ -233,10 +234,9 @@ fun AddTaskScreen(
                 onMemoChanged = { newMemo -> memo = newMemo },
                 onCategoryChanged = { category -> selectedCategory = category },
                 onAddCategoryClick = { categoryName ->
-                    if (categories.firstOrNull { it.name == categoryName}.isNotNull()) {
+                    if (categories.firstOrNull { it.name == categoryName }.isNotNull()) {
                         Toast.makeText(context, "이미 존재하는 카테고리입니다.", Toast.LENGTH_SHORT).show()
-                    }
-                    else {
+                    } else {
                         viewModel.addCategory(categoryName)
                     }
                 }
@@ -402,18 +402,14 @@ fun AddTaskBody(
                     selectedItem = selectedCategory,
                     onItemSelected = onCategoryChanged
                 )
-                IconButton(
-                    onClick = {
-                    showAddCategoryDialog = true
+                Text(
+                    text = "새 카테고리",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.clickable {
+                        showAddCategoryDialog = true
                     },
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(imageVector = Icons.Rounded.Add, contentDescription = "add_category")
-                }
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -466,7 +462,9 @@ fun AddTaskBody(
         Spacer(modifier = Modifier.height(16.dp))
     }
     if (showAddCategoryDialog) {
-        AddCategoryDialog(onSaveCategory = onAddCategoryClick, onChangedShowDialog = {showAddCategoryDialog = it})
+        AddCategoryDialog(
+            onSaveCategory = onAddCategoryClick,
+            onChangedShowDialog = { showAddCategoryDialog = it })
     }
 }
 
@@ -550,13 +548,14 @@ fun RoundedCategorySpinner(
         selectedItem = selectedItem,
         onItemSelected = onItemSelected,
         selectedItemFactory = { modifier, item ->
+            val title = if (item.name.length > 5) item.name.substring(0, 5) + "..." else item.name
             Row(
                 modifier = modifier.wrapContentSize(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = item.name,
+                    text = title,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                 )
