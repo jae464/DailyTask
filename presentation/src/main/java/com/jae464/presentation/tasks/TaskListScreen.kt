@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -346,6 +347,7 @@ fun TaskList(
         LazyColumn(
             state = state,
             verticalArrangement = Arrangement.spacedBy(24.dp),
+            modifier = Modifier.animateContentSize()
         ) {
             items(
                 taskListUiState.taskUiModels,

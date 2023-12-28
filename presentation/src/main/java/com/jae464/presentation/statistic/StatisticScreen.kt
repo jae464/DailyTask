@@ -49,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -101,13 +102,11 @@ fun StatisticScreen(
     val context = LocalContext.current
     
     val scrollState = rememberScrollState()
-    var toYOffset by remember { mutableStateOf(0) }
-    var calendarHeight by remember { mutableStateOf(0) }
-    var filterHeight by remember { mutableStateOf(0) }
+    var calendarHeight by remember { mutableIntStateOf(0) }
+    var filterHeight by remember { mutableIntStateOf(0) }
     var showCalendar by remember { mutableStateOf(true) }
     var showFilterOption by remember { mutableStateOf(false) }
 
-//    val filteredProgressTasks by viewModel.filteredProgressTasks.collectAsStateWithLifecycle()
 //
 //    Log.d(TAG, filteredProgressTasks.toString())
 
@@ -139,10 +138,12 @@ fun StatisticScreen(
                         .onSizeChanged {
                             calendarHeight = it.height
                         }
+                        .animateContentSize()
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .wrapContentHeight()
                             .clickable {
                                 showCalendar = !showCalendar
                             },
@@ -171,31 +172,11 @@ fun StatisticScreen(
                             }
                         }
                     }
-                    CustomCalendar(
-                        calendarState = calendarState,
-                        showCalendar = showCalendar
-                    )
-//                    Row(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(end = 16.dp, bottom = 16.dp, top = 16.dp),
-//                        horizontalArrangement = Arrangement.End
-//                    ) {
-//                        LoadPieChartButton(
-//                            calendarState = calendarState,
-//                            onClickLoad = { startDate, endDate ->
-//                                if (startDate == null || endDate == null) {
-//                                    val msg = if (startDate == null) "시작" else "종료"
-//                                    Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT)
-//                                        .show()
-//                                    return@LoadPieChartButton
-//                                }
-//                                viewModel.getProgressTasks2(startDate, endDate)
-//                            },
-//                            scrollState = scrollState,
-//                            toYOffset = calendarHeight + filterHeight
-//                        )
-//                    }
+                    if (showCalendar) {
+                        CustomCalendar(
+                            calendarState = calendarState,
+                        )
+                    }
                 }
                 FilterOption(
                     categories = categories,
