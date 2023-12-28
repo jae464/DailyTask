@@ -349,7 +349,7 @@ fun YearCalendar(
     onChangedYear: (Int) -> Unit
 ) {
     val years = mutableListOf<Int>()
-    for (i in LocalDate.now().year - 10..LocalDate.now().year) {
+    for (i in LocalDate.now().year - 11..LocalDate.now().year) {
         years.add(i)
     }
     LazyVerticalGrid(
@@ -650,7 +650,6 @@ fun DateCalendarContent(
                         )
                         .wrapContentHeight()
                         .width(40.dp)
-//                        .height(40.dp)
                         .padding(8.dp)
                         .align(Alignment.Center),
                     textAlign = TextAlign.Center,
