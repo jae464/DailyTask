@@ -85,6 +85,10 @@ fun StatisticScreen(
     val scrollState = rememberScrollState()
     var toYOffset by remember { mutableStateOf(0) }
 
+    val filteredProgressTasks by viewModel.filteredProgressTasks.collectAsStateWithLifecycle()
+
+    Log.d(TAG, filteredProgressTasks.toString())
+
     Surface(
         modifier = Modifier.windowInsetsPadding(
             WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
