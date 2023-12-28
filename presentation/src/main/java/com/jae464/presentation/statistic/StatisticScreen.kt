@@ -584,7 +584,9 @@ fun TotalProgressTaskItem(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(
+                modifier = Modifier.weight(8f)
+            ) {
                 Text(
                     text = totalProgressTaskUiModel.category.name,
                     color = MaterialTheme.colorScheme.onSecondary,
@@ -603,7 +605,8 @@ fun TotalProgressTaskItem(
                 )
             }
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(2f)
             ) {
                 PieChart(
                     modifier = Modifier
