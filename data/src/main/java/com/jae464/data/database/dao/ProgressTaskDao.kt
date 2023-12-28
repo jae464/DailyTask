@@ -7,6 +7,8 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.jae464.data.database.entity.ProgressTaskEntity
 import com.jae464.data.database.entity.ProgressTaskWithTask
+import com.jae464.domain.model.DayOfWeek
+import com.jae464.domain.model.TaskType
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -25,6 +27,45 @@ interface ProgressTaskDao {
     @Transaction
     @Query("SELECT * FROM progress_tasks WHERE created_at = :date")
     fun getProgressTaskByDate(date: LocalDate): Flow<List<ProgressTaskWithTask>>
+
+    @Transaction
+    @Query(
+        value = """
+            SELECT * FROM progress_tasks
+            WHERE
+                CASE WHEN :usePeriod
+                    THEN created_at BETWEEN :startDate AND :endDate
+                    ELSE 1
+                END
+            AND
+                CASE WHEN :useFilterCategory
+                    THEN task_id IN
+                        (
+                            SELECT id FROM tasks
+                            WHERE category_id = :filterCategoryIds
+                        )
+                    ELSE 1
+                END
+            AND
+                CASE WHEN :useFilterTaskType
+                    THEN task_id IN
+                        (
+                            SELECT id FROM tasks
+                            WHERE task_type = :filterTaskType
+                        )
+                    ELSE 1
+                END
+        """
+    )
+    fun getFilteredProgressTasks(
+        usePeriod: Boolean = false,
+        startDate: LocalDate = LocalDate.now(),
+        endDate: LocalDate = LocalDate.now(),
+        useFilterCategory: Boolean = false,
+        filterCategoryIds: Set<Long> = emptySet(),
+        useFilterTaskType: Boolean = false,
+        filterTaskType: TaskType = TaskType.Regular,
+    ): Flow<List<ProgressTaskWithTask>>
 
     @Transaction
     @Query("SELECT * FROM progress_tasks WHERE created_at BETWEEN :startDate AND :endDate")
