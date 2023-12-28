@@ -549,9 +549,35 @@ fun DateCalendarContent(
     currentFocus: CurrentFocus,
     onChangedFocus: (CurrentFocus) -> Unit,
 ) {
-    val dayLength =
-        LocalDate.of(selectedYear, selectedMonth, 1).lengthOfMonth()
-    val days = List(dayLength) { i -> i + 1 }
+    val currentMonth = LocalDate.of(selectedYear, selectedMonth, 1)
+    val dayLengthOfCurrentMonth = currentMonth.lengthOfMonth()
+    val beforeMonth = currentMonth.minusMonths(1)
+    val dayLengthOfBeforeMonth = beforeMonth.lengthOfMonth()
+    val nextMonth = currentMonth.plusMonths(1)
+
+    val firstDayOfWeek = currentMonth.dayOfWeek.value
+    val lastDayOfWeek =
+        LocalDate.of(selectedYear, selectedMonth, dayLengthOfCurrentMonth).dayOfWeek.value
+
+    Log.d("CustomCalendar", "첫번째 날의 요일 : $firstDayOfWeek")
+    Log.d("CustomCalendar", "마지막 날의 요일 : $lastDayOfWeek")
+
+    val localDates = mutableListOf<LocalDate>()
+    for (i in 1..dayLengthOfCurrentMonth) {
+        localDates.add(LocalDate.of(selectedYear, selectedMonth, i))
+    }
+
+    val beforeMonthLocalDates = mutableListOf<LocalDate>()
+    for (i in dayLengthOfBeforeMonth - (firstDayOfWeek - 1) + 1..dayLengthOfBeforeMonth) {
+        beforeMonthLocalDates.add(LocalDate.of(beforeMonth.year, beforeMonth.monthValue, i))
+    }
+    localDates.addAll(0, beforeMonthLocalDates)
+
+    for (i in 1..7 - lastDayOfWeek) {
+        localDates.add(LocalDate.of(nextMonth.year, nextMonth.monthValue, i))
+    }
+
+    val dayOfWeeks = listOf("월", "화", "수", "목", "금", "토", "일")
     LazyVerticalGrid(
         modifier = Modifier
             .background(Color.Transparent)
@@ -560,10 +586,19 @@ fun DateCalendarContent(
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        items(dayOfWeeks) {
+            Box {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.align(Alignment.Center),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
         items(
-            days
-        ) { day ->
-            val localDate = LocalDate.of(selectedYear, selectedMonth, day)
+            localDates
+        ) { localDate ->
             val isOneSelected =
                 (calendarState.startDate != null && calendarState.endDate == null) ||
                         (calendarState.startDate == null && calendarState.endDate != null)
@@ -603,9 +638,12 @@ fun DateCalendarContent(
                     .wrapContentHeight()
                     .wrapContentWidth()
             ) {
+                val textColor =
+                    if (isSelected) MaterialTheme.colorScheme.onPrimary else if (localDate.month.value == selectedMonth) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimaryContainer
                 Text(
-                    text = day.toString(), style = MaterialTheme.typography.labelSmall,
-                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
+                    text = localDate.dayOfMonth.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = textColor,
                     modifier = Modifier
                         .background(
                             color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
