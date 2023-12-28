@@ -107,6 +107,8 @@ fun StatisticScreen(
     var showCalendar by remember { mutableStateOf(true) }
     var showFilterOption by remember { mutableStateOf(false) }
 
+    val scope = rememberCoroutineScope()
+
 //
 //    Log.d(TAG, filteredProgressTasks.toString())
 
@@ -188,7 +190,14 @@ fun StatisticScreen(
                     onChangedFilteredDayOfWeeks = viewModel::filterDayOfWeeks,
                     onChangedSize = {filterHeight = it},
                     showFilterOption = showFilterOption,
-                    onChangedShowFilterOption = {showFilterOption = it}
+                    onChangedShowFilterOption = {
+                        showFilterOption = it
+                        if (showFilterOption) {
+                            scope.launch {
+                                scrollState.animateScrollTo(calendarHeight)
+                            }
+                        }
+                    },
                 )
                 LoadPieChartButton(
                     calendarState = calendarState,
@@ -233,9 +242,10 @@ fun FilterOption(
     onChangedFilteredDayOfWeeks: (List<DayOfWeek>) -> Unit,
     onChangedSize: (Int) -> Unit = {},
     showFilterOption: Boolean = true,
-    onChangedShowFilterOption: (Boolean) -> Unit = {}
+    onChangedShowFilterOption: (Boolean) -> Unit = {},
 ) {
     val dayOfWeeks = DayOfWeek.values()
+    val scope = rememberCoroutineScope()
     Column(
         modifier = Modifier
             .background(
@@ -249,7 +259,8 @@ fun FilterOption(
             .animateContentSize()
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .clickable {
                     onChangedShowFilterOption(!showFilterOption)
                 },
