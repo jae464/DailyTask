@@ -34,5 +34,4 @@ fun RoundedFilterChip(
         colors = colors,
         border = border
     )
-
 }

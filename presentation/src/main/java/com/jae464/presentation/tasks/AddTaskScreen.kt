@@ -77,6 +77,7 @@ import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.TaskType
 import com.jae464.presentation.common.RoundedFilterChip
+import com.jae464.presentation.common.TaskTypeRadioButton
 import com.jae464.presentation.model.AddTaskUiModel
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -646,25 +647,25 @@ fun AddCategoryDialog(
     )
 }
 
-@Composable
-fun <T> TaskTypeRadioButton(
-    text: String,
-    selected: Boolean,
-    onOptionSelected: (T) -> Unit,
-    item: T
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = text)
-        Spacer(modifier = Modifier.width(4.dp))
-        RadioButton(selected = selected,
-            onClick = {
-                onOptionSelected(item)
-            }
-        )
-    }
-}
+//@Composable
+//fun <T> TaskTypeRadioButton(
+//    text: String,
+//    selected: Boolean,
+//    onOptionSelected: (T) -> Unit,
+//    item: T
+//) {
+//    Row(
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        Text(text = text)
+//        Spacer(modifier = Modifier.width(4.dp))
+//        RadioButton(selected = selected,
+//            onClick = {
+//                onOptionSelected(item)
+//            }
+//        )
+//    }
+//}
 
 @Composable
 fun ContentTextField(

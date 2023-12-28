@@ -22,6 +22,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -32,6 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,6 +70,12 @@ import co.yml.charts.common.model.PlotType
 import co.yml.charts.ui.piechart.charts.PieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
+import com.jae464.domain.model.Category
+import com.jae464.domain.model.DayOfWeek
+import com.jae464.domain.model.TaskType
+import com.jae464.presentation.common.CategoryFilterChips
+import com.jae464.presentation.common.RoundedFilterChip
+import com.jae464.presentation.common.TaskTypeRadioButton
 import com.jae464.presentation.common.calendar.CalendarState
 import com.jae464.presentation.common.calendar.CustomCalendar
 import com.jae464.presentation.common.calendar.rememberCalendarState
@@ -79,15 +91,24 @@ fun StatisticScreen(
     viewModel: StatisticViewModel = hiltViewModel()
 ) {
     val totalProgressTasksUiState by viewModel.totalProgressTasksUiState.collectAsStateWithLifecycle()
-    var showCalendar by remember { mutableStateOf(true) }
+    val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
+    val filteredTaskType by viewModel.filteredTaskType.collectAsStateWithLifecycle()
+    val filteredDayOfWeeks by viewModel.filteredDayOfWeeks.collectAsStateWithLifecycle()
+    
     val calendarState = rememberCalendarState()
     val context = LocalContext.current
+    
     val scrollState = rememberScrollState()
     var toYOffset by remember { mutableStateOf(0) }
+    var calendarHeight by remember { mutableStateOf(0) }
+    var filterHeight by remember { mutableStateOf(0) }
+    var showCalendar by remember { mutableStateOf(true) }
+    var showFilterOption by remember { mutableStateOf(false) }
 
-    val filteredProgressTasks by viewModel.filteredProgressTasks.collectAsStateWithLifecycle()
-
-    Log.d(TAG, filteredProgressTasks.toString())
+//    val filteredProgressTasks by viewModel.filteredProgressTasks.collectAsStateWithLifecycle()
+//
+//    Log.d(TAG, filteredProgressTasks.toString())
 
     Surface(
         modifier = Modifier.windowInsetsPadding(
@@ -115,7 +136,7 @@ fun StatisticScreen(
                             shape = RoundedCornerShape(16.dp)
                         )
                         .onSizeChanged {
-                            toYOffset = it.height
+                            calendarHeight = it.height
                         }
                 ) {
                     Row(
@@ -150,28 +171,54 @@ fun StatisticScreen(
                         calendarState = calendarState,
                         showCalendar = showCalendar
                     )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(end = 16.dp, bottom = 16.dp, top = 16.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        LoadPieChartButton(
-                            calendarState = calendarState,
-                            onClickLoad = { startDate, endDate ->
-                                if (startDate == null || endDate == null) {
-                                    val msg = if (startDate == null) "시작" else "종료"
-                                    Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT)
-                                        .show()
-                                    return@LoadPieChartButton
-                                }
-                                viewModel.getProgressTasks(startDate, endDate)
-                            },
-                            scrollState = scrollState,
-                            toYOffset = toYOffset
-                        )
-                    }
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(end = 16.dp, bottom = 16.dp, top = 16.dp),
+//                        horizontalArrangement = Arrangement.End
+//                    ) {
+//                        LoadPieChartButton(
+//                            calendarState = calendarState,
+//                            onClickLoad = { startDate, endDate ->
+//                                if (startDate == null || endDate == null) {
+//                                    val msg = if (startDate == null) "시작" else "종료"
+//                                    Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT)
+//                                        .show()
+//                                    return@LoadPieChartButton
+//                                }
+//                                viewModel.getProgressTasks2(startDate, endDate)
+//                            },
+//                            scrollState = scrollState,
+//                            toYOffset = calendarHeight + filterHeight
+//                        )
+//                    }
                 }
+                FilterOption(
+                    categories = categories,
+                    filteredCategories = filteredCategories,
+                    onChangedFilteredCategories = viewModel::filterCategories,
+                    filteredTaskType = filteredTaskType,
+                    onChangedFilteredTaskType = viewModel::filterTaskType,
+                    filteredDayOfWeeks = filteredDayOfWeeks,
+                    onChangedFilteredDayOfWeeks = viewModel::filterDayOfWeeks,
+                    onChangedSize = {filterHeight = it},
+                    showFilterOption = showFilterOption,
+                    onChangedShowFilterOption = {showFilterOption = it}
+                )
+                LoadPieChartButton(
+                    calendarState = calendarState,
+                    onClickLoad = { startDate, endDate ->
+                        if (startDate == null || endDate == null) {
+                            val msg = if (startDate == null) "시작" else "종료"
+                            Toast.makeText(context, "${msg}기간을 지정해주세요", Toast.LENGTH_SHORT)
+                                .show()
+                            return@LoadPieChartButton
+                        }
+                        viewModel.getProgressTasks2(startDate, endDate)
+                    },
+                    scrollState = scrollState,
+                    toYOffset = calendarHeight + filterHeight
+                )
                 Column(
                     modifier = Modifier
                         .background(
@@ -183,13 +230,123 @@ fun StatisticScreen(
                         totalProgressTasksUiState = totalProgressTasksUiState,
                     )
                 }
-
             }
         }
 
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FilterOption(
+    categories: List<Category>,
+    filteredCategories: List<Category>,
+    onChangedFilteredCategories: (List<Category>) -> Unit,
+    filteredTaskType: TaskType,
+    onChangedFilteredTaskType: (TaskType) -> Unit,
+    filteredDayOfWeeks: List<DayOfWeek>,
+    onChangedFilteredDayOfWeeks: (List<DayOfWeek>) -> Unit,
+    onChangedSize: (Int) -> Unit = {},
+    showFilterOption: Boolean = true,
+    onChangedShowFilterOption: (Boolean) -> Unit = {}
+) {
+    val dayOfWeeks = DayOfWeek.values()
+    Column(
+        modifier = Modifier
+            .background(
+                color = Color.White,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .onSizeChanged {
+                onChangedSize(it.height)
+            }
+            .fillMaxWidth()
+            .animateContentSize()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+
+        ) {
+            Text(
+                text = "상세옵션",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .padding(16.dp),
+                fontWeight = FontWeight.Bold
+            )
+            IconButton(onClick = {
+                onChangedShowFilterOption(!showFilterOption)
+            }) {
+                if (showFilterOption) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = "drop-down"
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropUp,
+                        contentDescription = "drop-up"
+                    )
+                }
+            }
+        }
+        if (showFilterOption) {
+            // TODO 카테고리 필터링
+            Column {
+                Text(text = "카테고리", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), fontWeight = FontWeight.Bold)
+                CategoryFilterChips(
+                    categories = categories,
+                    filteredCategories = filteredCategories,
+                    onChangedFilteredCategories = onChangedFilteredCategories
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            // TODO 정기, 비정기 필터링
+            Column {
+                Text(text = "정기 / 비정기", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    TaskType.values().forEach {
+                        TaskTypeRadioButton(
+                            text = it.taskName,
+                            selected = it == filteredTaskType,
+                            onOptionSelected = onChangedFilteredTaskType,
+                            item = it)
+                    }
+                }
+            }
+
+            // TODO 요일 필터링
+            Column {
+                Text(text = "요일", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), fontWeight = FontWeight.Bold)
+                LazyRow(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    items(dayOfWeeks) { dayOfWeek ->
+                        RoundedFilterChip(
+                            text = dayOfWeek.day,
+                            checked = filteredDayOfWeeks.contains(dayOfWeek),
+                            onCheckedChanged = { checked ->
+                                if (checked) {
+                                    onChangedFilteredDayOfWeeks((filteredDayOfWeeks + listOf(dayOfWeek)).sorted())
+                                } else {
+                                    onChangedFilteredDayOfWeeks(filteredDayOfWeeks.filter { day -> day != dayOfWeek })
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+    }
+}
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StatisticTabLayout(
@@ -385,7 +542,7 @@ fun LoadPieChartButton(
 ) {
     val scope = rememberCoroutineScope()
     Button(
-        modifier = Modifier,
+        modifier = Modifier.fillMaxWidth(),
         onClick = {
             Log.d(
                 "StatisticScreen",
