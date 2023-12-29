@@ -38,26 +38,24 @@ class DetailViewModel @Inject constructor(
     private lateinit var progressTask: ProgressTask
 
     init {
-
         val currentProgressingTask = progressingTaskManager.getCurrentProgressTask()
-
         viewModelScope.launch {
             getProgressTaskUseCase(savedStateHandle["progressTaskId"] ?: "")
                 .collectLatest {
                     if (it == null) {
                         _uiState.emit(DetailUiState.Loading)
                     } else {
+                        if (uiState.value is DetailUiState.Success) return@collectLatest
                         progressTask = it
-                        _uiState.emit(DetailUiState.Success(it.toProgressTaskUiModel()))
-
-                        if (currentProgressingTask?.id == savedStateHandle["progressTaskId"]) {
+                        val isProgressing = currentProgressingTask?.id == savedStateHandle["progressTaskId"]
+                        _uiState.emit(DetailUiState.Success(it.toProgressTaskUiModel(isProgressing)))
+                        if (currentProgressingTask?.id == savedStateHandle["progressTaskId"] && collectProgressingTaskJob == null) {
                             startCollectProgressingTask()
                         }
                     }
                 }
         }
     }
-
 
     fun startProgressTask(context: Context) {
         // 기존 진행중인 ProgressTask 업데이트
