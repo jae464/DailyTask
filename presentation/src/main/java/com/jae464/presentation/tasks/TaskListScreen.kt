@@ -61,6 +61,7 @@ import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -209,7 +210,7 @@ fun TaskListScreen(
         },
         scrollStrategy = ScrollStrategy.EnterAlwaysCollapsed
     ) {
-        Column(
+        Box(
             modifier = modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -217,7 +218,10 @@ fun TaskListScreen(
         ) {
             when (taskListUiState) {
                 is TaskListUiState.Loading -> {
-                    Text(text = "로딩중")
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                    )
                 }
 
                 is TaskListUiState.Success -> {
