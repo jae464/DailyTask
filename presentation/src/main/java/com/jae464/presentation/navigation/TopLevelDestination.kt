@@ -1,5 +1,6 @@
 package com.jae464.presentation.navigation
 
+import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
@@ -7,6 +8,8 @@ import androidx.compose.material.icons.rounded.List
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.navOptions
 import com.jae464.presentation.home.navigateToHome
@@ -20,6 +23,7 @@ enum class TopLevelDestination(val icon: ImageVector, val route: String) {
     Statistic(Icons.Rounded.Info, "statistic"),
     Setting(Icons.Rounded.Settings, "setting"),
 }
+
 
 fun NavController.navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
     val topLevelNavOptions = navOptions {
@@ -42,6 +46,16 @@ fun NavController.navigateToTopLevelDestination(topLevelDestination: TopLevelDes
         TopLevelDestination.Setting -> {
             navigateToSetting(navOptions = topLevelNavOptions)
         }
-
     }
+}
+
+fun NavDestination?.isTopLevelDestinationInHierarchy(destination: TopLevelDestination): Boolean {
+//    Log.d("TopLevelDestination", this?.hierarchy.toString())
+//    this?.hierarchy?.forEach {
+//        Log.d("TopLevelDestination", it.toString())
+//    }
+    return this?.hierarchy?.any {
+        Log.d("TopLevelDestination", it.toString())
+        it.route?.contains(destination.route, true) ?: false
+    } ?: false
 }
