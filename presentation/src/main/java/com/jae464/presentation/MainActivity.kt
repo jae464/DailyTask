@@ -26,7 +26,12 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -34,6 +39,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -46,12 +55,15 @@ import com.jae464.presentation.detail.navigateToDetail
 import com.jae464.presentation.home.HomeScreen
 import com.jae464.presentation.navigation.DailyTaskNavHost
 import com.jae464.presentation.navigation.TopLevelDestination
+import com.jae464.presentation.navigation.isTopLevelDestinationInHierarchy
 import com.jae464.presentation.navigation.navigateToTopLevelDestination
 import com.jae464.presentation.setting.SettingScreen
 import com.jae464.presentation.statistic.StatisticScreen
 import com.jae464.presentation.tasks.AddTaskScreen
 import com.jae464.presentation.tasks.TaskListScreen
 import com.jae464.presentation.tasks.addTaskScreenRoute
+import com.jae464.presentation.ui.DailyTaskAppState
+import com.jae464.presentation.ui.rememberDailyTaskAppState
 import com.jae464.presentation.ui.theme.DailyTaskTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -66,12 +78,11 @@ class MainActivity : ComponentActivity() {
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
-            val deniedPermissions = permissions.filter { !it.value }.map {it.key}
+            val deniedPermissions = permissions.filter { !it.value }.map { it.key }
 
             if (deniedPermissions.isNotEmpty()) {
                 Log.d(TAG, deniedPermissions.toString())
-            }
-            else {
+            } else {
                 Log.d(TAG, "모든 권한이 허용")
             }
         }
@@ -83,11 +94,27 @@ class MainActivity : ComponentActivity() {
         setContent {
             DailyTaskTheme {
                 // A surface container using the 'background' color from the theme
-                val navController = rememberNavController()
+                val appState = rememberDailyTaskAppState()
+                val navController = appState.navController
+                val currentDest = appState.currentDestination
+                val isShowBottomNavigation = TopLevelDestination.values().map { it.route }.contains(
+                    appState.currentDestination?.route
+                )
+
+//                var currentDestination by rememberSaveable { mutableStateOf(navController.currentDestination) }
+//                val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
+//                    Log.d(TAG, destination.route.toString())
+//                    currentDestination = destination
+//                }
+//                navController.addOnDestinationChangedListener(listener)
 
                 Scaffold(
                     containerColor = Color.Transparent,
-                    bottomBar = { BottomNavBar(navController = navController) }
+                    bottomBar = {
+                        if (isShowBottomNavigation) {
+                            BottomNavBar(navController = navController, currentDest = currentDest)
+                        }
+                    }
                 ) { padding ->
                     Row(
                         modifier = Modifier
@@ -110,25 +137,21 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun BottomNavBar(navController: NavHostController) {
+fun BottomNavBar(navController: NavHostController, currentDest: NavDestination?) {
     val topDestinations = TopLevelDestination.values().asList()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
 
+    Log.d("MainActivity", "BottomNavBar currentDest : ${currentDest}")
     NavigationBar(
         tonalElevation = 16.dp,
         containerColor = MaterialTheme.colorScheme.background,
-//        modifier = Modifier.clip(RoundedCornerShape(32.dp))
-//        modifier = Modifier.graphicsLayer {
-//            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
-//            clip = true
-//        }
     ) {
         topDestinations.forEach { destination ->
             NavigationBarItem(
-                selected = currentRoute == destination.route,
+//                selected = navBackStackEntry?.destination?.route == destination.route,
+                selected = currentDest.isTopLevelDestinationInHierarchy(destination),
                 onClick = {
-                          navController.navigateToTopLevelDestination(destination)
+                    navController.navigateToTopLevelDestination(destination)
                 },
                 icon = {
                     Icon(
@@ -140,6 +163,8 @@ fun BottomNavBar(navController: NavHostController) {
         }
     }
 }
+
+//            val selected = currentRoute.isTopLevelDestinationInHierarchy(destination)
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {

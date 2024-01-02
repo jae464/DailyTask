@@ -1,5 +1,6 @@
 package com.jae464.presentation.home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseOut
@@ -15,6 +16,7 @@ import androidx.navigation.compose.composable
 const val homeRoute = "home"
 
 fun NavController.navigateToHome(navOptions: NavOptions? = null) {
+    Log.d("HomeNavigation", "navigateToHome")
     this.navigate(homeRoute, navOptions)
 }
 
@@ -23,28 +25,6 @@ fun NavGraphBuilder.homeScreen(
 ) {
     composable(
         route = homeRoute,
-//        enterTransition = {
-//            fadeIn(
-//                animationSpec = tween(
-//                    300, easing = LinearEasing
-//                )
-//            ) +
-//                    slideIntoContainer(
-//                        animationSpec = tween(300, easing = EaseIn),
-//                        towards = AnimatedContentTransitionScope.SlideDirection.Start
-//                    )
-//        },
-//        exitTransition = {
-//            fadeOut(
-//                animationSpec = tween(
-//                    300, easing = LinearEasing
-//                )
-//            ) +
-//            slideOutOfContainer(
-//                animationSpec = tween(300, easing = EaseOut),
-//                towards = AnimatedContentTransitionScope.SlideDirection.End
-//            )
-//        }
     ) {
         HomeScreen(
             onClickItem = onClickItem

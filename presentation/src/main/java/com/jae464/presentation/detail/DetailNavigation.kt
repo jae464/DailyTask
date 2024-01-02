@@ -1,5 +1,6 @@
 package com.jae464.presentation.detail
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseOut
@@ -17,6 +18,7 @@ import androidx.navigation.navArgument
 const val detailRoute = "detail"
 
 fun NavController.navigateToDetail(progressTaskId: String, navOptions: NavOptions? = null) {
+    Log.d("DetailNavigation", "navigateToDetail")
     this.navigate("$detailRoute/$progressTaskId") {
         launchSingleTop = true
     }
@@ -32,27 +34,7 @@ fun NavGraphBuilder.detailScreen(
                 type = NavType.StringType
                 defaultValue = ""
             }
-        ),
-//        enterTransition = {
-//            fadeIn(
-//                animationSpec = tween(
-//                    300, easing = LinearEasing
-//                )
-//            ) +
-//            slideIntoContainer(
-//                animationSpec = tween(300, easing = EaseIn),
-//                towards = AnimatedContentTransitionScope.SlideDirection.Start)
-//        },
-//        exitTransition = {
-//            fadeOut(
-//                animationSpec = tween(
-//                    300, easing = LinearEasing
-//                )
-//            ) +
-//            slideOutOfContainer(
-//                animationSpec = tween(300, easing = EaseOut),
-//                towards = AnimatedContentTransitionScope.SlideDirection.End)
-//        }
+        )
     ) {
         DetailScreen(
             onBackClick = onBackClick

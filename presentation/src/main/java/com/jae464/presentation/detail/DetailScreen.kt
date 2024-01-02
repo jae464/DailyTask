@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -127,7 +128,11 @@ fun DetailProgressTask(
 
     when (uiState) {
         is DetailUiState.Loading -> {
-
+            Box(modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
         }
 
         is DetailUiState.Success -> {
@@ -238,7 +243,8 @@ fun TodayMemoField(
     Spacer(modifier = Modifier.height(16.dp))
     BasicTextField(
         modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.secondary,
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(16.dp)
