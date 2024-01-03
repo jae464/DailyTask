@@ -66,6 +66,7 @@ import java.time.LocalDate
 fun CustomCalendar(
     modifier: Modifier = Modifier,
     calendarState: CalendarState = rememberCalendarState(),
+    onClickLocalDate: (LocalDate) -> Unit = {}
 ) {
     var currentFocus by remember { mutableStateOf(CurrentFocus.START) }
     var beforePage by remember { mutableStateOf(50) }
@@ -147,7 +148,8 @@ fun CustomCalendar(
                     calendarState = calendarState,
                     currentFocus = currentFocus,
                     onChangedFocus = { currentFocus = it },
-                    pagerState = pagerState
+                    pagerState = pagerState,
+                    onClickLocalDate = onClickLocalDate
                 )
             }
 
@@ -417,7 +419,8 @@ fun DateCalendar(
     calendarState: CalendarState,
     currentFocus: CurrentFocus,
     onChangedFocus: (CurrentFocus) -> Unit,
-    pagerState: PagerState
+    pagerState: PagerState,
+    onClickLocalDate: (LocalDate) -> Unit = {}
 ) {
     Log.d("CustomCalendar", "DateCalendar Rendered")
     HorizontalPager(state = pagerState) { page ->
@@ -428,6 +431,7 @@ fun DateCalendar(
             selectedMonth = calendarState.selectedMonth,
             currentFocus = currentFocus,
             onChangedFocus = onChangedFocus,
+            onClickLocalDate = onClickLocalDate
         )
     }
 }
@@ -548,6 +552,7 @@ fun DateCalendarContent(
     selectedMonth: Int,
     currentFocus: CurrentFocus,
     onChangedFocus: (CurrentFocus) -> Unit,
+    onClickLocalDate: (LocalDate) -> Unit = {}
 ) {
     val currentMonth = LocalDate.of(selectedYear, selectedMonth, 1)
     val dayLengthOfCurrentMonth = currentMonth.lengthOfMonth()
@@ -597,66 +602,109 @@ fun DateCalendarContent(
                 )
             }
         }
-        items(
-            localDates
-        ) { localDate ->
-            val isOneSelected =
-                (calendarState.startDate != null && calendarState.endDate == null) ||
-                        (calendarState.startDate == null && calendarState.endDate != null)
-            val isSelected =
-                (calendarState.startDate != null && localDate == calendarState.startDate) ||
-                        (calendarState.endDate != null && localDate == calendarState.endDate)
+        when (calendarState.calendarMode) {
+            CalendarMode.INTERVAL -> {
+                items(
+                    localDates
+                ) { localDate ->
+                    val isOneSelected =
+                        (calendarState.startDate != null && calendarState.endDate == null) ||
+                                (calendarState.startDate == null && calendarState.endDate != null)
+                    val isSelected =
+                        (calendarState.startDate != null && localDate == calendarState.startDate) ||
+                                (calendarState.endDate != null && localDate == calendarState.endDate)
 
-            val isBetween =
-                (calendarState.startDate != null && calendarState.endDate != null && localDate > calendarState.startDate && localDate < calendarState.endDate)
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = if ((isSelected && !isOneSelected) || isBetween) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                        shape = if (isBetween) RectangleShape else if (isSelected && localDate == calendarState.startDate) RoundedCornerShape(
-                            topStart = 32.dp,
-                            bottomStart = 32.dp
-                        ) else if (isSelected && localDate == calendarState.endDate) RoundedCornerShape(
-                            topEnd = 32.dp,
-                            bottomEnd = 32.dp
-                        ) else CircleShape
-                    )
-                    .clickable {
-                        if (currentFocus == CurrentFocus.START) {
-                            calendarState.startDate = localDate
-                            if (calendarState.endDate != null && localDate > calendarState.endDate) {
-                                calendarState.endDate = null
+                    val isBetween =
+                        (calendarState.startDate != null && calendarState.endDate != null && localDate > calendarState.startDate && localDate < calendarState.endDate)
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = if ((isSelected && !isOneSelected) || isBetween) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                                shape = if (isBetween) RectangleShape else if (isSelected && localDate == calendarState.startDate) RoundedCornerShape(
+                                    topStart = 32.dp,
+                                    bottomStart = 32.dp
+                                ) else if (isSelected && localDate == calendarState.endDate) RoundedCornerShape(
+                                    topEnd = 32.dp,
+                                    bottomEnd = 32.dp
+                                ) else CircleShape
+                            )
+                            .clickable {
+                                if (currentFocus == CurrentFocus.START) {
+                                    calendarState.startDate = localDate
+                                    if (calendarState.endDate != null && localDate > calendarState.endDate) {
+                                        calendarState.endDate = null
+                                    }
+                                    onChangedFocus(CurrentFocus.END)
+                                } else {
+                                    if (calendarState.startDate != null && localDate < calendarState.startDate) {
+                                        calendarState.startDate = localDate
+                                    } else {
+                                        calendarState.endDate = localDate
+                                    }
+                                }
                             }
-                            onChangedFocus(CurrentFocus.END)
-                        } else {
-                            if (calendarState.startDate != null && localDate < calendarState.startDate) {
-                                calendarState.startDate = localDate
-                            } else {
-                                calendarState.endDate = localDate
-                            }
-                        }
-                    }
-                    .wrapContentHeight()
-                    .wrapContentWidth()
-            ) {
-                val textColor =
-                    if (isSelected) MaterialTheme.colorScheme.onPrimary else if (localDate.month.value == selectedMonth) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimaryContainer
-                Text(
-                    text = localDate.dayOfMonth.toString(),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = textColor,
-                    modifier = Modifier
-                        .background(
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                            shape = CircleShape
+                            .wrapContentHeight()
+                            .wrapContentWidth()
+                    ) {
+                        val textColor =
+                            if (isSelected) MaterialTheme.colorScheme.onPrimary else if (localDate.month.value == selectedMonth) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimaryContainer
+                        Text(
+                            text = localDate.dayOfMonth.toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = textColor,
+                            modifier = Modifier
+                                .background(
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    shape = CircleShape
+                                )
+                                .wrapContentHeight()
+                                .width(40.dp)
+                                .padding(8.dp)
+                                .align(Alignment.Center),
+                            textAlign = TextAlign.Center,
                         )
-                        .wrapContentHeight()
-                        .width(40.dp)
-                        .padding(8.dp)
-                        .align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                )
+                    }
+                }
+            }
+            CalendarMode.MULTISELECT -> {
+                items(
+                    localDates
+                ) { localDate ->
+                    val isSelected = calendarState.selectedDates.contains(localDate)
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                shape = CircleShape
+
+                            )
+                            .clickable {
+
+                            }
+                            .wrapContentHeight()
+                            .wrapContentWidth()
+                    ) {
+                        val textColor =
+                            if (isSelected) MaterialTheme.colorScheme.onPrimary else if (localDate.month.value == selectedMonth) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimaryContainer
+                        Text(
+                            text = localDate.dayOfMonth.toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = textColor,
+                            modifier = Modifier
+                                .background(
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    shape = CircleShape
+                                )
+                                .wrapContentHeight()
+                                .width(40.dp)
+                                .padding(8.dp)
+                                .align(Alignment.Center),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
             }
         }
+
     }
 }

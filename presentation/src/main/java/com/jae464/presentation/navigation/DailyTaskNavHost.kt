@@ -10,6 +10,8 @@ import com.jae464.presentation.detail.navigateToDetail
 import com.jae464.presentation.home.homeRoute
 import com.jae464.presentation.home.homeScreen
 import com.jae464.presentation.setting.settingScreen
+import com.jae464.presentation.statistic.navigateToStatisticDetail
+import com.jae464.presentation.statistic.statisticDetailScreen
 import com.jae464.presentation.statistic.statisticScreen
 import com.jae464.presentation.tasks.addTaskScreen
 import com.jae464.presentation.tasks.navigateToAddTask
@@ -46,9 +48,18 @@ fun DailyTaskNavHost(
                 navController.popBackStack()
             }
         )
-        statisticScreen()
+        statisticScreen(
+            onClickProgressTask = {
+                navController.navigateToStatisticDetail(it)
+            }
+        )
         settingScreen()
         detailScreen(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
+        statisticDetailScreen(
             onBackClick = {
                 navController.popBackStack()
             }

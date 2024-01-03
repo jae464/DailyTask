@@ -94,7 +94,8 @@ private const val TAG = "StatisticScreen"
 
 @Composable
 fun StatisticScreen(
-    viewModel: StatisticViewModel = hiltViewModel()
+    viewModel: StatisticViewModel = hiltViewModel(),
+    onClickProgressTask: (StatisticDetailNavigationArgument) -> Unit = {}
 ) {
     val totalProgressTasksUiState by viewModel.totalProgressTasksUiState.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
@@ -223,7 +224,9 @@ fun StatisticScreen(
                         )
                 ) {
                     StatisticTabLayout(
+                        calendarState = calendarState,
                         totalProgressTasksUiState = totalProgressTasksUiState,
+                        onClickProgressTask = onClickProgressTask
                     )
                 }
             }
@@ -381,7 +384,9 @@ fun FilterOption(
 @Composable
 fun StatisticTabLayout(
     modifier: Modifier = Modifier,
+    calendarState: CalendarState,
     totalProgressTasksUiState: TotalProgressTasksUiState,
+    onClickProgressTask: (StatisticDetailNavigationArgument) -> Unit = {}
 ) {
     val pages = StatisticViewMode.values()
     val pagerState = rememberPagerState(
@@ -435,7 +440,9 @@ fun StatisticTabLayout(
         when (it) {
             0 -> {
                 TotalProgressTaskList(
+                    calendarState = calendarState,
                     totalProgressTasksUiState = totalProgressTasksUiState,
+                    onClickProgressTask = onClickProgressTask
                 )
             }
 
@@ -449,7 +456,9 @@ fun StatisticTabLayout(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TotalProgressTaskList(
+    calendarState: CalendarState,
     totalProgressTasksUiState: TotalProgressTasksUiState,
+    onClickProgressTask: (StatisticDetailNavigationArgument) -> Unit = {}
 ) {
     when (totalProgressTasksUiState) {
         is TotalProgressTasksUiState.Success -> {
@@ -497,7 +506,11 @@ fun TotalProgressTaskList(
                 ) {
                     filteredTotalProgressTask.forEach {
                         Spacer(modifier = Modifier.height(16.dp))
-                        TotalProgressTaskItem(totalProgressTaskUiModel = it)
+                        TotalProgressTaskItem(
+                            calendarState = calendarState,
+                            totalProgressTaskUiModel = it,
+                            onClickProgressTask = onClickProgressTask
+                        )
                         Divider(
                             modifier = Modifier.padding(top = 16.dp),
                             color = MaterialTheme.colorScheme.surface,
@@ -542,7 +555,9 @@ fun TotalProgressTaskList(
 
 @Composable
 fun TotalProgressTaskItem(
-    totalProgressTaskUiModel: TotalProgressTaskUiModel
+    calendarState: CalendarState,
+    totalProgressTaskUiModel: TotalProgressTaskUiModel,
+    onClickProgressTask: (StatisticDetailNavigationArgument) -> Unit = {}
 ) {
     val sumOfTotalTime = totalProgressTaskUiModel.totalTime.toFloat()
     val sumOfProgressedTime = totalProgressTaskUiModel.totalProgressedTime.toFloat()
@@ -576,6 +591,15 @@ fun TotalProgressTaskItem(
 
     Column(
         modifier = Modifier
+            .clickable {
+                onClickProgressTask(
+                    StatisticDetailNavigationArgument(
+                        totalProgressTaskUiModel.task.id,
+                        calendarState.startDate.toString(),
+                        calendarState.endDate.toString()
+                    )
+                )
+            }
             .wrapContentHeight()
             .fillMaxWidth()
     ) {

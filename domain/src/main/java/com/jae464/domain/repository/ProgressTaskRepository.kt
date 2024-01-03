@@ -22,6 +22,12 @@ interface ProgressTaskRepository {
         useFilterDayOfWeeks: Boolean = false,
         filterDayOfWeeks: Set<DayOfWeek> = emptySet()
     ): Flow<List<ProgressTask>>
+    fun getProgressTasksByTaskId(
+        usePeriod: Boolean = false,
+        taskId: String,
+        startDate: LocalDate = LocalDate.now(),
+        endDate: LocalDate = LocalDate.now()
+    ): Flow<List<ProgressTask>>
     suspend fun updateProgressTask(tasks: List<Task>)
     suspend fun updateProgressedTime(progressTaskId: String, progressedTime: Int)
     suspend fun updateTodayMemo(progressTaskId: String, todayMemo: String)
