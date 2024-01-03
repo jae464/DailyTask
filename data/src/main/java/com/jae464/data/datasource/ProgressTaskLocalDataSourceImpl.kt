@@ -44,6 +44,17 @@ class ProgressTaskLocalDataSourceImpl @Inject constructor(
         )
     }
 
+    override fun getProgressTasksByTaskId(
+        usePeriod: Boolean,
+        taskId: String,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<List<ProgressTaskWithTask>> {
+        return progressTaskDao.getProgressTasksByTaskId(
+            usePeriod, taskId, startDate, endDate
+        )
+    }
+
     override suspend fun updateProgressTime(progressTaskId: String, progressedTime: Int) {
         progressTaskDao.updateProgressedTime(progressTaskId, progressedTime)
     }

@@ -68,6 +68,26 @@ interface ProgressTaskDao {
     ): Flow<List<ProgressTaskWithTask>>
 
     @Transaction
+    @Query(
+        value = """
+            SELECT * FROM progress_tasks
+            WHERE
+                CASE WHEN :usePeriod
+                    THEN created_at BETWEEN :startDate AND :endDate
+                    ELSE 1
+                END
+            AND
+                task_id = :taskId
+        """
+    )
+    fun getProgressTasksByTaskId(
+        usePeriod: Boolean = false,
+        taskId: String,
+        startDate: LocalDate = LocalDate.now(),
+        endDate: LocalDate = LocalDate.now()
+    ): Flow<List<ProgressTaskWithTask>>
+
+    @Transaction
     @Query("SELECT * FROM progress_tasks WHERE created_at BETWEEN :startDate AND :endDate")
     fun getProgressTasksByDateRange(startDate: LocalDate, endDate: LocalDate): Flow<List<ProgressTaskWithTask>>
 

@@ -18,30 +18,14 @@ fun NavController.navigateToStatistic(navOptions: NavOptions? = null) {
     this.navigate(statisticRoute, navOptions)
 }
 
-fun NavGraphBuilder.statisticScreen() {
+fun NavGraphBuilder.statisticScreen(
+    onClickProgressTask: (StatisticDetailNavigationArgument) -> Unit
+) {
     composable(
         route = statisticRoute,
-//        enterTransition = {
-//            fadeIn(
-//                animationSpec = tween(
-//                    300, easing = LinearEasing
-//                )
-//            ) +
-//                    slideIntoContainer(
-//                animationSpec = tween(300, easing = EaseIn),
-//                towards = AnimatedContentTransitionScope.SlideDirection.Start)
-//        },
-//        exitTransition = {
-//            fadeOut(
-//                animationSpec = tween(
-//                    300, easing = LinearEasing
-//                )
-//            ) +
-//            slideOutOfContainer(
-//                animationSpec = tween(300, easing = EaseOut),
-//                towards = AnimatedContentTransitionScope.SlideDirection.End)
-//        }
     ) {
-        StatisticScreen()
+        StatisticScreen(
+            onClickProgressTask = onClickProgressTask
+        )
     }
 }
