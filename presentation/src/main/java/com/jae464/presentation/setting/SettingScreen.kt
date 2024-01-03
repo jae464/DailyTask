@@ -14,10 +14,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.jae464.presentation.common.calendar.CalendarMode
 import com.jae464.presentation.common.calendar.CustomCalendar
+import com.jae464.presentation.common.calendar.rememberCalendarState
 
 @Composable
 fun SettingScreen() {
+    val calendarState = rememberCalendarState(
+        calendarMode = CalendarMode.MULTISELECT
+    )
     Surface(
         modifier = Modifier
             .windowInsetsPadding(
@@ -29,7 +34,9 @@ fun SettingScreen() {
         Box(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
-            CustomCalendar()
+            CustomCalendar(
+                calendarState = calendarState
+            )
         }
     }
 }
