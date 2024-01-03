@@ -21,6 +21,8 @@ fun rememberCalendarState(
     selectState: CalendarSelectState = CalendarSelectState.DAY,
     selectedYear: Int = LocalDate.now().year,
     selectedMonth: Int = LocalDate.now().month.value,
+    calendarMode: CalendarMode = CalendarMode.INTERVAL,
+    selectedDates: List<LocalDate> = emptyList()
 ): CalendarState {
     return rememberSaveable(saver = CalendarState.Saver) {
         CalendarState(
@@ -28,7 +30,9 @@ fun rememberCalendarState(
             endDate = endDate,
             selectState = selectState,
             selectedYear = selectedYear,
-            selectedMonth = selectedMonth
+            selectedMonth = selectedMonth,
+            calendarMode = calendarMode,
+            selectedDates = selectedDates
         )
     }
 }
@@ -40,6 +44,8 @@ class CalendarState constructor(
     selectState: CalendarSelectState = CalendarSelectState.DAY,
     selectedYear: Int = LocalDate.now().year,
     selectedMonth: Int = LocalDate.now().month.value,
+    calendarMode: CalendarMode = CalendarMode.INTERVAL,
+    selectedDates: List<LocalDate> = emptyList()
 ): ScrollableState {
     private var _startDate by mutableStateOf(startDate)
     var startDate: LocalDate?
@@ -76,6 +82,20 @@ class CalendarState constructor(
             _selectedMonth = value
         }
 
+    private var _calendarMode by mutableStateOf(calendarMode)
+    var calendarMode: CalendarMode
+        get() = _calendarMode
+        set(value) {
+            _calendarMode = value
+        }
+
+    private var _selectedDates by mutableStateOf(selectedDates)
+    var selectedDates: List<LocalDate>
+        get() = _selectedDates
+        set(value) {
+            _selectedDates = value
+        }
+
     val prevMonth: Int
         get() {
             return LocalDate.of(selectedYear, selectedMonth, 1).minusMonths(1).monthValue
@@ -96,16 +116,22 @@ class CalendarState constructor(
                     it.endDate,
                     it.selectState,
                     it.selectedYear,
-                    it.selectedMonth
+                    it.selectedMonth,
+                    it.calendarMode,
+                    it.selectedDates.joinToString(",")
                 )
             },
             restore = {
+                val selectedDates = (it[6] as String)
+
                 CalendarState(
                     startDate = it[0] as LocalDate?,
                     endDate = it[1] as LocalDate?,
                     selectState = it[2] as CalendarSelectState,
                     selectedYear = it[3] as Int,
-                    selectedMonth = it[4] as Int
+                    selectedMonth = it[4] as Int,
+                    calendarMode = it[5] as CalendarMode,
+                    selectedDates = if (selectedDates.isBlank()) emptyList() else selectedDates.split(",").map { value -> LocalDate.parse(value) }
                 )
             }
         )
@@ -128,5 +154,9 @@ class CalendarState constructor(
 
 enum class CalendarSelectState {
     YEAR, MONTH, DAY
+}
+
+enum class CalendarMode {
+    INTERVAL, MULTISELECT
 }
 
