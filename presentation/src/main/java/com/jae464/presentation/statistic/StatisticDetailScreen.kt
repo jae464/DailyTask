@@ -113,6 +113,7 @@ fun ProgressTaskItem(
     if (uiState is StatisticDetailUiState.Success) {
 //        Log.d("StatisticDetailScreen", uiState.toString())
         val progressTask = uiState.progressTasks.firstOrNull() { it.createdAt == selectedLocalDate }
+        Log.d("StatisticDetailScreen", progressTask.toString())
         if (progressTask.isNotNull()) {
             Text(text = "진행 일정")
             Text(text = progressTask?.title.toString())
@@ -126,7 +127,6 @@ fun MultiSelectCalendar(
     calendarState: CalendarState,
     onClickLocalDate: (LocalDate) -> Unit
 ) {
-    Log.d("StatisticDetailScreen", "MultiSelectCalendar Rendered")
     if (uiState is StatisticDetailUiState.Success) {
         calendarState.selectedDates = uiState.progressTasks.map {
             it.createdAt
