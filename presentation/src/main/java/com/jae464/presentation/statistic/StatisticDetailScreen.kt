@@ -199,7 +199,11 @@ fun MultiSelectCalendar(
     onClickLocalDate: (LocalDate) -> Unit
 ) {
     if (uiState is StatisticDetailUiState.Success) {
-        calendarState.selectedDates = uiState.progressTasks.map {
+        calendarState.selectedDates = uiState.progressTasks
+            .filter {
+                it.progressedTime > 0
+            }
+            .map {
             it.createdAt
         }
     }
