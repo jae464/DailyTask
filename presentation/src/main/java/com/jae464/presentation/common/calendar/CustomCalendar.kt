@@ -679,7 +679,9 @@ fun DateCalendarContent(
 
                             )
                             .clickable {
-                                onClickLocalDate(localDate)
+                                if (isSelected) {
+                                    onClickLocalDate(localDate)
+                                }
                             }
                             .wrapContentHeight()
                             .wrapContentWidth()
