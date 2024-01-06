@@ -34,4 +34,8 @@ fun Task.toTaskUiModel(categoryName: String): TaskUiModel {
     )
 }
 
+fun TaskUiModel.toTask() {
+
+}
+
 

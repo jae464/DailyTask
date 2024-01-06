@@ -32,4 +32,5 @@ interface ProgressTaskRepository {
     suspend fun updateProgressedTime(progressTaskId: String, progressedTime: Int)
     suspend fun updateTodayMemo(progressTaskId: String, todayMemo: String)
     suspend fun insertProgressTask(progressTask: ProgressTask)
+    suspend fun isExistProgressTaskByDate(taskId: String, createdAt: LocalDate): Boolean
 }

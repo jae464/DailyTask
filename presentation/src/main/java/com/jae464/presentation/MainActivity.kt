@@ -91,7 +91,9 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
         }
+
         intentData = intent.getStringExtra("progressTaskId") ?: ""
+
         setContent {
             DailyTaskTheme {
                 // A surface container using the 'background' color from the theme

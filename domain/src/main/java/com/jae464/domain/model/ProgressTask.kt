@@ -13,3 +13,17 @@ data class ProgressTask(
     val todayMemo: String,
     val createdAt: LocalDate
 )
+
+fun Task.toProgressTask(category: Category): ProgressTask {
+    return ProgressTask(
+        id = id,
+        title = title,
+        totalTime = progressTime,
+        progressedTime = 0,
+        task = this,
+        category = category,
+        memo = memo,
+        todayMemo = "",
+        createdAt = LocalDate.now()
+    )
+}

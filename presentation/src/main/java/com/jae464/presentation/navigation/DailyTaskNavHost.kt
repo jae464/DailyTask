@@ -61,7 +61,6 @@ fun DailyTaskNavHost(
         settingScreen()
         detailScreen(
             onBackClick = {
-//                navController.navigateToTopLevelDestination(TopLevelDestination.Home)
                 navController.navigateUp()
             }
         )

@@ -98,4 +98,7 @@ interface ProgressTaskDao {
     @Query("UPDATE progress_tasks SET today_memo = :todayMemo WHERE id = :progressTaskId")
     suspend fun updateTodayMemo(progressTaskId: String, todayMemo: String)
 
+    @Query("SELECT EXISTS (SELECT * FROM progress_tasks WHERE task_id = :taskId AND created_at = :createdAt)")
+    suspend fun isExistProgressTaskByDate(taskId: String, createdAt: LocalDate): Boolean
+
 }

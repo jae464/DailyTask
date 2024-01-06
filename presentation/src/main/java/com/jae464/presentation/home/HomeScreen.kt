@@ -1,6 +1,5 @@
 package com.jae464.presentation.home
 
-import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -177,7 +176,7 @@ fun ProgressTaskItem(
                         .weight(1f)
                 ) {
                     Text(
-                        text = progressTaskUiModel.categoryName,
+                        text = "${progressTaskUiModel.taskType}/${progressTaskUiModel.categoryName}",
                         color = MaterialTheme.colorScheme.onSecondary,
                         style = MaterialTheme.typography.bodySmall,
                     )
