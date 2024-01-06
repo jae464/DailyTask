@@ -29,6 +29,9 @@ class StatisticDetailViewModel @Inject constructor(
     private val _uiState: MutableStateFlow<StatisticDetailUiState> =  MutableStateFlow(StatisticDetailUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
+    private val _selectedLocalDate : MutableStateFlow<LocalDate> = MutableStateFlow(LocalDate.now())
+    val selectedLocalDate = _selectedLocalDate.asStateFlow()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val task = savedStateHandle.getStateFlow(key = "taskId", initialValue = "")
         .flatMapLatest {
@@ -42,6 +45,7 @@ class StatisticDetailViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = null
         )
+
 
     init {
         val taskId = savedStateHandle["taskId"] ?: ""
@@ -57,9 +61,14 @@ class StatisticDetailViewModel @Inject constructor(
                 .collectLatest {
                     Log.d("StatisticDetailViewModel", it.toString())
                     _uiState.value = StatisticDetailUiState.Success(it)
+                    _selectedLocalDate.value = it.last().createdAt
                 }
         }
 
+    }
+
+    fun setSelectedLocalDate(localDate: LocalDate) {
+        _selectedLocalDate.value = localDate
     }
 }
 
