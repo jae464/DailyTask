@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -59,9 +60,10 @@ class StatisticDetailViewModel @Inject constructor(
         viewModelScope.launch {
             getProgressTaskByTaskIdUseCase(usePeriod = usePeriod, taskId, startDate, endDate)
                 .collectLatest {
+                    val filteredProgressTasks = it.filter { p -> p.progressedTime > 0 }
                     Log.d("StatisticDetailViewModel", it.toString())
-                    _uiState.value = StatisticDetailUiState.Success(it)
-                    _selectedLocalDate.value = it.last().createdAt
+                    _uiState.value = StatisticDetailUiState.Success(filteredProgressTasks)
+                    _selectedLocalDate.value = filteredProgressTasks.last().createdAt
                 }
         }
 

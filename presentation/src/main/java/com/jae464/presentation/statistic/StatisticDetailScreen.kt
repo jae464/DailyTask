@@ -72,6 +72,13 @@ fun StatisticDetailScreen(
     )
     val selectedLocalDate by viewModel.selectedLocalDate.collectAsStateWithLifecycle()
 
+    LaunchedEffect(
+        selectedLocalDate
+    ) {
+        calendarState.selectedYear = selectedLocalDate.year
+        calendarState.selectedMonth = selectedLocalDate.month.value
+    }
+
     Scaffold(
         modifier = modifier
             .windowInsetsPadding(
