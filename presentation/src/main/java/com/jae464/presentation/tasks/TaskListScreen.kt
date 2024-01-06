@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +32,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -58,6 +60,7 @@ import androidx.compose.material.icons.rounded.AccessTimeFilled
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material.icons.rounded.Today
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -71,6 +74,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -80,6 +84,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -229,7 +234,8 @@ fun TaskListScreen(
                         modifier = modifier,
                         taskListUiState = taskListUiState,
                         onClickTask = onClickTask,
-                        onClickDelete = { showDeleteDialog = it }
+                        onClickDelete = { showDeleteDialog = it },
+                        onClickAddProgressTask = viewModel::insertProgressTaskToday
                     )
                 }
 
@@ -337,6 +343,7 @@ fun TaskList(
     taskListUiState: TaskListUiState,
     onClickTask: (String) -> Unit,
     onClickDelete: (String) -> Unit,
+    onClickAddProgressTask: (String) -> Unit,
 ) {
     val state = rememberLazyListState()
     val focusManager = LocalFocusManager.current
@@ -360,7 +367,8 @@ fun TaskList(
                     taskUIModel = taskUiModel,
                     onClickTask = onClickTask,
                     onClickDelete = onClickDelete,
-                    isScrolling = isScrollInProgress
+                    isScrolling = isScrollInProgress,
+                    onClickAddProgressTask = onClickAddProgressTask,
                 )
             }
 
@@ -408,15 +416,18 @@ fun TaskItem(
     modifier: Modifier = Modifier,
     onClickTask: (String) -> Unit,
     onClickDelete: (String) -> Unit,
+    onClickAddProgressTask: (String) -> Unit,
     isScrolling: Boolean = false,
 ) {
     val anchors = DraggableAnchors {
         DragValue.Start at -200.dp.value
         DragValue.Center at 0.dp.value
-//        DragValue.End at 200.dp.value
+        DragValue.End at 200.dp.value
     }
 
     val scope = rememberCoroutineScope()
+
+    var cardHeight by remember { mutableIntStateOf(0) }
 
     val state = remember { AnchoredDraggableState(
         initialValue = DragValue.Center,
@@ -444,9 +455,27 @@ fun TaskItem(
             .fillMaxWidth()
             .wrapContentHeight()
             .anchoredDraggable(state, Orientation.Horizontal)
-            .background(if (state.offset < 0) MaterialTheme.colorScheme.errorContainer else Color.White)
+            .background(if (state.offset > 0) MaterialTheme.colorScheme.secondary else if (state.offset < 0) MaterialTheme.colorScheme.errorContainer else Color.White)
 
     ) {
+        IconButton(
+            onClick = {
+                Log.d("TaskListScreen", "onClick delete button")
+                // TODO show alert dialog to confirm delete
+                onClickAddProgressTask(taskUIModel.id)
+            },
+            modifier =
+            Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 20.dp)
+//                    .wrapContentWidth()
+                .fillMaxHeight()
+        ) {
+            Image(
+                imageVector = Icons.Rounded.Today,
+                contentDescription = "add_progress_task"
+            )
+        }
 
         IconButton(
             onClick = {
@@ -456,9 +485,10 @@ fun TaskItem(
             },
             modifier =
             Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 20.dp)
-                .wrapContentWidth()
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 20.dp)
+//                    .wrapContentWidth()
+                .fillMaxHeight()
         ) {
             Image(
                 imageVector = Icons.Rounded.Delete,
@@ -467,13 +497,17 @@ fun TaskItem(
         }
 
         Card(
-            modifier = modifier
+            modifier = Modifier
                 .offset {
                     IntOffset(
                         state
                             .requireOffset()
                             .roundToInt(), 0
                     )
+                }
+                .onSizeChanged {
+                    Log.d("TaskListScreen", it.toString())
+                    cardHeight = it.height
                 }
                 .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),

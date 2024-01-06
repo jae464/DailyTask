@@ -3,8 +3,12 @@ package com.jae464.presentation.tasks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.Category
+import com.jae464.domain.model.Task
+import com.jae464.domain.model.toProgressTask
 import com.jae464.domain.usecase.task.DeleteTaskUseCase
 import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
+import com.jae464.domain.usecase.progresstask.InsertProgressTaskUseCase
+import com.jae464.domain.usecase.progresstask.IsExistProgressTaskUseCase
 import com.jae464.domain.usecase.task.GetAllTasksUseCase
 import com.jae464.presentation.home.ProgressingTaskManager
 import com.jae464.presentation.model.TaskUiModel
@@ -19,6 +23,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
@@ -26,7 +31,9 @@ import javax.inject.Inject
 class TaskListViewModel @Inject constructor(
     private val getAllTasksUseCase: GetAllTasksUseCase,
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
-    private val deleteTaskUseCase: DeleteTaskUseCase
+    private val deleteTaskUseCase: DeleteTaskUseCase,
+    private val isExistProgressTaskUseCase: IsExistProgressTaskUseCase,
+    private val insertProgressTaskUseCase: InsertProgressTaskUseCase
 ) : ViewModel() {
 
     private val progressingTaskManager = ProgressingTaskManager.getInstance()
@@ -114,6 +121,20 @@ class TaskListViewModel @Inject constructor(
         _searchText.value = text
     }
 
+    fun insertProgressTaskToday(taskId: String) {
+        viewModelScope.launch {
+            val isExist = checkIsExistProgressToday(taskId)
+            if (!isExist) {
+                val task = tasks.value.first { it.id == taskId }
+                val category = categories.value.first { it.id == task.categoryId }
+                insertProgressTaskUseCase(task.toProgressTask(category))
+            }
+        }
+    }
+
+    suspend fun checkIsExistProgressToday(taskId: String): Boolean {
+        return isExistProgressTaskUseCase(taskId, LocalDate.now())
+    }
 }
 
 sealed interface TaskListUiState {

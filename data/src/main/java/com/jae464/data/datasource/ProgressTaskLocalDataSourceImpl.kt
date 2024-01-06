@@ -67,4 +67,8 @@ class ProgressTaskLocalDataSourceImpl @Inject constructor(
         progressTaskDao.insertProgressTask(progressTaskEntity)
     }
 
+    override suspend fun isExistProgressTaskByDate(taskId: String, createdAt: LocalDate): Boolean {
+        return progressTaskDao.isExistProgressTaskByDate(taskId, createdAt)
+    }
+
 }

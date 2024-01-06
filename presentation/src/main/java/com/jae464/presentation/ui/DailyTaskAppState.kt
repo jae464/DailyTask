@@ -32,7 +32,7 @@ fun rememberDailyTaskAppState(
 }
 @Stable
 class DailyTaskAppState(
-    val progressIntentData: String,
+    private val progressIntentData: String,
     val navController: NavHostController
 ) {
     val currentDestination: NavDestination?
