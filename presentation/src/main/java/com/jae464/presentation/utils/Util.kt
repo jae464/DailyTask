@@ -33,6 +33,10 @@ fun stringToLocalDates(value: String): List<LocalDate> {
     }
 }
 
-fun intToTimeFormatString(time: Int): String {
+fun intToProgressTimeFormat(time: Int): String {
     return "%2d시간 %02d분".format(time / 3600, time % 3600 / 60)
+}
+
+fun LocalDate.toKrFormat(): String {
+    return "${this.year}년 ${this.monthValue}월 ${this.dayOfMonth}일"
 }
