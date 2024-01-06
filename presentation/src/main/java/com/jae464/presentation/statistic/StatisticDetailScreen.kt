@@ -159,7 +159,7 @@ fun ProgressTaskStatisticItem(
 ) {
     val totalTime = progressTask.task.progressTime.toFloat()
     val progressedTime = progressTask.progressedTime.toFloat()
-    val notProgressedTime = totalTime - progressedTime
+    val notProgressedTime = (totalTime - progressedTime).coerceAtLeast(0f)
 
     val progressedTimeSlice = PieChartData.Slice(
         "",
