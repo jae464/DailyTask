@@ -70,6 +70,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val TAG = "MainActivity"
+    private var intentData: String? = ""
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,23 +91,18 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
         }
-
+        intentData = intent.getStringExtra("progressTaskId") ?: ""
         setContent {
             DailyTaskTheme {
                 // A surface container using the 'background' color from the theme
-                val appState = rememberDailyTaskAppState()
+                val appState = rememberDailyTaskAppState(
+                    intentData = intentData ?: ""
+                )
                 val navController = appState.navController
                 val currentDest = appState.currentDestination
                 val isShowBottomNavigation = TopLevelDestination.values().map { it.route }.contains(
                     appState.currentDestination?.route
                 )
-
-//                var currentDestination by rememberSaveable { mutableStateOf(navController.currentDestination) }
-//                val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
-//                    Log.d(TAG, destination.route.toString())
-//                    currentDestination = destination
-//                }
-//                navController.addOnDestinationChangedListener(listener)
 
                 Scaffold(
                     containerColor = Color.Transparent,
@@ -121,13 +117,7 @@ class MainActivity : ComponentActivity() {
                             .padding(padding)
                             .fillMaxSize()
                     ) {
-                        DailyTaskNavHost(navController = navController)
-
-                        // Notification 클릭해서 들어온 경우
-                        val progressTaskId = intent.getStringExtra("progressTaskId") ?: ""
-                        if (progressTaskId.isNotEmpty()) {
-                            navController.navigateToDetail(progressTaskId)
-                        }
+                        DailyTaskNavHost(appState = appState)
                     }
                 }
             }
@@ -164,64 +154,12 @@ fun BottomNavBar(navController: NavHostController, currentDest: NavDestination?)
     }
 }
 
-//            val selected = currentRoute.isTopLevelDestinationInHierarchy(destination)
-
-@Composable
-fun NavigationGraph(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Routes.Home.route) {
-        composable(Routes.Home.route) {
-            HomeScreen()
-        }
-        composable(
-            route = Routes.TaskList.route
-        ) {
-            TaskListScreen(
-                onClickAddTask = {
-                    navController.navigate(addTaskScreenRoute) {
-                        launchSingleTop = true
-                    }
-                },
-                onClickTask = { taskId ->
-                    navController.navigate("$addTaskScreenRoute?taskId=$taskId") {
-                        launchSingleTop = true
-                    }
-                }
-            )
-        }
-        composable(Routes.Statistic.route) {
-            StatisticScreen()
-        }
-        composable(Routes.Setting.route) {
-            SettingScreen()
-        }
-        composable(
-            route = "$addTaskScreenRoute?taskId={taskId}",
-            arguments = listOf(
-                navArgument("taskId") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                })
-        ) {
-            AddTaskScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                }
-            )
-        }
-    }
-}
-
-enum class Routes(val icon: ImageVector, val route: String) {
-    Home(Icons.Rounded.Home, "home"),
-    TaskList(Icons.Rounded.List, "task_list"),
-    Statistic(Icons.Rounded.Info, "statistic"),
-    Setting(Icons.Rounded.Settings, "setting"),
-}
-
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     DailyTaskTheme {
-        HomeScreen()
+//        HomeScreen(
+//
+//        )
     }
 }

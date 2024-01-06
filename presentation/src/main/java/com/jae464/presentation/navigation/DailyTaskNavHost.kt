@@ -16,12 +16,16 @@ import com.jae464.presentation.statistic.statisticScreen
 import com.jae464.presentation.tasks.addTaskScreen
 import com.jae464.presentation.tasks.navigateToAddTask
 import com.jae464.presentation.tasks.taskListScreen
+import com.jae464.presentation.ui.DailyTaskAppState
 
 @Composable
 fun DailyTaskNavHost(
-    navController: NavHostController,
+    appState: DailyTaskAppState,
     startDestination: String = homeRoute
 ) {
+
+    val navController = appState.navController
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -31,6 +35,7 @@ fun DailyTaskNavHost(
         popExitTransition = { ExitTransition.None }
     ) {
         homeScreen(
+            appState = appState,
             onClickItem = {
                 navController.navigateToDetail(progressTaskId = it)
             }
@@ -56,7 +61,8 @@ fun DailyTaskNavHost(
         settingScreen()
         detailScreen(
             onBackClick = {
-                navController.popBackStack()
+//                navController.navigateToTopLevelDestination(TopLevelDestination.Home)
+                navController.navigateUp()
             }
         )
         statisticDetailScreen(
