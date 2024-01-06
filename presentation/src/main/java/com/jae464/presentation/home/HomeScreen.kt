@@ -1,5 +1,6 @@
 package com.jae464.presentation.home
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,10 +44,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jae464.presentation.model.ProgressTaskUiModel
 import com.jae464.presentation.model.toProgressTaskUiModel
+import com.jae464.presentation.ui.DailyTaskAppState
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    appState: DailyTaskAppState,
     viewModel: HomeViewModel = hiltViewModel(),
     onClickItem: (String) -> Unit = {}
 ) {
@@ -56,6 +59,11 @@ fun HomeScreen(
     val context = LocalContext.current
 
     Log.d("HomeScreen", "HomeScreen Rendered")
+
+    if (appState.intentData.isNotBlank()) {
+        onClickItem(appState.intentData)
+        appState.intentData = ""
+    }
 
     Surface(
         modifier = Modifier

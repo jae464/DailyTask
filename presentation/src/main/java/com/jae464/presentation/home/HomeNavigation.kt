@@ -12,6 +12,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.jae464.presentation.ui.DailyTaskAppState
 
 const val homeRoute = "home"
 
@@ -21,12 +22,14 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
 }
 
 fun NavGraphBuilder.homeScreen(
+    appState: DailyTaskAppState,
     onClickItem: (String) -> Unit = {}
 ) {
     composable(
         route = homeRoute,
     ) {
         HomeScreen(
+            appState = appState,
             onClickItem = onClickItem
         )
     }
