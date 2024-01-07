@@ -13,6 +13,7 @@ import com.jae464.domain.usecase.progresstask.GetProgressTaskByDates
 import com.jae464.presentation.statistic.model.TotalProgressTaskUiModel
 import com.jae464.presentation.statistic.model.toTotalProgressTaskUiModels
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -50,38 +51,12 @@ class StatisticViewModel @Inject constructor(
     val filteredDayOfWeeks: StateFlow<List<DayOfWeek>>
         get() = _filteredDayOfWeeks
 
-//    val filteredProgressTasks = getFilteredProgressTaskUseCase(
-//        usePeriod = true,
-//        useFilterCategory = true,
-//        filterCategoryIds = setOf(1L),
-//        useFilterTaskType = true,
-//        filterTaskType = TaskType.Regular,
-//        useFilterDayOfWeeks = true,
-//        filterDayOfWeeks = setOf(DayOfWeek.SUNDAY)
-//    ).stateIn(
-//        scope = viewModelScope,
-//        started = SharingStarted.WhileSubscribed(5_000),
-//        initialValue = emptyList()
-//    )
+    private var getProgressTaskJob: Job? = null
 
     fun getProgressTasks(startDate: LocalDate, endDate: LocalDate) {
-        viewModelScope.launch {
-            totalProgressTasksUiState.value = TotalProgressTasksUiState.Loading
-            // TODO 호출할때마다 Collector가 계속해서 증가할 것으로 보임. 수정 필요
-            getProgressTaskByDates(startDate, endDate).collectLatest {
-                Log.d("StatisticViewModel", "collector ${this.coroutineContext.hashCode()}")
-                if (it.isEmpty()) {
-                    totalProgressTasksUiState.value = TotalProgressTasksUiState.Empty
-                }
-                else {
-                    totalProgressTasksUiState.value = TotalProgressTasksUiState.Success(it.toTotalProgressTaskUiModels())
-                }
-            }
-        }
-    }
+        getProgressTaskJob?.cancel()
 
-    fun getProgressTasks2(startDate: LocalDate, endDate: LocalDate) {
-        viewModelScope.launch {
+        getProgressTaskJob = viewModelScope.launch {
             totalProgressTasksUiState.value = TotalProgressTasksUiState.Loading
             val useFilterCategory = filteredCategories.value.isNotEmpty()
             val useFilterTaskType = filteredTaskType.value != TaskType.All
@@ -97,6 +72,7 @@ class StatisticViewModel @Inject constructor(
                 useFilterDayOfWeeks = useFilterDayOfWeeks,
                 filterDayOfWeeks = filteredDayOfWeeks.value.toSet()
             ).collectLatest {
+                Log.d("StatisticViewModel", "getProgressTasks $it")
                 if (it.isEmpty()) {
                     totalProgressTasksUiState.value = TotalProgressTasksUiState.Empty
                 }

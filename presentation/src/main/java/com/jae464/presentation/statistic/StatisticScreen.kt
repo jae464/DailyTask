@@ -114,9 +114,6 @@ fun StatisticScreen(
 
     val scope = rememberCoroutineScope()
 
-//
-//    Log.d(TAG, filteredProgressTasks.toString())
-
     Surface(
         modifier = Modifier.windowInsetsPadding(
             WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
@@ -211,7 +208,7 @@ fun StatisticScreen(
                                 .show()
                             return@LoadPieChartButton
                         }
-                        viewModel.getProgressTasks2(startDate, endDate)
+                        viewModel.getProgressTasks(startDate, endDate)
                     },
                     scrollState = scrollState,
                     toYOffset = calendarHeight + filterHeight
@@ -471,10 +468,10 @@ fun TotalProgressTaskList(
                     modifier = Modifier.padding(16.dp)
                 )
             } else {
-                val chunkedTotalProgressTask = filteredTotalProgressTask.chunked(4)
-                val pagerState = rememberPagerState(
-                    pageCount = { chunkedTotalProgressTask.size }
-                )
+//                val chunkedTotalProgressTask = filteredTotalProgressTask.chunked(4)
+//                val pagerState = rememberPagerState(
+//                    pageCount = { chunkedTotalProgressTask.size }
+//                )
                 // 방법 1. HorizontalPager 사용
 //                HorizontalPager(
 //                    state = pagerState,
