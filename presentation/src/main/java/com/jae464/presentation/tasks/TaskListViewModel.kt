@@ -15,7 +15,9 @@ import com.jae464.presentation.model.TaskUiModel
 import com.jae464.presentation.model.toTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -62,6 +64,10 @@ class TaskListViewModel @Inject constructor(
         get() = _searchText
 
     private val filteredSearchText = MutableStateFlow("")
+
+    private val _event = MutableStateFlow<TaskListEvent>(TaskListEvent.Initial)
+    val event: StateFlow<TaskListEvent>
+        get() = _event
 
     init {
         viewModelScope.launch {
@@ -141,4 +147,9 @@ sealed interface TaskListUiState {
     object Loading : TaskListUiState
     data class Success(val taskUiModels: List<TaskUiModel>) : TaskListUiState
     object Empty : TaskListUiState
+}
+
+sealed interface TaskListEvent {
+    object Initial : TaskListEvent
+    data class Success(val message: String) : TaskListEvent
 }
