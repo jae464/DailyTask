@@ -1,6 +1,7 @@
 package com.jae464.presentation.tasks
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -85,6 +86,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -108,7 +110,7 @@ import me.onebone.toolbar.ScrollStrategy
 import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalToolbarApi::class)
+@OptIn(ExperimentalToolbarApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun TaskListScreen(
     modifier: Modifier = Modifier,
@@ -123,10 +125,11 @@ fun TaskListScreen(
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
 
-    var showDeleteDialog by remember { mutableStateOf("") } // 삭제할 taskId 저장
+    var showDeleteDialog by remember { mutableStateOf<Pair<String, AnchoredDraggableState<DragValue>?>>(Pair("", null)) } // 삭제할 taskId 저장
     var showBottomSheetDialog by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
 
     CollapsingToolbarScaffold(
         modifier = modifier
@@ -234,7 +237,9 @@ fun TaskListScreen(
                         modifier = modifier,
                         taskListUiState = taskListUiState,
                         onClickTask = onClickTask,
-                        onClickDelete = { showDeleteDialog = it },
+                        onClickDelete = { showDialog, anchoredState ->
+                            showDeleteDialog = Pair(showDialog, anchoredState)
+                        },
                         onClickAddProgressTask = viewModel::insertProgressTaskToday
                     )
                 }
@@ -251,18 +256,22 @@ fun TaskListScreen(
                 else -> {}
             }
 
-            if (showDeleteDialog.isNotEmpty()) {
+            if (showDeleteDialog.first.isNotEmpty()) {
                 AlertDialog(
                     onDismissRequest = {
-                        showDeleteDialog = ""
+                        val anchoredDraggableState = showDeleteDialog.second
+                        scope.launch {
+                            anchoredDraggableState?.animateTo(DragValue.Center)
+                        }
+                        showDeleteDialog = Pair("", null)
                     },
                     title = {
                         Text(text = "일정을 삭제하시겠습니까?")
                     },
                     confirmButton = {
                         TextButton(onClick = {
-                            viewModel.deleteTask(showDeleteDialog)
-                            showDeleteDialog = ""
+                            viewModel.deleteTask(showDeleteDialog.first)
+                            showDeleteDialog = Pair("", null)
                         }) {
                             Text(text = "삭제")
                         }
@@ -337,12 +346,13 @@ fun SearchTextField(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TaskList(
     modifier: Modifier = Modifier,
     taskListUiState: TaskListUiState,
     onClickTask: (String) -> Unit,
-    onClickDelete: (String) -> Unit,
+    onClickDelete: (String, AnchoredDraggableState<DragValue>) -> Unit,
     onClickAddProgressTask: (String) -> Unit,
 ) {
     val state = rememberLazyListState()
@@ -415,7 +425,7 @@ fun TaskItem(
     taskUIModel: TaskUiModel,
     modifier: Modifier = Modifier,
     onClickTask: (String) -> Unit,
-    onClickDelete: (String) -> Unit,
+    onClickDelete: (String, AnchoredDraggableState<DragValue>) -> Unit,
     onClickAddProgressTask: (String) -> Unit,
     isScrolling: Boolean = false,
 ) {
@@ -441,6 +451,8 @@ fun TaskItem(
         anchors = anchors
     )}
 
+    val context = LocalContext.current
+
     LaunchedEffect(isScrolling) {
         if (isScrolling && !state.isAnimationRunning) {
             scope.launch {
@@ -460,14 +472,18 @@ fun TaskItem(
     ) {
         IconButton(
             onClick = {
-                Log.d("TaskListScreen", "onClick delete button")
-                // TODO show alert dialog to confirm delete
+                Log.d("TaskListScreen", "onClick add progress task button")
                 onClickAddProgressTask(taskUIModel.id)
+                // TODO 저장 완료되었을때 메시지 띄우도록 수정하기
+                Toast.makeText(context, "오늘 할일에 추가되었습니다.", Toast.LENGTH_SHORT).show()
+                scope.launch {
+                    state.animateTo(DragValue.Center)
+                }
             },
             modifier =
             Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 20.dp)
+                .align(Alignment.CenterStart)
+                .padding(start = 20.dp)
 //                    .wrapContentWidth()
                 .fillMaxHeight()
         ) {
@@ -481,12 +497,12 @@ fun TaskItem(
             onClick = {
                 Log.d("TaskListScreen", "onClick delete button")
                 // TODO show alert dialog to confirm delete
-                onClickDelete(taskUIModel.id)
+                onClickDelete(taskUIModel.id, state)
             },
             modifier =
             Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 20.dp)
+                .align(Alignment.CenterEnd)
+                .padding(end = 20.dp)
 //                    .wrapContentWidth()
                 .fillMaxHeight()
         ) {
