@@ -24,18 +24,18 @@ class ProgressingTaskManager {
         _progressingState.value = ProgressingState.Progressing(progressTask)
         this.progressTask = progressTask
 
-        val constraints = Constraints.Builder()
-            .build()
-        val request = OneTimeWorkRequestBuilder<ProgressTaskWorker>()
-            .setConstraints(constraints)
-            .build()
-        val workManager = WorkManager.getInstance(context)
-        workManager.beginUniqueWork(
-            "taskWorker",
-            ExistingWorkPolicy.REPLACE,
-            request
-        )
-            .enqueue()
+//        val constraints = Constraints.Builder()
+//            .build()
+//        val request = OneTimeWorkRequestBuilder<ProgressTaskWorker>()
+//            .setConstraints(constraints)
+//            .build()
+//        val workManager = WorkManager.getInstance(context)
+//        workManager.beginUniqueWork(
+//            "taskWorker",
+//            ExistingWorkPolicy.REPLACE,
+//            request
+//        )
+//            .enqueue()
     }
 
     fun tick() {

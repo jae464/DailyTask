@@ -1,6 +1,7 @@
 package com.jae464.presentation.home
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,6 +14,7 @@ import com.jae464.domain.usecase.progresstask.UpdateTodayProgressTasksUseCase
 import com.jae464.presentation.model.ProgressTaskUiModel
 import com.jae464.presentation.model.toProgressTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -23,6 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val getTasksByDayOfWeekUseCase: GetTasksByDayOfWeekUseCase,
     private val getTodayProgressTaskUseCase: GetTodayProgressTaskUseCase,
     private val updateTodayProgressTasksUseCase: UpdateTodayProgressTasksUseCase,
@@ -91,7 +94,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun startProgressTask(id: String, context: Context) {
+    fun startProgressTask(id: String) {
         val progressTask = progressTasks.value?.firstOrNull{it.id == id} ?: return
 
         if (progressingTaskManager.progressingState.value is ProgressingState.Progressing) {
@@ -100,10 +103,15 @@ class HomeViewModel @Inject constructor(
             stopCurrentProgressingTask()
 
             if (progressingTaskId != id) {
+                val service = Intent(context, ProgressTaskService::class.java)
+                context.startService(service)
                 progressingTaskManager.startProgressTask(progressTask, context)
+
             }
         }
         else {
+            val service = Intent(context, ProgressTaskService::class.java)
+            context.startService(service)
             progressingTaskManager.startProgressTask(progressTask, context)
         }
     }
@@ -111,6 +119,8 @@ class HomeViewModel @Inject constructor(
     private fun stopCurrentProgressingTask() {
         if (progressingTaskManager.progressingState.value is ProgressingState.Progressing) {
             val progressingTaskId = progressingTaskManager.getCurrentProgressTask()?.id ?: return
+            val service = Intent(context, ProgressTaskService::class.java)
+            context.stopService(service)
             val progressedTime = progressingTaskManager.stopProgressTask()
             viewModelScope.launch {
                 updateProgressedTimeUseCase(progressingTaskId, progressedTime)

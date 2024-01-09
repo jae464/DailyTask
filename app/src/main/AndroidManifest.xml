@@ -36,6 +36,9 @@
                 android:value="androidx.startup" />
         </provider>
 
+        <service
+            android:name="com.jae464.presentation.home.ProgressTaskService"/>
+
     </application>
 
 </manifest>
