@@ -42,6 +42,7 @@ bottomsheetdialog-compose = "1.4.0"
 #androidx
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx"}
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "androidx-lifecycle-compose"}
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle-compose"}
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle-compose"}
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose"}

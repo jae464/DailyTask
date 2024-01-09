@@ -1,5 +1,6 @@
 package com.jae464.presentation.home
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -76,7 +77,9 @@ fun HomeScreen(
             progressUiTaskState = progressUiTaskState,
             progressingTaskState = progressingTaskState,
             onClickStart = {
-                viewModel.startProgressTask(it, context)
+                viewModel.startProgressTask(it)
+//                val service = Intent(context, ProgressTaskService::class.java)
+//                context.startService(service)
             },
             onClickItem = onClickItem,
         )
@@ -149,6 +152,8 @@ fun ProgressTaskItem(
     onClickStart: (String) -> Unit,
     onClickItem: (String) -> Unit,
 ) {
+    val context = LocalContext.current
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -200,6 +205,10 @@ fun ProgressTaskItem(
                 Button(
                     onClick = {
                         onClickStart(progressTaskUiModel.id)
+//                        if (progressTaskUiModel.isProgressing) {
+//                            val service = Intent(context, ProgressTaskService::class.java)
+//                            context.stopService(service)
+//                        }
                     },
                     modifier = Modifier
                         .wrapContentSize()

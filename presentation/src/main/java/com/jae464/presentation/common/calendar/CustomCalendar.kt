@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import kotlin.system.measureTimeMillis
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
