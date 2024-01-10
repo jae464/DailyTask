@@ -438,115 +438,6 @@ fun DateCalendar(
 }
 
 @Composable
-fun LazyItemScope.CustomGridView(
-    calendarState: CalendarState,
-    selectedYear: Int,
-    selectedMonth: Int,
-    currentFocus: CurrentFocus,
-    onChangedFocus: (CurrentFocus) -> Unit
-) {
-    Box(
-        modifier = Modifier.fillParentMaxWidth()
-    ) {
-        val dayLength =
-            LocalDate.of(selectedYear, selectedMonth, 1).lengthOfMonth()
-        val days = List(dayLength) { i -> i + 1 }.chunked(7)
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            days.forEachIndexed { index, ints ->
-                Row(
-                    modifier = Modifier.wrapContentWidth()
-                ) {
-                    ints.forEach { day ->
-                        DayBox(
-                            calendarState = calendarState,
-                            selectedYear = selectedYear,
-                            selectedMonth = selectedMonth,
-                            day = day,
-                            currentFocus = currentFocus,
-                            onChangedFocus = onChangedFocus
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun DayBox(
-    modifier: Modifier = Modifier,
-    calendarState: CalendarState,
-    selectedYear: Int,
-    selectedMonth: Int,
-    day: Int,
-    currentFocus: CurrentFocus,
-    onChangedFocus: (CurrentFocus) -> Unit
-) {
-    val localDate = LocalDate.of(selectedYear, selectedMonth, day)
-    val isOneSelected =
-        (calendarState.startDate != null && calendarState.endDate == null) ||
-                (calendarState.startDate == null && calendarState.endDate != null)
-    val isSelected =
-        (calendarState.startDate != null && localDate == calendarState.startDate) ||
-                (calendarState.endDate != null && localDate == calendarState.endDate)
-
-    val isBetween =
-        (calendarState.startDate != null && calendarState.endDate != null && localDate > calendarState.startDate && localDate < calendarState.endDate)
-    Box(
-        modifier = Modifier
-            .background(
-                color = if ((isSelected && !isOneSelected) || isBetween) MaterialTheme.colorScheme.secondaryContainer else Color.White,
-                shape = if (isBetween) RectangleShape else if (isSelected && localDate == calendarState.startDate) RoundedCornerShape(
-                    topStart = 32.dp,
-                    bottomStart = 32.dp
-                ) else if (isSelected && localDate == calendarState.endDate) RoundedCornerShape(
-                    topEnd = 32.dp,
-                    bottomEnd = 32.dp
-                ) else CircleShape
-            )
-            .clickable {
-                if (currentFocus == CurrentFocus.START) {
-                    calendarState.startDate = localDate
-                    if (calendarState.endDate != null && localDate > calendarState.endDate) {
-                        calendarState.endDate = null
-                    }
-                    onChangedFocus(CurrentFocus.END)
-                } else {
-                    if (calendarState.startDate != null && localDate < calendarState.startDate) {
-                        calendarState.startDate = localDate
-                    } else {
-                        calendarState.endDate = localDate
-                    }
-                }
-            }
-            .height(48.dp)
-            .width(48.dp)
-    ) {
-        Text(
-            text = day.toString(),
-            style = MaterialTheme.typography.labelSmall,
-            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier
-                .background(
-                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                    shape = CircleShape
-                )
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .padding(16.dp)
-                .align(Alignment.BottomCenter),
-            textAlign = TextAlign.Center,
-        )
-    }
-}
-
-@Composable
 fun DateCalendarContent(
     calendarState: CalendarState,
     selectedYear: Int,
@@ -555,6 +446,7 @@ fun DateCalendarContent(
     onChangedFocus: (CurrentFocus) -> Unit,
     onClickLocalDate: (LocalDate) -> Unit = {}
 ) {
+    Log.d("CustomCalendar", "DateCalendarContent Rendered")
     val currentMonth = LocalDate.of(selectedYear, selectedMonth, 1)
     val dayLengthOfCurrentMonth = currentMonth.lengthOfMonth()
     val beforeMonth = currentMonth.minusMonths(1)
@@ -667,6 +559,7 @@ fun DateCalendarContent(
                     }
                 }
             }
+
             CalendarMode.MULTISELECT -> {
                 items(
                     localDates
