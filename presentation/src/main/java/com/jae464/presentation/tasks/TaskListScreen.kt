@@ -74,6 +74,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -103,6 +104,7 @@ import com.jae464.presentation.common.CategoryFilterChips
 import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.presentation.model.TaskUiModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ExperimentalToolbarApi
@@ -118,9 +120,11 @@ fun TaskListScreen(
     onClickTask: (String) -> Unit,
     viewModel: TaskListViewModel = hiltViewModel()
 ) {
-    val state = rememberCollapsingToolbarScaffoldState()
+    val toolbarState = rememberCollapsingToolbarScaffoldState()
 
     val taskListUiState by viewModel.taskListUiState.collectAsStateWithLifecycle()
+    val event = viewModel.event
+
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
@@ -130,6 +134,20 @@ fun TaskListScreen(
 
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    LaunchedEffect(event) {
+        event.collectLatest { event ->
+            when (event) {
+                is TaskListEvent.SendToastMessage -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+
+                }
+            }
+        }
+    }
 
     CollapsingToolbarScaffold(
         modifier = modifier
@@ -137,7 +155,7 @@ fun TaskListScreen(
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             ),
-        state = state,
+        state = toolbarState,
         toolbar = {
             Box(
                 modifier = Modifier
@@ -474,8 +492,6 @@ fun TaskItem(
             onClick = {
                 Log.d("TaskListScreen", "onClick add progress task button")
                 onClickAddProgressTask(taskUIModel.id)
-                // TODO 저장 완료되었을때 메시지 띄우도록 수정하기
-                Toast.makeText(context, "오늘 할일에 추가되었습니다.", Toast.LENGTH_SHORT).show()
                 scope.launch {
                     state.animateTo(DragValue.Center)
                 }
