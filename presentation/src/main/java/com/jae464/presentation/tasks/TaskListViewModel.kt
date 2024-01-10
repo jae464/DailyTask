@@ -65,18 +65,7 @@ class TaskListViewModel @Inject constructor(
 
     private val filteredSearchText = MutableStateFlow("")
 
-    private val _event = MutableStateFlow<TaskListEvent>(TaskListEvent.Initial)
-    val event: StateFlow<TaskListEvent>
-        get() = _event
-
-    init {
-        viewModelScope.launch {
-            searchText.debounce(500).collect {
-                filteredSearchText.value = it
-            }
-        }
-    }
-
+    // UIState
     val taskListUiState: StateFlow<TaskListUiState> =
         combine(
             categories,
@@ -109,6 +98,19 @@ class TaskListViewModel @Inject constructor(
             initialValue = TaskListUiState.Loading
         )
 
+    // Event
+    private val _event = MutableSharedFlow<TaskListEvent>()
+    val event: SharedFlow<TaskListEvent>
+        get() = _event
+
+    init {
+        viewModelScope.launch {
+            searchText.debounce(500).collect {
+                filteredSearchText.value = it
+            }
+        }
+    }
+
     fun deleteTask(taskId: String) {
         viewModelScope.launch {
             // 삭제하려는 일정이 현재 진행중인 일정이면 진행을 멈춘다.
@@ -134,11 +136,12 @@ class TaskListViewModel @Inject constructor(
                 val task = tasks.value.first { it.id == taskId }
                 val category = categories.value.first { it.id == task.categoryId }
                 insertProgressTaskUseCase(task.toProgressTask(category))
+                _event.emit(TaskListEvent.SendToastMessage("오늘 할일에 추가되었습니다."))
             }
         }
     }
 
-    suspend fun checkIsExistProgressToday(taskId: String): Boolean {
+    private suspend fun checkIsExistProgressToday(taskId: String): Boolean {
         return isExistProgressTaskUseCase(taskId, LocalDate.now())
     }
 }
@@ -150,6 +153,5 @@ sealed interface TaskListUiState {
 }
 
 sealed interface TaskListEvent {
-    object Initial : TaskListEvent
-    data class Success(val message: String) : TaskListEvent
+    data class SendToastMessage(val message: String) : TaskListEvent
 }
