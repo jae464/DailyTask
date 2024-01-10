@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -70,12 +71,34 @@ fun CustomCalendar(
     onClickLocalDate: (LocalDate) -> Unit = {}
 ) {
     var currentFocus by remember { mutableStateOf(CurrentFocus.START) }
-    var beforePage by remember { mutableStateOf(50) }
+//    var beforePage by remember { mutableStateOf(50) }
     val pagerState = rememberPagerState(
-        initialPage = 50,
-        pageCount = { 100 }
+        initialPage = 1,
+        pageCount = { 3 }
     )
-
+    val scope = rememberCoroutineScope()
+//    LaunchedEffect(pagerState.currentPageOffsetFraction) {
+//        Log.d("CustomCalendar", pagerState.currentPageOffsetFraction.toString())
+//    }
+    LaunchedEffect(pagerState.isScrollInProgress) {
+        Log.d("CustomCalendar", "isScrollInProgress : ${pagerState.isScrollInProgress}")
+        if (!pagerState.isScrollInProgress) {
+            if(pagerState.currentPage == 2) {
+                pagerState.scrollToPage(1)
+                calendarState.selectedMonth = calendarState.nextMonth
+                if (calendarState.selectedMonth == 1) {
+                    calendarState.selectedYear = calendarState.selectedYear + 1
+                }
+            }
+            else if (pagerState.currentPage == 0) {
+                pagerState.scrollToPage(1)
+                calendarState.selectedMonth = calendarState.prevMonth
+                if (calendarState.selectedMonth == 12) {
+                    calendarState.selectedYear = calendarState.selectedYear - 1
+                }
+            }
+        }
+    }
     Log.d("CustomCalendar", "calendarState changed : $calendarState")
     Column(
         modifier = modifier
@@ -127,20 +150,39 @@ fun CustomCalendar(
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.currentPage }.collect { page ->
                         Log.d("CustomCalendar", "pagerState Changed Logic Start")
-                        if (page > beforePage) {
-                            if (calendarState.nextMonth == 1) {
-                                calendarState.selectedYear = calendarState.selectedYear + 1
-                            }
-                            calendarState.selectedMonth = calendarState.nextMonth
-                            beforePage = page
-                        } else if (page < beforePage) {
-                            if (calendarState.prevMonth == 12) {
-                                calendarState.selectedYear = calendarState.selectedYear - 1
-                            }
-                            calendarState.selectedMonth = calendarState.prevMonth
-                            beforePage = page
-                        }
+                        Log.d("CustomCalendar", pagerState.currentPageOffsetFraction.toString())
+                        // 이때 currentPageOffestFraction이 음수면 다음페이지, 양수면 이전페이지로 이동된거임
+//                        scope.launch {
+//                            pagerState.scrollToPage(page)
+//                        }
+//                        if (pagerState.currentPageOffsetFraction < 0) {
+//                        }
+//                        if (page > beforePage) {
+//                            if (calendarState.nextMonth == 1) {
+//                                calendarState.selectedYear = calendarState.selectedYear + 1
+//                            }
+//                            calendarState.selectedMonth = calendarState.nextMonth
+//                            beforePage = page
+//                        } else if (page < beforePage) {
+//                            if (calendarState.prevMonth == 12) {
+//                                calendarState.selectedYear = calendarState.selectedYear - 1
+//                            }
+//                            calendarState.selectedMonth = calendarState.prevMonth
+//                            beforePage = page
+//                        }
                         Log.d("CustomCalendar", "pagerState Changed Logic End")
+
+                    }
+                }
+                LaunchedEffect(pagerState) {
+                    snapshotFlow { pagerState.settledPage }.collect { page ->
+                        Log.d("CustomCalendar", "settled page : $page")
+
+                    }
+                }
+                LaunchedEffect(pagerState) {
+                    snapshotFlow { pagerState.targetPage }.collect { page ->
+                        Log.d("CustomCalendar", "target page : $page")
 
                     }
                 }
@@ -426,14 +468,43 @@ fun DateCalendar(
     Log.d("CustomCalendar", "DateCalendar Rendered")
     HorizontalPager(state = pagerState) { page ->
         Log.d("CustomCalendar", "page : $page")
-        DateCalendarContent(
-            calendarState = calendarState,
-            selectedYear = calendarState.selectedYear,
-            selectedMonth = calendarState.selectedMonth,
-            currentFocus = currentFocus,
-            onChangedFocus = onChangedFocus,
-            onClickLocalDate = onClickLocalDate
-        )
+        when (page) {
+            0 -> {
+                // 전날 달력
+                val prevMonth = calendarState.prevMonth
+                val year = if (prevMonth == 12) calendarState.selectedYear - 1 else calendarState.selectedYear
+                DateCalendarContent(
+                    calendarState = calendarState,
+                    selectedYear = year,
+                    selectedMonth = prevMonth,
+                    currentFocus = currentFocus,
+                    onChangedFocus = onChangedFocus,
+                    onClickLocalDate = onClickLocalDate
+                )
+            }
+            1 -> {
+                DateCalendarContent(
+                    calendarState = calendarState,
+                    selectedYear = calendarState.selectedYear,
+                    selectedMonth = calendarState.selectedMonth,
+                    currentFocus = currentFocus,
+                    onChangedFocus = onChangedFocus,
+                    onClickLocalDate = onClickLocalDate
+                )
+            }
+            2 -> {
+                val nextMonth = calendarState.nextMonth
+                val year = if (nextMonth == 1) calendarState.selectedYear + 1 else calendarState.selectedYear
+                DateCalendarContent(
+                    calendarState = calendarState,
+                    selectedYear = year,
+                    selectedMonth = nextMonth,
+                    currentFocus = currentFocus,
+                    onChangedFocus = onChangedFocus,
+                    onClickLocalDate = onClickLocalDate
+                )
+            }
+        }
     }
 }
 
