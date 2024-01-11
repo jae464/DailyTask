@@ -391,13 +391,17 @@ fun TaskList(
             items(
                 taskListUiState.taskUiModels,
                 key = { it.id }) { taskUiModel ->
-                TaskItem(
-                    taskUIModel = taskUiModel,
-                    onClickTask = onClickTask,
-                    onClickDelete = onClickDelete,
-                    isScrolling = isScrollInProgress,
-                    onClickAddProgressTask = onClickAddProgressTask,
-                )
+                Row(Modifier.animateItemPlacement(
+                    tween(durationMillis = 250)
+                )) {
+                    TaskItem(
+                        taskUIModel = taskUiModel,
+                        onClickTask = onClickTask,
+                        onClickDelete = onClickDelete,
+                        isScrolling = isScrollInProgress,
+                        onClickAddProgressTask = onClickAddProgressTask,
+                    )
+                }
             }
 
         }
