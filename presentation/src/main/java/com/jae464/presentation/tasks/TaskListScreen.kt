@@ -67,6 +67,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -93,6 +94,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -129,7 +131,11 @@ fun TaskListScreen(
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
 
-    var showDeleteDialog by remember { mutableStateOf<Pair<String, AnchoredDraggableState<DragValue>?>>(Pair("", null)) } // 삭제할 taskId 저장
+    var showDeleteDialog by remember {
+        mutableStateOf<Pair<String, AnchoredDraggableState<DragValue>?>>(
+            Pair("", null)
+        )
+    } // 삭제할 taskId 저장
     var showBottomSheetDialog by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
@@ -142,6 +148,7 @@ fun TaskListScreen(
                 is TaskListEvent.SendToastMessage -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
+
                 else -> {
 
                 }
@@ -298,31 +305,11 @@ fun TaskListScreen(
             }
 
             if (showBottomSheetDialog) {
-                BottomSheetDialog(
-                    onDismissRequest = {
-                        showBottomSheetDialog = false
-                    },
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .background(
-                                color = Color.White,
-                                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-                            )
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = "BottomSheetDialog Test")
-                            Text(text = "BottomSheetDialog Test")
-                            Text(text = "BottomSheetDialog Test")
-                            Text(text = "BottomSheetDialog Test")
-                            Text(text = "BottomSheetDialog Test")
-                            Text(text = "BottomSheetDialog Test")
-                        }
-
+                FilterBottomSheetDialog(
+                    onChangeShowBottomSheetDialog = {
+                        showBottomSheetDialog = it
                     }
-                }
+                )
             }
         }
         FloatingActionButton(
@@ -343,6 +330,67 @@ fun TaskListScreen(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun FilterBottomSheetDialog(
+    onChangeShowBottomSheetDialog: (Boolean) -> Unit
+) {
+    BottomSheetDialog(
+        onDismissRequest = {
+            onChangeShowBottomSheetDialog(false)
+        },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .background(
+                    color = Color.White,
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "정렬",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "날짜",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row {
+                    FilterChip(
+                        selected = true,
+                        onClick = { /*TODO*/ },
+                        label = { Text(text = "최신순") }
+                    )
+                    FilterChip(
+                        selected = true,
+                        onClick = { /*TODO*/ },
+                        label = { Text(text = "오래된 순") })
+                }
+                Text(
+                    text = "필터",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+            }
+
+        }
+    }
+}
+
 @Composable
 fun SearchTextField(
     modifier: Modifier = Modifier,
@@ -353,7 +401,7 @@ fun SearchTextField(
     BasicTextField(
         modifier = modifier,
         value = text,
-        onValueChange = {onValueChanged(it)},
+        onValueChange = { onValueChanged(it) },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Search
@@ -391,9 +439,11 @@ fun TaskList(
             items(
                 taskListUiState.taskUiModels,
                 key = { it.id }) { taskUiModel ->
-                Row(Modifier.animateItemPlacement(
-                    tween(durationMillis = 250)
-                )) {
+                Row(
+                    Modifier.animateItemPlacement(
+                        tween(durationMillis = 250)
+                    )
+                ) {
                     TaskItem(
                         taskUIModel = taskUiModel,
                         onClickTask = onClickTask,
@@ -439,6 +489,7 @@ fun SwipeDismissItem(
         )
     }
 }
+
 enum class DragValue { Start, Center, End }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -461,17 +512,19 @@ fun TaskItem(
 
     var cardHeight by remember { mutableIntStateOf(0) }
 
-    val state = remember { AnchoredDraggableState(
-        initialValue = DragValue.Center,
-        positionalThreshold = { distance: Float ->
-            distance * 0.5f
-        },
-        velocityThreshold = {
-            50.dp.value
-        },
-        animationSpec = tween(),
-        anchors = anchors
-    )}
+    val state = remember {
+        AnchoredDraggableState(
+            initialValue = DragValue.Center,
+            positionalThreshold = { distance: Float ->
+                distance * 0.5f
+            },
+            velocityThreshold = {
+                50.dp.value
+            },
+            animationSpec = tween(),
+            anchors = anchors
+        )
+    }
 
     val context = LocalContext.current
 
