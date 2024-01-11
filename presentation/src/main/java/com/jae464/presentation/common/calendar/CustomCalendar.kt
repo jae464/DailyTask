@@ -74,70 +74,12 @@ fun CustomCalendar(
     onClickLocalDate: (LocalDate) -> Unit = {}
 ) {
     var currentFocus by remember { mutableStateOf(CurrentFocus.START) }
-//    var beforePage by remember { mutableStateOf(50) }
+
     val pagerState = rememberPagerState(
         initialPage = 1,
         pageCount = { 3 }
     )
 
-    val scope = rememberCoroutineScope()
-
-    var userScrollable by remember { mutableStateOf(true) }
-
-//    LaunchedEffect(pagerState.currentPageOffsetFraction) {
-//        launch {
-//            Log.d(
-//                "CustomCalendar",
-//                "currentPageOffestFraction : ${pagerState.currentPageOffsetFraction.toString()}"
-//            )
-//            if (pagerState.currentPageOffsetFraction == 0f && pagerState.currentPage != 1) {
-//                Log.d("CustomCalendar", "reset pager, current page : ${pagerState.currentPage}")
-//                if (pagerState.currentPage == 2) {
-//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 시작")
-//                    userScrollable = false
-//                    calendarState.selectedMonth = calendarState.nextMonth
-//                    if (calendarState.selectedMonth == 1) {
-//                        calendarState.selectedYear = calendarState.selectedYear + 1
-//                    }
-//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 중간 (스크롤 전)")
-//                    pagerState.scrollToPage(1)
-//                    userScrollable = true
-//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 완료")
-//                } else if (pagerState.currentPage == 0) {
-//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 시작")
-//                    userScrollable = false
-//                    calendarState.selectedMonth = calendarState.prevMonth
-//                    if (calendarState.selectedMonth == 12) {
-//                        calendarState.selectedYear = calendarState.selectedYear - 1
-//                    }
-//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 중간 (스크롤 전)")
-//                    pagerState.scrollToPage(1)
-//                    userScrollable = true
-//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 완료")
-//                }
-//            }
-//        }
-//    }
-
-//    LaunchedEffect(pagerState.isScrollInProgress) {
-//        Log.d("CustomCalendar", "isScrollInProgress : ${pagerState.isScrollInProgress}")
-//        if (!pagerState.isScrollInProgress) {
-//            if(pagerState.currentPage == 2) {
-//                calendarState.selectedMonth = calendarState.nextMonth
-//                pagerState.scrollToPage(1)
-//                if (calendarState.selectedMonth == 1) {
-//                    calendarState.selectedYear = calendarState.selectedYear + 1
-//                }
-//            }
-//            else if (pagerState.currentPage == 0) {
-//                calendarState.selectedMonth = calendarState.prevMonth
-//                pagerState.scrollToPage(1)
-//                if (calendarState.selectedMonth == 12) {
-//                    calendarState.selectedYear = calendarState.selectedYear - 1
-//                }
-//            }
-//        }
-//    }
     Log.d("CustomCalendar", "calendarState changed : $calendarState")
     Column(
         modifier = modifier
@@ -150,12 +92,6 @@ fun CustomCalendar(
             .padding(8.dp)
             .animateContentSize()
     ) {
-        // 임시 버튼 (페이지 확인용)
-//        Button(onClick = {
-//            Log.d("CustomCalendar", "currentPage : ${pagerState.currentPage.toString()}")
-//        }) {
-//
-//        }
         if (calendarState.calendarMode == CalendarMode.INTERVAL) {
             DateSelector(
                 calendarState = calendarState,
@@ -193,37 +129,7 @@ fun CustomCalendar(
 
             CalendarSelectState.DAY -> {
                 LaunchedEffect(pagerState) {
-                    snapshotFlow { pagerState.currentPage }.collect { page ->
-                        Log.d("CustomCalendar", "pagerState Changed Logic Start")
-//                        Log.d("CustomCalendar", pagerState.currentPageOffsetFraction.toString())
-                        // 이때 currentPageOffestFraction이 음수면 다음페이지, 양수면 이전페이지로 이동된거임
-
-//                        scope.launch {
-////                            pagerState.scrollToPage(page)
-//                            // 이 코드는 실행되지 않음. currentPage로 animateScrollToPage를 하려고 할때 그냥 return하도록 내부적으로 구현되어있음
-//                            pagerState.animateScrollToPage(page)
-//                        }
-//                        if (pagerState.currentPageOffsetFraction < 0) {
-//                        }
-//                        if (page > beforePage) {
-//                            if (calendarState.nextMonth == 1) {
-//                                calendarState.selectedYear = calendarState.selectedYear + 1
-//                            }
-//                            calendarState.selectedMonth = calendarState.nextMonth
-//                            beforePage = page
-//                        } else if (page < beforePage) {
-//                            if (calendarState.prevMonth == 12) {
-//                                calendarState.selectedYear = calendarState.selectedYear - 1
-//                            }
-//                            calendarState.selectedMonth = calendarState.prevMonth
-//                            beforePage = page
-//                        }
-                        Log.d("CustomCalendar", "pagerState Changed Logic End")
-                    }
-                }
-                LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.settledPage }.collect { page ->
-                        Log.d("CustomCalendar", "settled page : $page")
                         if (!pagerState.isScrollInProgress) {
                             if(pagerState.currentPage == 2) {
                                 calendarState.selectedMonth = calendarState.nextMonth
@@ -243,11 +149,6 @@ fun CustomCalendar(
                     }
                 }
 
-                LaunchedEffect(pagerState) {
-                    snapshotFlow { pagerState.targetPage }.collect { page ->
-                        Log.d("CustomCalendar", "target page : $page")
-                    }
-                }
                 DateCalendar(
                     modifier = modifier,
                     calendarState = calendarState,
