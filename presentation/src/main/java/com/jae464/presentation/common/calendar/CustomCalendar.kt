@@ -9,6 +9,7 @@ import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,7 +60,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import kotlin.system.measureTimeMillis
 
@@ -76,29 +79,65 @@ fun CustomCalendar(
         initialPage = 1,
         pageCount = { 3 }
     )
+
     val scope = rememberCoroutineScope()
+
+    var userScrollable by remember { mutableStateOf(true) }
+
 //    LaunchedEffect(pagerState.currentPageOffsetFraction) {
-//        Log.d("CustomCalendar", pagerState.currentPageOffsetFraction.toString())
+//        launch {
+//            Log.d(
+//                "CustomCalendar",
+//                "currentPageOffestFraction : ${pagerState.currentPageOffsetFraction.toString()}"
+//            )
+//            if (pagerState.currentPageOffsetFraction == 0f && pagerState.currentPage != 1) {
+//                Log.d("CustomCalendar", "reset pager, current page : ${pagerState.currentPage}")
+//                if (pagerState.currentPage == 2) {
+//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 시작")
+//                    userScrollable = false
+//                    calendarState.selectedMonth = calendarState.nextMonth
+//                    if (calendarState.selectedMonth == 1) {
+//                        calendarState.selectedYear = calendarState.selectedYear + 1
+//                    }
+//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 중간 (스크롤 전)")
+//                    pagerState.scrollToPage(1)
+//                    userScrollable = true
+//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 완료")
+//                } else if (pagerState.currentPage == 0) {
+//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 시작")
+//                    userScrollable = false
+//                    calendarState.selectedMonth = calendarState.prevMonth
+//                    if (calendarState.selectedMonth == 12) {
+//                        calendarState.selectedYear = calendarState.selectedYear - 1
+//                    }
+//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 중간 (스크롤 전)")
+//                    pagerState.scrollToPage(1)
+//                    userScrollable = true
+//                    Log.d("CustomCalendar", "reset pager, scroll to page 1 완료")
+//                }
+//            }
+//        }
 //    }
-    LaunchedEffect(pagerState.isScrollInProgress) {
-        Log.d("CustomCalendar", "isScrollInProgress : ${pagerState.isScrollInProgress}")
-        if (!pagerState.isScrollInProgress) {
-            if(pagerState.currentPage == 2) {
-                pagerState.scrollToPage(1)
-                calendarState.selectedMonth = calendarState.nextMonth
-                if (calendarState.selectedMonth == 1) {
-                    calendarState.selectedYear = calendarState.selectedYear + 1
-                }
-            }
-            else if (pagerState.currentPage == 0) {
-                pagerState.scrollToPage(1)
-                calendarState.selectedMonth = calendarState.prevMonth
-                if (calendarState.selectedMonth == 12) {
-                    calendarState.selectedYear = calendarState.selectedYear - 1
-                }
-            }
-        }
-    }
+
+//    LaunchedEffect(pagerState.isScrollInProgress) {
+//        Log.d("CustomCalendar", "isScrollInProgress : ${pagerState.isScrollInProgress}")
+//        if (!pagerState.isScrollInProgress) {
+//            if(pagerState.currentPage == 2) {
+//                calendarState.selectedMonth = calendarState.nextMonth
+//                pagerState.scrollToPage(1)
+//                if (calendarState.selectedMonth == 1) {
+//                    calendarState.selectedYear = calendarState.selectedYear + 1
+//                }
+//            }
+//            else if (pagerState.currentPage == 0) {
+//                calendarState.selectedMonth = calendarState.prevMonth
+//                pagerState.scrollToPage(1)
+//                if (calendarState.selectedMonth == 12) {
+//                    calendarState.selectedYear = calendarState.selectedYear - 1
+//                }
+//            }
+//        }
+//    }
     Log.d("CustomCalendar", "calendarState changed : $calendarState")
     Column(
         modifier = modifier
@@ -111,6 +150,12 @@ fun CustomCalendar(
             .padding(8.dp)
             .animateContentSize()
     ) {
+        // 임시 버튼 (페이지 확인용)
+//        Button(onClick = {
+//            Log.d("CustomCalendar", "currentPage : ${pagerState.currentPage.toString()}")
+//        }) {
+//
+//        }
         if (calendarState.calendarMode == CalendarMode.INTERVAL) {
             DateSelector(
                 calendarState = calendarState,
@@ -150,10 +195,13 @@ fun CustomCalendar(
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.currentPage }.collect { page ->
                         Log.d("CustomCalendar", "pagerState Changed Logic Start")
-                        Log.d("CustomCalendar", pagerState.currentPageOffsetFraction.toString())
+//                        Log.d("CustomCalendar", pagerState.currentPageOffsetFraction.toString())
                         // 이때 currentPageOffestFraction이 음수면 다음페이지, 양수면 이전페이지로 이동된거임
+
 //                        scope.launch {
-//                            pagerState.scrollToPage(page)
+////                            pagerState.scrollToPage(page)
+//                            // 이 코드는 실행되지 않음. currentPage로 animateScrollToPage를 하려고 할때 그냥 return하도록 내부적으로 구현되어있음
+//                            pagerState.animateScrollToPage(page)
 //                        }
 //                        if (pagerState.currentPageOffsetFraction < 0) {
 //                        }
@@ -171,19 +219,33 @@ fun CustomCalendar(
 //                            beforePage = page
 //                        }
                         Log.d("CustomCalendar", "pagerState Changed Logic End")
-
                     }
                 }
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.settledPage }.collect { page ->
                         Log.d("CustomCalendar", "settled page : $page")
-
+                        if (!pagerState.isScrollInProgress) {
+                            if(pagerState.currentPage == 2) {
+                                calendarState.selectedMonth = calendarState.nextMonth
+                                if (calendarState.selectedMonth == 1) {
+                                    calendarState.selectedYear = calendarState.selectedYear + 1
+                                }
+                                pagerState.scrollToPage(1)
+                            }
+                            else if (pagerState.currentPage == 0) {
+                                calendarState.selectedMonth = calendarState.prevMonth
+                                if (calendarState.selectedMonth == 12) {
+                                    calendarState.selectedYear = calendarState.selectedYear - 1
+                                }
+                                pagerState.scrollToPage(1)
+                            }
+                        }
                     }
                 }
+
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.targetPage }.collect { page ->
                         Log.d("CustomCalendar", "target page : $page")
-
                     }
                 }
                 DateCalendar(
@@ -463,16 +525,21 @@ fun DateCalendar(
     currentFocus: CurrentFocus,
     onChangedFocus: (CurrentFocus) -> Unit,
     pagerState: PagerState,
-    onClickLocalDate: (LocalDate) -> Unit = {}
+    onClickLocalDate: (LocalDate) -> Unit = {},
+    userScrollable: Boolean = true
 ) {
     Log.d("CustomCalendar", "DateCalendar Rendered")
-    HorizontalPager(state = pagerState) { page ->
+    HorizontalPager(
+        state = pagerState,
+        userScrollEnabled = userScrollable
+    ) { page ->
         Log.d("CustomCalendar", "page : $page")
         when (page) {
             0 -> {
                 // 전날 달력
                 val prevMonth = calendarState.prevMonth
-                val year = if (prevMonth == 12) calendarState.selectedYear - 1 else calendarState.selectedYear
+                val year =
+                    if (prevMonth == 12) calendarState.selectedYear - 1 else calendarState.selectedYear
                 DateCalendarContent(
                     calendarState = calendarState,
                     selectedYear = year,
@@ -482,6 +549,7 @@ fun DateCalendar(
                     onClickLocalDate = onClickLocalDate
                 )
             }
+
             1 -> {
                 DateCalendarContent(
                     calendarState = calendarState,
@@ -492,9 +560,11 @@ fun DateCalendar(
                     onClickLocalDate = onClickLocalDate
                 )
             }
+
             2 -> {
                 val nextMonth = calendarState.nextMonth
-                val year = if (nextMonth == 1) calendarState.selectedYear + 1 else calendarState.selectedYear
+                val year =
+                    if (nextMonth == 1) calendarState.selectedYear + 1 else calendarState.selectedYear
                 DateCalendarContent(
                     calendarState = calendarState,
                     selectedYear = year,
@@ -672,6 +742,5 @@ fun DateCalendarContent(
                 }
             }
         }
-
     }
 }
