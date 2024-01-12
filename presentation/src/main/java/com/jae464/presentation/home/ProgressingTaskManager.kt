@@ -2,12 +2,15 @@ package com.jae464.presentation.home
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.Stable
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.jae464.domain.model.ProgressTask
+import com.jae464.presentation.model.ProgressTaskUiModel
+import com.jae464.presentation.model.toProgressTaskUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,28 +24,15 @@ class ProgressingTaskManager {
     private var progressTask: ProgressTask? = null
 
     fun startProgressTask(progressTask: ProgressTask, context: Context) {
-        _progressingState.value = ProgressingState.Progressing(progressTask)
+        _progressingState.value = ProgressingState.Progressing(progressTask.toProgressTaskUiModel(true))
         this.progressTask = progressTask
-
-//        val constraints = Constraints.Builder()
-//            .build()
-//        val request = OneTimeWorkRequestBuilder<ProgressTaskWorker>()
-//            .setConstraints(constraints)
-//            .build()
-//        val workManager = WorkManager.getInstance(context)
-//        workManager.beginUniqueWork(
-//            "taskWorker",
-//            ExistingWorkPolicy.REPLACE,
-//            request
-//        )
-//            .enqueue()
     }
 
     fun tick() {
         if (progressingState.value is ProgressingState.Progressing) {
             if (this.progressTask != null) {
                 this.progressTask = this.progressTask!!.copy(progressedTime = progressTask!!.progressedTime + 1)
-                _progressingState.value = ProgressingState.Progressing(progressTask!!)
+                _progressingState.value = ProgressingState.Progressing(progressTask!!.toProgressTaskUiModel(true))
             }
         }
     }
@@ -72,5 +62,5 @@ class ProgressingTaskManager {
 
 sealed interface ProgressingState {
     object Ready : ProgressingState
-    data class Progressing(val progressTask: ProgressTask): ProgressingState
+    data class Progressing(val progressTask: ProgressTaskUiModel): ProgressingState
 }
