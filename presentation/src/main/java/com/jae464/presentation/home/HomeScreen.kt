@@ -34,6 +34,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -75,11 +79,9 @@ fun HomeScreen(
     ) {
         ProgressTaskList(
             progressUiTaskState = progressUiTaskState,
-            progressingTaskState = progressingTaskState,
+//            progressingTaskState = progressingTaskState,
             onClickStart = {
                 viewModel.startProgressTask(it)
-//                val service = Intent(context, ProgressTaskService::class.java)
-//                context.startService(service)
             },
             onClickItem = onClickItem,
         )
@@ -90,11 +92,10 @@ fun HomeScreen(
 fun ProgressTaskList(
     modifier: Modifier = Modifier,
     progressUiTaskState: ProgressTaskUiState,
-    progressingTaskState: ProgressingState,
+//    progressingTaskState: ProgressingState,
     onClickStart: (String) -> Unit,
     onClickItem: (String) -> Unit,
 ) {
-    Log.d("ProgressTaskList", progressUiTaskState.toString())
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -111,22 +112,11 @@ fun ProgressTaskList(
                         progressUiTaskState.progressTasks,
                         key = null
                     ) { progressTaskUiModel ->
-                        if (progressingTaskState is ProgressingState.Progressing && progressingTaskState.progressTask.id == progressTaskUiModel.id) {
-                            ProgressTaskItem(
-                                progressTaskUiModel = progressingTaskState.progressTask.toProgressTaskUiModel(
-                                    true
-                                ),
-                                onClickStart = onClickStart,
-                                onClickItem = onClickItem
-
-                            )
-                        } else {
-                            ProgressTaskItem(
-                                progressTaskUiModel = progressTaskUiModel,
-                                onClickStart = onClickStart,
-                                onClickItem = onClickItem
-                            )
-                        }
+                        ProgressTaskItem(
+                            progressTaskUiModel = progressTaskUiModel,
+                            onClickStart = onClickStart,
+                            onClickItem = onClickItem
+                        )
                     }
                 }
             }
@@ -205,10 +195,6 @@ fun ProgressTaskItem(
                 Button(
                     onClick = {
                         onClickStart(progressTaskUiModel.id)
-//                        if (progressTaskUiModel.isProgressing) {
-//                            val service = Intent(context, ProgressTaskService::class.java)
-//                            context.stopService(service)
-//                        }
                     },
                     modifier = Modifier
                         .wrapContentSize()

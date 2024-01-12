@@ -18,6 +18,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -54,8 +55,9 @@ class HomeViewModel @Inject constructor(
 
     val progressUiTaskState: StateFlow<ProgressTaskUiState> = combine(
         tasks,
-        progressTasks
-    ) { tasks, progressTasks ->
+        progressTasks,
+        progressingTask
+    ) { tasks, progressTasks, progressingTask ->
         if (tasks == null || progressTasks == null || isUploading) {
             ProgressTaskUiState.Loading
         }
@@ -76,7 +78,18 @@ class HomeViewModel @Inject constructor(
                     ProgressTaskUiState.Empty
                 }
                 else {
-                    ProgressTaskUiState.Success(progressTasks.map { it.toProgressTaskUiModel() })
+                    if (progressingTask is ProgressingState.Progressing) {
+                        ProgressTaskUiState.Success(progressTasks.map {
+                            if (it.id == progressingTask.progressTask.id) {
+                                progressingTask.progressTask
+                            } else {
+                                it.toProgressTaskUiModel()
+                            }
+                        })
+                    }
+                    else {
+                        ProgressTaskUiState.Success(progressTasks.map { it.toProgressTaskUiModel() })
+                    }
                 }
             }
         }
