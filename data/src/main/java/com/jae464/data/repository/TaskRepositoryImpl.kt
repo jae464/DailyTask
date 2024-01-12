@@ -7,6 +7,7 @@ import com.jae464.data.datasource.TaskLocalDataSource
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.ProgressTask
 import com.jae464.domain.model.Task
+import com.jae464.domain.model.TaskType
 import com.jae464.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -38,6 +39,22 @@ class TaskRepositoryImpl @Inject constructor(
             taskEntities.map {
                 it.toDomain()
             }
+        }
+    }
+
+    override fun getFilteredTasks(
+        usePeriod: Boolean,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        useFilterCategory: Boolean,
+        filterCategoryIds: Set<Long>,
+        useFilterTaskType: Boolean,
+        filterTaskType: TaskType
+    ): Flow<List<Task>> {
+        return taskLocalDataSource.getFilteredTasks(
+            usePeriod, startDate, endDate, useFilterCategory, filterCategoryIds, useFilterTaskType, filterTaskType
+        ).map { taskEntities ->
+            taskEntities.map { it.toDomain() }
         }
     }
 
