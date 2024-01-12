@@ -3,7 +3,9 @@ package com.jae464.presentation.tasks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.Category
+import com.jae464.domain.model.SortBy
 import com.jae464.domain.model.Task
+import com.jae464.domain.model.TaskType
 import com.jae464.domain.model.toProgressTask
 import com.jae464.domain.usecase.task.DeleteTaskUseCase
 import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
@@ -58,12 +60,19 @@ class TaskListViewModel @Inject constructor(
     val filteredCategories: StateFlow<List<Category>>
         get() = _filteredCategories
 
-
     private val _searchText = MutableStateFlow("")
-    val searchText: StateFlow<String>
-        get() = _searchText
+    val searchText: StateFlow<String> get() = _searchText
 
     private val filteredSearchText = MutableStateFlow("")
+
+    private val _sortBy = MutableStateFlow(SortBy.ASC)
+    val sortBy: StateFlow<SortBy> get() = _sortBy
+
+    private val _taskType = MutableStateFlow(TaskType.All)
+    val taskType: StateFlow<TaskType> get() = _taskType
+
+
+
 
     // UIState
     val taskListUiState: StateFlow<TaskListUiState> =
@@ -143,6 +152,10 @@ class TaskListViewModel @Inject constructor(
 
     private suspend fun checkIsExistProgressToday(taskId: String): Boolean {
         return isExistProgressTaskUseCase(taskId, LocalDate.now())
+    }
+
+    fun setSortBy(sortBy: SortBy) {
+        _sortBy.value = sortBy
     }
 }
 

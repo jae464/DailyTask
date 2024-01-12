@@ -87,6 +87,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -102,6 +103,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
 import com.jae464.domain.model.Category
+import com.jae464.domain.model.SortBy
 import com.jae464.presentation.common.CategoryFilterChips
 import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.extension.addFocusCleaner
@@ -130,6 +132,7 @@ fun TaskListScreen(
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
+    val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
 
     var showDeleteDialog by remember {
         mutableStateOf<Pair<String, AnchoredDraggableState<DragValue>?>>(
@@ -308,7 +311,9 @@ fun TaskListScreen(
                 FilterBottomSheetDialog(
                     onChangeShowBottomSheetDialog = {
                         showBottomSheetDialog = it
-                    }
+                    },
+                    selectedSortBy = sortBy,
+                    onChangedSortBy = viewModel::setSortBy
                 )
             }
         }
@@ -333,7 +338,9 @@ fun TaskListScreen(
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FilterBottomSheetDialog(
-    onChangeShowBottomSheetDialog: (Boolean) -> Unit
+    onChangeShowBottomSheetDialog: (Boolean) -> Unit,
+    selectedSortBy: SortBy,
+    onChangedSortBy: (SortBy) -> Unit
 ) {
     BottomSheetDialog(
         onDismissRequest = {
@@ -366,15 +373,14 @@ fun FilterBottomSheetDialog(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row {
-                    FilterChip(
-                        selected = true,
-                        onClick = { /*TODO*/ },
-                        label = { Text(text = "최신순") }
-                    )
-                    FilterChip(
-                        selected = true,
-                        onClick = { /*TODO*/ },
-                        label = { Text(text = "오래된 순") })
+                    SortBy.values().map {
+                        RectangleFilterChip(
+                            title = it.title,
+                            item =  it,
+                            isSelected = selectedSortBy == it,
+                            onClickItem = onChangedSortBy
+                        )
+                    }
                 }
                 Text(
                     text = "필터",
@@ -384,7 +390,6 @@ fun FilterBottomSheetDialog(
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-
             }
 
         }
@@ -681,5 +686,39 @@ fun RoundedBackgroundText(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun <T> RectangleFilterChip(
+    title: String,
+    item: T,
+    isSelected: Boolean,
+    onClickItem: (T) -> Unit
+) {
+    FilterChip(
+        selected = isSelected,
+        shape = RoundedCornerShape(4.dp),
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor = Color.Transparent,
+            labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            selectedContainerColor = Color.Transparent,
+            selectedLabelColor = MaterialTheme.colorScheme.primary,
+            disabledLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
 
-
+        ),
+        border = FilterChipDefaults.filterChipBorder(
+            selectedBorderColor = MaterialTheme.colorScheme.primary,
+            disabledBorderColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            borderWidth = 2.dp,
+            selectedBorderWidth = 2.dp
+        ),
+        onClick = {
+            onClickItem(item)
+        },
+        label = {
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    )
+}
