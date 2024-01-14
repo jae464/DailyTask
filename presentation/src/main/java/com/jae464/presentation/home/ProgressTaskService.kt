@@ -52,6 +52,7 @@ class ProgressTaskService : LifecycleService() {
             .setContentTitle(progressingTaskManager.getCurrentProgressTask()?.title ?: "")
             .setContentText(progressingTaskManager.getCurrentProgressTask()?.progressedTime.toString())
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSilent(true)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
