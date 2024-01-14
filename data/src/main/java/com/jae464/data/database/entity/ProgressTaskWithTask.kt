@@ -24,7 +24,7 @@ fun ProgressTaskWithTask.toDomain(): ProgressTask {
         title = progressTaskEntity.title,
         totalTime = progressTaskEntity.totalTime,
         progressedTime = progressTaskEntity.progressedTime,
-        task = task.toDomain(),
+        task = task.toDomain(category.toDomain()),
         category = category.toDomain(),
         memo = progressTaskEntity.memo,
         todayMemo = progressTaskEntity.todayMemo,

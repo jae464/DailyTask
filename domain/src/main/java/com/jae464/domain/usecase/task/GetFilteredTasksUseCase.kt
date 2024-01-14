@@ -1,11 +1,13 @@
 package com.jae464.domain.usecase.task
 
+import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import com.jae464.domain.repository.TaskRepository
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import javax.inject.Inject
 
-class GetFilteredTasks @Inject constructor(
+class GetFilteredTasksUseCase @Inject constructor(
     private val taskRepository: TaskRepository
 ) {
     operator fun invoke(
@@ -16,5 +18,5 @@ class GetFilteredTasks @Inject constructor(
         filterCategoryIds: Set<Long> = emptySet(),
         useFilterTaskType: Boolean = false,
         filterTaskType: TaskType = TaskType.Regular,
-    ) = taskRepository.getFilteredTasks(usePeriod, startDate, endDate, useFilterCategory, filterCategoryIds, useFilterTaskType, filterTaskType)
+    ): Flow<List<Task>> = taskRepository.getFilteredTasks(usePeriod, startDate, endDate, useFilterCategory, filterCategoryIds, useFilterTaskType, filterTaskType)
 }

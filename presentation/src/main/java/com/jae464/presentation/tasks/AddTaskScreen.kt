@@ -136,7 +136,7 @@ fun AddTaskScreen(
                 useAlarm = savedTaskModel.useAlarm
                 alarmTime = savedTaskModel.alarmTime
                 memo = savedTaskModel.memo
-                selectedCategory = categories.firstOrNull { it.id == savedTaskModel.categoryId }
+                selectedCategory = savedTaskModel.category
             }
 
             else -> {}
@@ -184,7 +184,7 @@ fun AddTaskScreen(
                             useAlarm = useAlarm,
                             alarmTime = alarmTime,
                             memo = memo,
-                            categoryId = selectedCategory!!.id
+                            category = selectedCategory!!
                         )
                     )
                 }

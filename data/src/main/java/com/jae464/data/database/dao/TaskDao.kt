@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.jae464.data.database.entity.TaskEntity
+import com.jae464.data.database.entity.TaskWithCategory
 import com.jae464.domain.model.SortBy
 import com.jae464.domain.model.TaskType
 import kotlinx.coroutines.flow.Flow
@@ -18,10 +19,10 @@ interface TaskDao {
     suspend fun insertTask(taskEntity: TaskEntity)
 
     @Query("SELECT * FROM tasks")
-    fun getAllTasks(): Flow<List<TaskEntity>>
+    fun getAllTasks(): Flow<List<TaskWithCategory>>
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
-    fun getTask(taskId: String): Flow<TaskEntity>
+    fun getTask(taskId: String): Flow<TaskWithCategory>
 
     @Transaction
     @Query(
@@ -52,10 +53,10 @@ interface TaskDao {
         filterCategoryIds: Set<Long> = emptySet(),
         useFilterTaskType: Boolean = false,
         filterTaskType: TaskType = TaskType.Regular,
-    ): Flow<List<TaskEntity>>
+    ): Flow<List<TaskWithCategory>>
 
     @Query("SELECT * FROM tasks WHERE day_of_week LIKE '%' || :dayOfWeek || '%'")
-    fun getTasksByDayOfWeek(dayOfWeek: String): Flow<List<TaskEntity>>
+    fun getTasksByDayOfWeek(dayOfWeek: String): Flow<List<TaskWithCategory>>
 
     @Update
     suspend fun updateTask(taskEntity: TaskEntity)

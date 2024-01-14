@@ -1,5 +1,6 @@
 package com.jae464.presentation.model
 
+import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
@@ -14,7 +15,7 @@ data class AddTaskUiModel(
     val useAlarm: Boolean,
     val alarmTime: LocalDateTime,
     val memo: String,
-    val categoryId: Long
+    val category: Category
 )
 
 fun Task.toAddTaskUiModel(): AddTaskUiModel {
@@ -27,7 +28,7 @@ fun Task.toAddTaskUiModel(): AddTaskUiModel {
         useAlarm = useAlarm,
         alarmTime = alarmTime,
         memo = memo,
-        categoryId = categoryId
+        category = category
     )
 }
 
@@ -41,6 +42,6 @@ fun AddTaskUiModel.toTask(): Task {
         dayOfWeeks = dayOfWeeks,
         useAlarm = useAlarm,
         alarmTime = alarmTime,
-        categoryId = categoryId
+        category = category
     )
 }
