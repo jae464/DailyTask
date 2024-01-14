@@ -17,11 +17,14 @@ import com.jae464.presentation.model.TaskUiModel
 import com.jae464.presentation.model.toTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
@@ -104,6 +107,10 @@ class TaskListViewModel @Inject constructor(
             initialValue = TaskListUiState.Loading
         )
 
+    val taskListUiState2 = MutableStateFlow<TaskListUiState>(TaskListUiState.Loading)
+
+    private var getTasksJob: Job? = null
+
     // Event
     private val _event = MutableSharedFlow<TaskListEvent>()
     val event: SharedFlow<TaskListEvent>
@@ -114,6 +121,40 @@ class TaskListViewModel @Inject constructor(
             searchText.debounce(500).collect {
                 filteredSearchText.value = it
             }
+        }
+        getTasksJob?.cancel()
+        getTasksJob = viewModelScope.launch {
+            getAllTasksUseCase().collectLatest { tasks ->
+                if (tasks.isEmpty()) {
+                    taskListUiState2.value = TaskListUiState.Loading
+                }
+                else {
+                    taskListUiState2.value = TaskListUiState.Success(
+                        tasks.map { it.toTaskUiModel(it.category.name) }
+                    )
+                }
+            }
+        }
+    }
+
+    fun getFilteredTasks() {
+        getTasksJob?.cancel()
+        getTasksJob = viewModelScope.launch {
+            val useFilterTaskType = filteredTaskType.value != TaskType.All
+            getFilteredTasksUseCase(
+                useFilterTaskType = useFilterTaskType,
+                filterTaskType = filteredTaskType.value
+            )
+                .collectLatest {tasks ->
+                    if (tasks.isEmpty()) {
+                        taskListUiState2.value = TaskListUiState.Loading
+                    }
+                    else {
+                        taskListUiState2.value = TaskListUiState.Success(
+                            tasks.map { it.toTaskUiModel(it.category.name) }
+                        )
+                    }
+                }
         }
     }
 
@@ -152,6 +193,10 @@ class TaskListViewModel @Inject constructor(
 
     fun setSortBy(sortBy: SortBy) {
         _sortBy.value = sortBy
+    }
+
+    fun setTaskType(taskType: TaskType) {
+        _filteredTaskType.value = taskType
     }
 }
 

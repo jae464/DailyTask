@@ -5,7 +5,7 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.animateContentSize
+
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -48,6 +48,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
@@ -63,6 +64,8 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.Today
 import androidx.compose.material.rememberDismissState
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -104,6 +107,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.SortBy
+import com.jae464.domain.model.TaskType
 import com.jae464.presentation.common.CategoryFilterChips
 import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.extension.addFocusCleaner
@@ -126,13 +130,14 @@ fun TaskListScreen(
 ) {
     val toolbarState = rememberCollapsingToolbarScaffoldState()
 
-    val taskListUiState by viewModel.taskListUiState.collectAsStateWithLifecycle()
+    val taskListUiState by viewModel.taskListUiState2.collectAsStateWithLifecycle()
     val event = viewModel.event
 
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
+    val selectedTaskType by viewModel.filteredTaskType.collectAsStateWithLifecycle()
 
     var showDeleteDialog by remember {
         mutableStateOf<Pair<String, AnchoredDraggableState<DragValue>?>>(
@@ -313,7 +318,10 @@ fun TaskListScreen(
                         showBottomSheetDialog = it
                     },
                     selectedSortBy = sortBy,
-                    onChangedSortBy = viewModel::setSortBy
+                    onChangedSortBy = viewModel::setSortBy,
+                    selectedTaskType = selectedTaskType,
+                    onChangedTaskType = viewModel::setTaskType,
+                    onClickLoadButton = viewModel::getFilteredTasks
                 )
             }
         }
@@ -340,7 +348,10 @@ fun TaskListScreen(
 fun FilterBottomSheetDialog(
     onChangeShowBottomSheetDialog: (Boolean) -> Unit,
     selectedSortBy: SortBy,
-    onChangedSortBy: (SortBy) -> Unit
+    onChangedSortBy: (SortBy) -> Unit,
+    selectedTaskType: TaskType,
+    onChangedTaskType: (TaskType) -> Unit,
+    onClickLoadButton: () -> Unit
 ) {
     BottomSheetDialog(
         onDismissRequest = {
@@ -372,7 +383,9 @@ fun FilterBottomSheetDialog(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Row {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     SortBy.values().map {
                         RectangleFilterChip(
                             title = it.title,
@@ -390,6 +403,37 @@ fun FilterBottomSheetDialog(
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "일정종류")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    TaskType.values().map {
+                        RectangleFilterChip(
+                            title = it.taskName,
+                            item =  it,
+                            isSelected = selectedTaskType == it,
+                            onClickItem = onChangedTaskType
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = onClickLoadButton,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text(
+                            text = "적용하기",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+                }
             }
 
         }
