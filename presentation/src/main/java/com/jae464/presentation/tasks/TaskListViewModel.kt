@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.SortBy
-import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import com.jae464.domain.model.toProgressTask
 import com.jae464.domain.usecase.task.DeleteTaskUseCase
@@ -12,6 +11,7 @@ import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
 import com.jae464.domain.usecase.progresstask.InsertProgressTaskUseCase
 import com.jae464.domain.usecase.progresstask.IsExistProgressTaskUseCase
 import com.jae464.domain.usecase.task.GetAllTasksUseCase
+import com.jae464.domain.usecase.task.GetFilteredTasksUseCase
 import com.jae464.presentation.home.ProgressingTaskManager
 import com.jae464.presentation.model.TaskUiModel
 import com.jae464.presentation.model.toTaskUiModel
@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
@@ -37,7 +36,8 @@ class TaskListViewModel @Inject constructor(
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
     private val isExistProgressTaskUseCase: IsExistProgressTaskUseCase,
-    private val insertProgressTaskUseCase: InsertProgressTaskUseCase
+    private val insertProgressTaskUseCase: InsertProgressTaskUseCase,
+    private val getFilteredTasksUseCase: GetFilteredTasksUseCase
 ) : ViewModel() {
 
     private val progressingTaskManager = ProgressingTaskManager.getInstance()
@@ -68,11 +68,8 @@ class TaskListViewModel @Inject constructor(
     private val _sortBy = MutableStateFlow(SortBy.ASC)
     val sortBy: StateFlow<SortBy> get() = _sortBy
 
-    private val _taskType = MutableStateFlow(TaskType.All)
-    val taskType: StateFlow<TaskType> get() = _taskType
-
-
-
+    private val _filteredTaskType = MutableStateFlow(TaskType.All)
+    val filteredTaskType: StateFlow<TaskType> get() = _filteredTaskType
 
     // UIState
     val taskListUiState: StateFlow<TaskListUiState> =
@@ -89,13 +86,13 @@ class TaskListViewModel @Inject constructor(
                     TaskListUiState.Success(tasks
                         .filter {
                             filteredCategories.isEmpty() || filteredCategories.map { fc -> fc.id }
-                                .contains(it.categoryId)
+                                .contains(it.category.id)
                         }
                         .filter {
                             filteredSearchText.isEmpty() || it.title.contains(filteredSearchText)
                         }
                         .map { task ->
-                            task.toTaskUiModel(categories.first { it.id == task.categoryId }.name)
+                            task.toTaskUiModel(categories.first { it.id == task.category.id }.name)
                         })
                 }
             } else {
@@ -143,8 +140,7 @@ class TaskListViewModel @Inject constructor(
             val isExist = checkIsExistProgressToday(taskId)
             if (!isExist) {
                 val task = tasks.value.first { it.id == taskId }
-                val category = categories.value.first { it.id == task.categoryId }
-                insertProgressTaskUseCase(task.toProgressTask(category))
+                insertProgressTaskUseCase(task.toProgressTask())
                 _event.emit(TaskListEvent.SendToastMessage("오늘 할일에 추가되었습니다."))
             }
         }

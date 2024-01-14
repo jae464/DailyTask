@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
@@ -36,7 +37,7 @@ data class TaskEntity(
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime
 )
 
-fun TaskEntity.toDomain(): Task {
+fun TaskEntity.toDomain(category: Category): Task {
     return Task(
         id = id,
         title = title,
@@ -46,7 +47,7 @@ fun TaskEntity.toDomain(): Task {
         dayOfWeeks = dayOfWeeks,
         useAlarm = useAlarm,
         alarmTime = alarmTime,
-        categoryId = categoryId
+        category = category
     )
 }
 
@@ -58,7 +59,7 @@ fun Task.toEntity(taskId: String? = null): TaskEntity {
         progressTime = progressTime,
         taskType = taskType,
         dayOfWeeks = dayOfWeeks,
-        categoryId = categoryId,
+        categoryId = category.id,
         useAlarm = useAlarm,
         alarmTime = alarmTime,
         createdAt = LocalDateTime.now()
@@ -72,7 +73,7 @@ fun Task.toProgressTaskEntity(): ProgressTaskEntity {
         totalTime = progressTime,
         progressedTime = 0,
         taskId = id,
-        categoryId = categoryId,
+        categoryId = category.id,
         memo = memo,
         todayMemo = "",
         createdAt = LocalDate.now()

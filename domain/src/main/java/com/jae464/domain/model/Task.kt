@@ -11,6 +11,6 @@ data class Task(
     val dayOfWeeks: List<DayOfWeek>,
     val useAlarm: Boolean,
     val alarmTime: LocalDateTime,
-    val categoryId: Long
+    val category: Category
 )
 

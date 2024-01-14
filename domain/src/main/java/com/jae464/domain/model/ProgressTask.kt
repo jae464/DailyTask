@@ -14,7 +14,7 @@ data class ProgressTask(
     val createdAt: LocalDate
 )
 
-fun Task.toProgressTask(category: Category): ProgressTask {
+fun Task.toProgressTask(): ProgressTask {
     return ProgressTask(
         id = id,
         title = title,
