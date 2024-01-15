@@ -87,6 +87,8 @@ import com.jae464.presentation.common.calendar.rememberCalendarState
 import com.jae464.presentation.statistic.model.StatisticViewMode
 import com.jae464.presentation.statistic.model.TotalProgressTaskUiModel
 import com.jae464.presentation.utils.noRippleClickable
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -114,6 +116,9 @@ fun StatisticScreen(
 
     val scope = rememberCoroutineScope()
 
+    var changeCalendarHeightJob: Job? = null
+    var changeFilterHeightJob: Job? = null
+
     Surface(
         modifier = Modifier.windowInsetsPadding(
             WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
@@ -140,7 +145,11 @@ fun StatisticScreen(
                             shape = RoundedCornerShape(16.dp)
                         )
                         .onSizeChanged {
-                            calendarHeight = it.height
+                            changeCalendarHeightJob?.cancel()
+                            changeCalendarHeightJob = scope.launch {
+                                delay(500)
+                                calendarHeight = it.height
+                            }
                         }
                         .animateContentSize()
                 ) {
@@ -190,7 +199,13 @@ fun StatisticScreen(
                     onChangedFilteredTaskType = viewModel::filterTaskType,
                     filteredDayOfWeeks = filteredDayOfWeeks,
                     onChangedFilteredDayOfWeeks = viewModel::filterDayOfWeeks,
-                    onChangedSize = { filterHeight = it },
+                    onChangedSize = {
+                        changeFilterHeightJob?.cancel()
+                        changeFilterHeightJob = scope.launch {
+                            delay(500)
+                            filterHeight = it
+                        }
+                    },
                     showFilterOption = showFilterOption,
                     onChangedShowFilterOption = {
                         showFilterOption = it
