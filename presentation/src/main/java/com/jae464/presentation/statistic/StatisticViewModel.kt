@@ -14,7 +14,9 @@ import com.jae464.presentation.statistic.model.TotalProgressTaskUiModel
 import com.jae464.presentation.statistic.model.toTotalProgressTaskUiModels
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -30,6 +32,7 @@ class StatisticViewModel @Inject constructor(
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase
 ) : ViewModel() {
 
+    // UI State
     val totalProgressTasksUiState = MutableStateFlow<TotalProgressTasksUiState>(TotalProgressTasksUiState.Empty)
 
     val categories = getAllCategoriesUseCase()
@@ -52,6 +55,19 @@ class StatisticViewModel @Inject constructor(
         get() = _filteredDayOfWeeks
 
     private var getProgressTaskJob: Job? = null
+
+    private val _filterCardHeight = MutableStateFlow(0)
+    val filterCardHeight: StateFlow<Int> get() = _filterCardHeight
+
+    private val _calendarHeight = MutableStateFlow(0)
+    val calendarHeight: StateFlow<Int> get() = _calendarHeight
+
+    private val _loadButtonHeight = MutableStateFlow(0)
+    val loadButtonHeight: StateFlow<Int> get() = _loadButtonHeight
+
+    // Event
+    private val _event = MutableSharedFlow<StatisticEvent>()
+    val event: SharedFlow<StatisticEvent> get() = _event
 
     fun getProgressTasks(startDate: LocalDate, endDate: LocalDate) {
         getProgressTaskJob?.cancel()
@@ -94,10 +110,39 @@ class StatisticViewModel @Inject constructor(
     fun filterDayOfWeeks(dayOfWeeks: List<DayOfWeek>) {
         _filteredDayOfWeeks.value = dayOfWeeks
     }
+
+    fun setCalendarHeight(height: Int) {
+        _calendarHeight.value = height
+    }
+
+    fun setFilterCardHeight(height: Int) {
+        _filterCardHeight.value = height
+    }
+
+    fun setLoadButtonHeight(height: Int) {
+        _loadButtonHeight.value = height
+    }
+
+    fun scrollToFilterCard() {
+        viewModelScope.launch {
+            _event.emit(StatisticEvent.ScrollToFilterCard(calendarHeight.value))
+        }
+    }
+
+    fun scrollToStatisticList() {
+        viewModelScope.launch {
+            _event.emit(StatisticEvent.ScrollToStatisticList(calendarHeight.value + filterCardHeight.value + loadButtonHeight.value))
+        }
+    }
 }
 
 sealed interface TotalProgressTasksUiState {
     object Empty: TotalProgressTasksUiState
     object Loading: TotalProgressTasksUiState
     data class Success(val totalProgressTasks: List<TotalProgressTaskUiModel>): TotalProgressTasksUiState
+}
+
+sealed interface StatisticEvent {
+    data class ScrollToFilterCard(val offset: Int) : StatisticEvent
+    data class ScrollToStatisticList(val offset: Int): StatisticEvent
 }
