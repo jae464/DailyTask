@@ -104,20 +104,29 @@ fun StatisticScreen(
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
     val filteredTaskType by viewModel.filteredTaskType.collectAsStateWithLifecycle()
     val filteredDayOfWeeks by viewModel.filteredDayOfWeeks.collectAsStateWithLifecycle()
+    val event = viewModel.event
 
     val calendarState = rememberCalendarState()
     val context = LocalContext.current
 
     val scrollState = rememberScrollState()
-    var calendarHeight by remember { mutableIntStateOf(0) }
-    var filterHeight by remember { mutableIntStateOf(0) }
     var showCalendar by remember { mutableStateOf(true) }
     var showFilterOption by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
-    var changeCalendarHeightJob: Job? = null
-    var changeFilterHeightJob: Job? = null
+    LaunchedEffect(event) {
+        event.collect { event ->
+            when (event) {
+                is StatisticEvent.ScrollToFilterCard -> {
+                    scrollState.animateScrollTo(event.offset)
+                }
+                is StatisticEvent.ScrollToStatisticList -> {
+                    scrollState.animateScrollTo(event.offset)
+                }
+            }
+        }
+    }
 
     Surface(
         modifier = Modifier.windowInsetsPadding(
@@ -145,11 +154,7 @@ fun StatisticScreen(
                             shape = RoundedCornerShape(16.dp)
                         )
                         .onSizeChanged {
-                            changeCalendarHeightJob?.cancel()
-                            changeCalendarHeightJob = scope.launch {
-                                delay(500)
-                                calendarHeight = it.height
-                            }
+                            viewModel.setCalendarHeight(it.height)
                         }
                         .animateContentSize()
                 ) {
@@ -200,18 +205,12 @@ fun StatisticScreen(
                     filteredDayOfWeeks = filteredDayOfWeeks,
                     onChangedFilteredDayOfWeeks = viewModel::filterDayOfWeeks,
                     onChangedSize = {
-                        changeFilterHeightJob?.cancel()
-                        changeFilterHeightJob = scope.launch {
-                            delay(500)
-                            filterHeight = it
-                        }
+                        viewModel.setFilterCardHeight(it)
                     },
                     showFilterOption = showFilterOption,
                     onChangedShowFilterOption = {
                         showFilterOption = it
-                        scope.launch {
-                            scrollState.animateScrollTo(calendarHeight)
-                        }
+                        viewModel.scrollToFilterCard()
                     },
                 )
                 LoadPieChartButton(
@@ -224,9 +223,11 @@ fun StatisticScreen(
                             return@LoadPieChartButton
                         }
                         viewModel.getProgressTasks(startDate, endDate)
+                        viewModel.scrollToStatisticList()
+
                     },
                     scrollState = scrollState,
-                    toYOffset = calendarHeight + filterHeight
+                    onChangedButtonSize = viewModel::setLoadButtonHeight
                 )
                 Column(
                     modifier = Modifier
@@ -665,14 +666,16 @@ fun LoadPieChartButton(
     calendarState: CalendarState,
     onClickLoad: (LocalDate?, LocalDate?) -> Unit,
     scrollState: ScrollState,
-    toYOffset: Int
+    onChangedButtonSize: (Int) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var buttonHeight by remember { mutableIntStateOf(0) }
     Button(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .onSizeChanged {
-               buttonHeight = it.height
+//                buttonHeight = it.height
+                           onChangedButtonSize(it.height)
             },
         onClick = {
             Log.d(
@@ -680,11 +683,11 @@ fun LoadPieChartButton(
                 "startDate : ${calendarState.startDate} endDate : ${calendarState.endDate}"
             )
             onClickLoad(calendarState.startDate, calendarState.endDate)
-            scope.launch {
-                if (!scrollState.isScrollInProgress) {
-                    scrollState.animateScrollTo(toYOffset + buttonHeight)
-                }
-            }
+//            scope.launch {
+//                if (!scrollState.isScrollInProgress) {
+//                    scrollState.animateScrollTo(toYOffset + buttonHeight)
+//                }
+//            }
         }
     ) {
         Text(text = "불러오기")
