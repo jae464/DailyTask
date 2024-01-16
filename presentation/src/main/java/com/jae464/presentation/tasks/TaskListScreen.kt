@@ -5,7 +5,6 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -33,13 +32,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -48,7 +44,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
@@ -64,7 +59,7 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.Today
 import androidx.compose.material.rememberDismissState
-import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -78,7 +73,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -90,7 +84,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -105,13 +98,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
-import com.jae464.domain.model.Category
 import com.jae464.domain.model.SortBy
+import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import com.jae464.presentation.common.CategoryFilterChips
-import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.extension.addFocusCleaner
-import com.jae464.presentation.model.TaskUiModel
+import com.jae464.presentation.utils.getHeader
+import com.jae464.presentation.utils.toHourMinuteFormat
+import com.jae464.presentation.utils.toTimeFormat
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import me.onebone.toolbar.CollapsingToolbarScaffold
@@ -125,7 +119,7 @@ import kotlin.math.roundToInt
 fun TaskListScreen(
     modifier: Modifier = Modifier,
     onClickAddTask: () -> Unit,
-    onClickTask: (String) -> Unit,
+    onClickTask: (Task) -> Unit,
     viewModel: TaskListViewModel = hiltViewModel()
 ) {
     val toolbarState = rememberCollapsingToolbarScaffoldState()
@@ -140,8 +134,8 @@ fun TaskListScreen(
     val selectedTaskType by viewModel.filteredTaskType.collectAsStateWithLifecycle()
 
     var showDeleteDialog by remember {
-        mutableStateOf<Pair<String, AnchoredDraggableState<DragValue>?>>(
-            Pair("", null)
+        mutableStateOf<Pair<Task?, AnchoredDraggableState<DragValue>?>>(
+            Pair(null, null)
         )
     } // 삭제할 taskId 저장
     var showBottomSheetDialog by remember { mutableStateOf(false) }
@@ -270,8 +264,8 @@ fun TaskListScreen(
                         modifier = modifier,
                         taskListUiState = taskListUiState,
                         onClickTask = onClickTask,
-                        onClickDelete = { showDialog, anchoredState ->
-                            showDeleteDialog = Pair(showDialog, anchoredState)
+                        onClickDelete = { task, anchoredState ->
+                            showDeleteDialog = Pair(task, anchoredState)
                         },
                         onClickAddProgressTask = viewModel::insertProgressTaskToday
                     )
@@ -289,22 +283,25 @@ fun TaskListScreen(
                 else -> {}
             }
 
-            if (showDeleteDialog.first.isNotEmpty()) {
+            if (showDeleteDialog.first != null) {
+                // TODO !! 제거하기 위해 따로 Composable로 만들어서 빼기
                 AlertDialog(
                     onDismissRequest = {
                         val anchoredDraggableState = showDeleteDialog.second
                         scope.launch {
                             anchoredDraggableState?.animateTo(DragValue.Center)
                         }
-                        showDeleteDialog = Pair("", null)
+                        showDeleteDialog = Pair(null, null)
                     },
                     title = {
                         Text(text = "일정을 삭제하시겠습니까?")
                     },
                     confirmButton = {
                         TextButton(onClick = {
-                            viewModel.deleteTask(showDeleteDialog.first)
-                            showDeleteDialog = Pair("", null)
+                            if (showDeleteDialog.first != null) {
+                                viewModel.deleteTask(showDeleteDialog.first!!)
+                                showDeleteDialog = Pair(null, null)
+                            }
                         }) {
                             Text(text = "삭제")
                         }
@@ -466,9 +463,9 @@ fun SearchTextField(
 fun TaskList(
     modifier: Modifier = Modifier,
     taskListUiState: TaskListUiState,
-    onClickTask: (String) -> Unit,
-    onClickDelete: (String, AnchoredDraggableState<DragValue>) -> Unit,
-    onClickAddProgressTask: (String) -> Unit,
+    onClickTask: (Task) -> Unit,
+    onClickDelete: (Task, AnchoredDraggableState<DragValue>) -> Unit,
+    onClickAddProgressTask: (Task) -> Unit,
 ) {
     val state = rememberLazyListState()
     val focusManager = LocalFocusManager.current
@@ -486,15 +483,15 @@ fun TaskList(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             items(
-                taskListUiState.taskUiModels,
-                key = { it.id }) { taskUiModel ->
+                taskListUiState.tasks,
+                key = { it.id }) { task ->
                 Row(
                     Modifier.animateItemPlacement(
                         tween(durationMillis = 250)
                     )
                 ) {
                     TaskItem(
-                        taskUIModel = taskUiModel,
+                        task = task,
                         onClickTask = onClickTask,
                         onClickDelete = onClickDelete,
                         isScrolling = isScrollInProgress,
@@ -544,11 +541,11 @@ enum class DragValue { Start, Center, End }
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TaskItem(
-    taskUIModel: TaskUiModel,
+    task: Task,
     modifier: Modifier = Modifier,
-    onClickTask: (String) -> Unit,
-    onClickDelete: (String, AnchoredDraggableState<DragValue>) -> Unit,
-    onClickAddProgressTask: (String) -> Unit,
+    onClickTask: (Task) -> Unit,
+    onClickDelete: (Task, AnchoredDraggableState<DragValue>) -> Unit,
+    onClickAddProgressTask: (Task) -> Unit,
     isScrolling: Boolean = false,
 ) {
     val anchors = DraggableAnchors {
@@ -597,7 +594,7 @@ fun TaskItem(
         IconButton(
             onClick = {
                 Log.d("TaskListScreen", "onClick add progress task button")
-                onClickAddProgressTask(taskUIModel.id)
+                onClickAddProgressTask(task)
                 scope.launch {
                     state.animateTo(DragValue.Center)
                 }
@@ -619,7 +616,7 @@ fun TaskItem(
             onClick = {
                 Log.d("TaskListScreen", "onClick delete button")
                 // TODO show alert dialog to confirm delete
-                onClickDelete(taskUIModel.id, state)
+                onClickDelete(task, state)
             },
             modifier =
             Modifier
@@ -650,11 +647,11 @@ fun TaskItem(
                 .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
-            onClick = { onClickTask(taskUIModel.id) }
+            onClick = { onClickTask(task) }
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = taskUIModel.header,
+                    text = task.getHeader(),
                     color = MaterialTheme.colorScheme.onSecondary,
                     style = MaterialTheme.typography.bodySmall
 
@@ -664,14 +661,13 @@ fun TaskItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    taskUIModel.dayOfWeek?.forEach { it ->
+                    task.dayOfWeeks.map {
                         RoundedBackgroundText(text = it.day)
-//                        Text(text = it.day, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = taskUIModel.title,
+                    text = task.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -686,7 +682,7 @@ fun TaskItem(
                         tint = MaterialTheme.colorScheme.onSecondary
                     )
                     Text(
-                        text = taskUIModel.progressTimeStr,
+                        text = task.progressTime.toTimeFormat(),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -701,7 +697,7 @@ fun TaskItem(
                         tint = MaterialTheme.colorScheme.onSecondary
                     )
                     Text(
-                        text = if (taskUIModel.useAlarm) taskUIModel.alarmTime else "없음",
+                        text = if (task.useAlarm) task.alarmTime.toHourMinuteFormat() else "없음",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

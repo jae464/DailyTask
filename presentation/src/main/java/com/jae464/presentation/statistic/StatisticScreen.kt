@@ -656,6 +656,7 @@ fun TotalProgressTaskItem(
                     text = "${((sumOfProgressedTime / sumOfTotalTime) * 100).toInt()}%",
                     style = MaterialTheme.typography.bodyMedium
                 )
+
             }
         }
     }

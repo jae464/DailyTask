@@ -44,8 +44,8 @@ fun DailyTaskNavHost(
             onClickAddTask = {
                 navController.navigateToAddTask()
             },
-            onClickTask = { taskId ->
-                navController.navigateToAddTask(taskId)
+            onClickTask = { task ->
+                navController.navigateToAddTask(task.id)
             }
         )
         addTaskScreen(
