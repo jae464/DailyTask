@@ -4,17 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.SortBy
+import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import com.jae464.domain.model.toProgressTask
-import com.jae464.domain.usecase.task.DeleteTaskUseCase
 import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
 import com.jae464.domain.usecase.progresstask.InsertProgressTaskUseCase
 import com.jae464.domain.usecase.progresstask.IsExistProgressTaskUseCase
+import com.jae464.domain.usecase.task.DeleteTaskUseCase
 import com.jae464.domain.usecase.task.GetAllTasksUseCase
 import com.jae464.domain.usecase.task.GetFilteredTasksUseCase
 import com.jae464.presentation.home.ProgressingTaskManager
-import com.jae464.presentation.model.TaskUiModel
-import com.jae464.presentation.model.toTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -23,9 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -75,38 +72,6 @@ class TaskListViewModel @Inject constructor(
     val filteredTaskType: StateFlow<TaskType> get() = _filteredTaskType
 
     // UIState
-    val taskListUiState: StateFlow<TaskListUiState> =
-        combine(
-            categories,
-            tasks,
-            filteredCategories,
-            filteredSearchText
-        ) { categories, tasks, filteredCategories, filteredSearchText ->
-            if (categories.isNotEmpty()) {
-                if (tasks.isEmpty()) {
-                    TaskListUiState.Empty
-                } else {
-                    TaskListUiState.Success(tasks
-                        .filter {
-                            filteredCategories.isEmpty() || filteredCategories.map { fc -> fc.id }
-                                .contains(it.category.id)
-                        }
-                        .filter {
-                            filteredSearchText.isEmpty() || it.title.contains(filteredSearchText)
-                        }
-                        .map { task ->
-                            task.toTaskUiModel(categories.first { it.id == task.category.id }.name)
-                        })
-                }
-            } else {
-                TaskListUiState.Loading
-            }
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = TaskListUiState.Loading
-        )
-
     val taskListUiState2 = MutableStateFlow<TaskListUiState>(TaskListUiState.Loading)
 
     private var getTasksJob: Job? = null
@@ -129,9 +94,7 @@ class TaskListViewModel @Inject constructor(
                     taskListUiState2.value = TaskListUiState.Loading
                 }
                 else {
-                    taskListUiState2.value = TaskListUiState.Success(
-                        tasks.map { it.toTaskUiModel(it.category.name) }
-                    )
+                    taskListUiState2.value = TaskListUiState.Success(tasks)
                 }
             }
         }
@@ -151,20 +114,20 @@ class TaskListViewModel @Inject constructor(
                     }
                     else {
                         taskListUiState2.value = TaskListUiState.Success(
-                            tasks.map { it.toTaskUiModel(it.category.name) }
+                            tasks
                         )
                     }
                 }
         }
     }
 
-    fun deleteTask(taskId: String) {
+    fun deleteTask(task: Task) {
         viewModelScope.launch {
             // 삭제하려는 일정이 현재 진행중인 일정이면 진행을 멈춘다.
-            if ((progressingTaskManager.getCurrentProgressTask()?.task?.id ?: "") == taskId) {
+            if ((progressingTaskManager.getCurrentProgressTask()?.task?.id ?: "") == task.id) {
                 progressingTaskManager.stopProgressTask()
             }
-            deleteTaskUseCase(taskId)
+            deleteTaskUseCase(task.id)
         }
     }
 
@@ -176,11 +139,10 @@ class TaskListViewModel @Inject constructor(
         _searchText.value = text
     }
 
-    fun insertProgressTaskToday(taskId: String) {
+    fun insertProgressTaskToday(task: Task) {
         viewModelScope.launch {
-            val isExist = checkIsExistProgressToday(taskId)
+            val isExist = checkIsExistProgressToday(task.id)
             if (!isExist) {
-                val task = tasks.value.first { it.id == taskId }
                 insertProgressTaskUseCase(task.toProgressTask())
                 _event.emit(TaskListEvent.SendToastMessage("오늘 할일에 추가되었습니다."))
             }
@@ -202,7 +164,7 @@ class TaskListViewModel @Inject constructor(
 
 sealed interface TaskListUiState {
     object Loading : TaskListUiState
-    data class Success(val taskUiModels: List<TaskUiModel>) : TaskListUiState
+    data class Success(val tasks: List<Task>) : TaskListUiState
     object Empty : TaskListUiState
 }
 

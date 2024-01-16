@@ -11,6 +11,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.jae464.domain.model.Task
 import com.jae464.presentation.home.HomeScreen
 import com.jae464.presentation.home.homeRoute
 
@@ -22,7 +23,7 @@ fun NavController.navigateToTaskList(navOptions: NavOptions? = null) {
 
 fun NavGraphBuilder.taskListScreen(
     onClickAddTask: () -> Unit,
-    onClickTask: (String) -> Unit
+    onClickTask: (Task) -> Unit
 ) {
     composable(
         route = taskListRoute,
