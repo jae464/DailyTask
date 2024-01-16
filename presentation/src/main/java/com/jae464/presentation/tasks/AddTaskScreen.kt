@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
@@ -32,22 +30,18 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -73,14 +67,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.yml.charts.common.extensions.isNotNull
-import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.domain.model.Category
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.TaskType
 import com.jae464.presentation.common.RoundedFilterChip
 import com.jae464.presentation.common.TaskTypeRadioButton
-import com.jae464.presentation.model.AddTaskUiModel
-import java.time.LocalDate
+import com.jae464.presentation.extension.addFocusCleaner
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -93,62 +85,38 @@ fun AddTaskScreen(
     onBackClick: () -> Unit,
     viewModel: AddTaskViewModel = hiltViewModel()
 ) {
-
-    val addTaskUiState by viewModel.task.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
-    val isCompleted by viewModel.saveCompleted.collectAsStateWithLifecycle()
+    val title by viewModel.title.collectAsStateWithLifecycle()
+    val progressTimeHour by viewModel.progressTimeHour.collectAsStateWithLifecycle()
+    val progressTimeMinute by viewModel.progressTimeMinute.collectAsStateWithLifecycle()
+    val selectedTaskType by viewModel.selectedTaskType.collectAsStateWithLifecycle()
+    val selectedDayOfWeeks by viewModel.selectedDayOfWeeks.collectAsStateWithLifecycle()
+    val useAlarm by viewModel.useAlarm.collectAsStateWithLifecycle()
+    val alarmTime by viewModel.alarmTime.collectAsStateWithLifecycle()
+    val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
+    val memo by viewModel.memo.collectAsStateWithLifecycle()
 
-    var title by remember { mutableStateOf("") }
-    var progressTimeHour by remember { mutableStateOf(0) }
-    var progressTimeMinute by remember { mutableStateOf(0) }
-    val (selectedTaskType, onSelectedTaskType) = remember { mutableStateOf(TaskType.Regular) }
-    var selectedDayOfWeeks by remember { mutableStateOf(emptyList<DayOfWeek>()) }
-    var useAlarm by remember { mutableStateOf(false) }
-    var alarmTime by remember {
-        mutableStateOf(
-            LocalDateTime.of(
-                LocalDate.now(),
-                LocalTime.of(9, 0)
-            )
-        )
-    }
-    var memo by remember { mutableStateOf("") }
-    var selectedCategory: Category? by remember { mutableStateOf(null) }
-
+    val event = viewModel.event
     val context = LocalContext.current
-
-    LaunchedEffect(isCompleted) {
-        if (isCompleted) {
-            Log.d(TAG, "saved completed! go to back screen")
-            onBackClick()
-        }
-    }
-
-    LaunchedEffect(addTaskUiState) {
-        when (addTaskUiState) {
-            is AddTaskUiState.LoadSavedTask -> {
-                val savedTaskModel = (addTaskUiState as AddTaskUiState.LoadSavedTask).addTaskUiModel
-                title = savedTaskModel.title
-                progressTimeHour = savedTaskModel.progressTimeHour
-                progressTimeMinute = savedTaskModel.progressTimeMinute
-                onSelectedTaskType(savedTaskModel.taskType)
-                selectedDayOfWeeks = savedTaskModel.dayOfWeeks
-                useAlarm = savedTaskModel.useAlarm
-                alarmTime = savedTaskModel.alarmTime
-                memo = savedTaskModel.memo
-                selectedCategory = savedTaskModel.category
-            }
-
-            else -> {}
-        }
-    }
 
     LaunchedEffect(categories) {
         if (categories.isNotEmpty() && selectedCategory == null) {
-            selectedCategory = categories[0]
+            viewModel.onChangeSelectedCategory(categories.first())
         }
     }
 
+    LaunchedEffect(event) {
+        event.collect {
+            when (it) {
+                is AddTaskEvent.SaveCompleted -> {
+                    onBackClick()
+                }
+                is AddTaskEvent.ShowToastMessage -> {
+                    Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     Log.d(TAG, "AddTaskScreen Rendered()")
     Scaffold(
@@ -161,32 +129,7 @@ fun AddTaskScreen(
             AddTaskTopAppBar(
                 onBackClick = onBackClick,
                 onSaveClick = {
-                    if (selectedCategory == null) return@AddTaskTopAppBar
-                    if (title.isEmpty()) {
-                        Toast.makeText(context, "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
-                        return@AddTaskTopAppBar
-                    }
-                    if (progressTimeHour == 0 && progressTimeMinute == 0) {
-                        Toast.makeText(context, "진행시간을 설정해주세요.", Toast.LENGTH_SHORT).show()
-                        return@AddTaskTopAppBar
-                    }
-                    if (selectedTaskType == TaskType.Regular && selectedDayOfWeeks.isEmpty()) {
-                        Toast.makeText(context, "하나 이상의 요일을 설정해주세요.", Toast.LENGTH_SHORT).show()
-                        return@AddTaskTopAppBar
-                    }
-                    viewModel.saveTask(
-                        AddTaskUiModel(
-                            title = title,
-                            progressTimeHour = progressTimeHour,
-                            progressTimeMinute = progressTimeMinute,
-                            taskType = selectedTaskType,
-                            dayOfWeeks = if (selectedTaskType == TaskType.Regular) selectedDayOfWeeks else emptyList(),
-                            useAlarm = useAlarm,
-                            alarmTime = alarmTime,
-                            memo = memo,
-                            category = selectedCategory!!
-                        )
-                    )
+                    viewModel.saveTask()
                 }
             )
         }
@@ -196,7 +139,6 @@ fun AddTaskScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            val context = LocalContext.current
             AddTaskBody(
                 modifier = modifier,
                 title = title,
@@ -214,25 +156,25 @@ fun AddTaskScreen(
                         Toast.makeText(context, "제목은 최대 30자까지 입력할 수 있습니다.", Toast.LENGTH_SHORT)
                             .show()
                     } else {
-                        title = newTitle
+                        viewModel.onChangeTitle(newTitle)
                     }
                 },
                 onProgressTimeHourChanged = { newHour ->
                     Log.d("AddTaskScreen", "progressTimeHour : $newHour")
-                    progressTimeHour = newHour
+                    viewModel.onChangeProgressTimeHour(newHour)
                 },
                 onProgressTimeMinuteChanged = { newMinute ->
                     Log.d("AddTaskScreen", "progressTimeMinute : $newMinute")
-                    progressTimeMinute = newMinute
+                    viewModel.onChangeProgressTimeMinute(newMinute)
                 },
                 onSelectedTaskType = {
-                    onSelectedTaskType(it)
+                    viewModel.onChangeSelectedTaskType(it)
                 },
-                onDayOfWeeksChanged = { dayOfWeeks -> selectedDayOfWeeks = dayOfWeeks },
-                onUseAlarmChanged = { useAlarm = it },
-                onAlarmTimeChanged = { newAlarmTime -> alarmTime = newAlarmTime },
-                onMemoChanged = { newMemo -> memo = newMemo },
-                onCategoryChanged = { category -> selectedCategory = category },
+                onDayOfWeeksChanged = viewModel::onChangeSelectedDayOfWeeks,
+                onUseAlarmChanged = viewModel::onChangeUseAlarm,
+                onAlarmTimeChanged = viewModel::onChangeAlarmTime,
+                onMemoChanged = viewModel::onChangeMemo,
+                onCategoryChanged = viewModel::onChangeSelectedCategory,
                 onAddCategoryClick = { categoryName ->
                     if (categories.firstOrNull { it.name == categoryName }.isNotNull()) {
                         Toast.makeText(context, "이미 존재하는 카테고리입니다.", Toast.LENGTH_SHORT).show()

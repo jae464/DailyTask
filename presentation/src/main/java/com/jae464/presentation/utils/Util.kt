@@ -55,3 +55,10 @@ fun Int.toTimeFormat(): String {
     return "%2d시간 %02d분".format(this / 3600, this % 3600 / 60)
 }
 
+fun Int.getHour(): Int {
+    return this / 3600
+}
+
+fun Int.getMinute(): Int {
+    return this % 3600 / 60
+}
