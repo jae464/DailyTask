@@ -3,6 +3,7 @@ package com.jae464.presentation.tasks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.Category
+import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.SortBy
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
@@ -71,6 +72,10 @@ class TaskListViewModel @Inject constructor(
     private val _filteredTaskType = MutableStateFlow(TaskType.All)
     val filteredTaskType: StateFlow<TaskType> get() = _filteredTaskType
 
+    private val _filteredDayOfWeeks = MutableStateFlow<List<DayOfWeek>>(emptyList())
+    val filteredDayOfWeeks: StateFlow<List<DayOfWeek>> get() = _filteredDayOfWeeks
+
+
     // UIState
     val taskListUiState2 = MutableStateFlow<TaskListUiState>(TaskListUiState.Loading)
 
@@ -104,19 +109,28 @@ class TaskListViewModel @Inject constructor(
         getTasksJob?.cancel()
         getTasksJob = viewModelScope.launch {
             val useFilterTaskType = filteredTaskType.value != TaskType.All
+            val useFilterCategory = filteredCategories.value.isNotEmpty()
+            val useFilterDayOfWeeks = filteredDayOfWeeks.value.isNotEmpty()
             getFilteredTasksUseCase(
                 useFilterTaskType = useFilterTaskType,
-                filterTaskType = filteredTaskType.value
+                filterTaskType = filteredTaskType.value,
+                useFilterCategory = useFilterCategory,
+                filterCategoryIds = filteredCategories.value.map { it.id }.toSet(),
+                useFilterDayOfWeeks = useFilterDayOfWeeks,
+                filterDayOfWeeks = filteredDayOfWeeks.value.toSet(),
+                sortBy = sortBy.value
             )
                 .collectLatest {tasks ->
                     if (tasks.isEmpty()) {
-                        taskListUiState2.value = TaskListUiState.Loading
+                        taskListUiState2.value = TaskListUiState.Empty
                     }
                     else {
                         taskListUiState2.value = TaskListUiState.Success(
                             tasks
                         )
                     }
+                    _event.emit(TaskListEvent.HideBottomSheetDialog)
+
                 }
         }
     }
@@ -133,6 +147,7 @@ class TaskListViewModel @Inject constructor(
 
     fun filterCategories(filteredCategories: List<Category>) {
         _filteredCategories.value = filteredCategories
+        getFilteredTasks()
     }
 
     fun setSearchText(text: String) {
@@ -160,6 +175,10 @@ class TaskListViewModel @Inject constructor(
     fun setTaskType(taskType: TaskType) {
         _filteredTaskType.value = taskType
     }
+
+    fun setFilteredDayOfWeeks(dayOfWeeks: List<DayOfWeek>) {
+        _filteredDayOfWeeks.value = dayOfWeeks
+    }
 }
 
 sealed interface TaskListUiState {
@@ -170,4 +189,5 @@ sealed interface TaskListUiState {
 
 sealed interface TaskListEvent {
     data class SendToastMessage(val message: String) : TaskListEvent
+    object HideBottomSheetDialog : TaskListEvent
 }

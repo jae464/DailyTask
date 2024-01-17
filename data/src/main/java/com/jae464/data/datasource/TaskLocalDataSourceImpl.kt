@@ -1,18 +1,15 @@
 package com.jae464.data.datasource
 
-import com.jae464.data.database.dao.CategoryDao
-import com.jae464.data.database.dao.ProgressTaskDao
 import com.jae464.data.database.dao.TaskDao
-import com.jae464.data.database.entity.ProgressTaskEntity
-import com.jae464.data.database.entity.ProgressTaskWithTask
 import com.jae464.data.database.entity.TaskEntity
 import com.jae464.data.database.entity.TaskWithCategory
 import com.jae464.domain.model.DayOfWeek
+import com.jae464.domain.model.SortBy
 import com.jae464.domain.model.TaskType
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import java.time.LocalDate
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 class TaskLocalDataSourceImpl @Inject constructor(
@@ -37,11 +34,28 @@ class TaskLocalDataSourceImpl @Inject constructor(
         useFilterCategory: Boolean,
         filterCategoryIds: Set<Long>,
         useFilterTaskType: Boolean,
-        filterTaskType: TaskType
+        filterTaskType: TaskType,
+        useFilterDayOfWeeks: Boolean,
+        filterDayOfWeeks: Set<DayOfWeek>,
+        sortBy: SortBy
     ): Flow<List<TaskWithCategory>> {
-        return taskDao.getFilteredTasks(
-            usePeriod, startDate, endDate, useFilterCategory, filterCategoryIds, useFilterTaskType, filterTaskType
-        )
+        return when (sortBy) {
+            SortBy.ASC -> {
+                taskDao.getFilteredTasks(
+                    usePeriod, startDate, endDate, useFilterCategory, filterCategoryIds, useFilterTaskType, filterTaskType
+                ).map { taskEntities ->
+                    taskEntities.filter { it.taskEntity.dayOfWeeks.intersect(filterDayOfWeeks).isNotEmpty() }
+                }
+            }
+
+            SortBy.DESC -> {
+                taskDao.getFilteredTasksOrderByDesc(
+                    usePeriod, startDate, endDate, useFilterCategory, filterCategoryIds, useFilterTaskType, filterTaskType
+                ).map { taskEntities ->
+                    taskEntities.filter { it.taskEntity.dayOfWeeks.intersect(filterDayOfWeeks).isNotEmpty() }
+                }
+            }
+        }
     }
 
     override suspend fun insertTask(taskEntity: TaskEntity) {

@@ -36,6 +36,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -98,6 +102,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
+import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.SortBy
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
@@ -132,6 +137,7 @@ fun TaskListScreen(
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
     val selectedTaskType by viewModel.filteredTaskType.collectAsStateWithLifecycle()
+    val selectedDayOfWeeks by viewModel.filteredDayOfWeeks.collectAsStateWithLifecycle()
 
     var showDeleteDialog by remember {
         mutableStateOf<Pair<Task?, AnchoredDraggableState<DragValue>?>>(
@@ -150,10 +156,7 @@ fun TaskListScreen(
                 is TaskListEvent.SendToastMessage -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
-
-                else -> {
-
-                }
+                TaskListEvent.HideBottomSheetDialog -> showBottomSheetDialog = false
             }
         }
     }
@@ -318,6 +321,8 @@ fun TaskListScreen(
                     onChangedSortBy = viewModel::setSortBy,
                     selectedTaskType = selectedTaskType,
                     onChangedTaskType = viewModel::setTaskType,
+                    selectedDayOfWeeks = selectedDayOfWeeks,
+                    onChangedSelectedDayOfWeeks = viewModel::setFilteredDayOfWeeks,
                     onClickLoadButton = viewModel::getFilteredTasks
                 )
             }
@@ -348,6 +353,8 @@ fun FilterBottomSheetDialog(
     onChangedSortBy: (SortBy) -> Unit,
     selectedTaskType: TaskType,
     onChangedTaskType: (TaskType) -> Unit,
+    selectedDayOfWeeks: List<DayOfWeek>,
+    onChangedSelectedDayOfWeeks: (List<DayOfWeek>) -> Unit,
     onClickLoadButton: () -> Unit
 ) {
     BottomSheetDialog(
@@ -392,6 +399,7 @@ fun FilterBottomSheetDialog(
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "필터",
                     modifier = Modifier.fillMaxWidth(),
@@ -412,6 +420,32 @@ fun FilterBottomSheetDialog(
                             onClickItem = onChangedTaskType
                         )
                     }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "요일")
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(4),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.Center
+
+                ) {
+                    items(DayOfWeek.values()) {
+                        RectangleFilterChip(
+                            title = it.day + "요일",
+                            item = it,
+                            isSelected = selectedDayOfWeeks.contains(it),
+                            onClickItem = { dayOfWeek ->
+                                if (selectedDayOfWeeks.contains(dayOfWeek)) {
+                                    onChangedSelectedDayOfWeeks(selectedDayOfWeeks.minus(dayOfWeek))
+                                }
+                                else {
+                                    onChangedSelectedDayOfWeeks(selectedDayOfWeeks.plus(dayOfWeek))
+                                }
+                            }
+                        )
+                    }
+//                    DayOfWeek.values().map {
+//                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
@@ -477,6 +511,12 @@ fun TaskList(
         }
     }
 
+    LaunchedEffect(taskListUiState) {
+        if (taskListUiState is TaskListUiState.Success) {
+            state.animateScrollToItem(0)
+        }
+    }
+
     if (taskListUiState is TaskListUiState.Success) {
         LazyColumn(
             state = state,
@@ -499,10 +539,7 @@ fun TaskList(
                     )
                 }
             }
-
         }
-
-
     }
 }
 
@@ -571,8 +608,6 @@ fun TaskItem(
             anchors = anchors
         )
     }
-
-    val context = LocalContext.current
 
     LaunchedEffect(isScrolling) {
         if (isScrolling && !state.isAnimationRunning) {
@@ -748,16 +783,18 @@ fun <T> RectangleFilterChip(
         border = FilterChipDefaults.filterChipBorder(
             selectedBorderColor = MaterialTheme.colorScheme.primary,
             disabledBorderColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            borderWidth = 2.dp,
-            selectedBorderWidth = 2.dp
+            borderWidth = 1.dp,
+            selectedBorderWidth = 1.dp
         ),
         onClick = {
             onClickItem(item)
         },
         label = {
             Text(
+                modifier = Modifier.fillMaxWidth(),
                 text = title,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Light,
+                textAlign = TextAlign.Center
             )
         }
     )

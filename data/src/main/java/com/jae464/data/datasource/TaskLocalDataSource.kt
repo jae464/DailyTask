@@ -5,6 +5,7 @@ import com.jae464.data.database.entity.ProgressTaskWithTask
 import com.jae464.data.database.entity.TaskEntity
 import com.jae464.data.database.entity.TaskWithCategory
 import com.jae464.domain.model.DayOfWeek
+import com.jae464.domain.model.SortBy
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,9 @@ interface TaskLocalDataSource {
         filterCategoryIds: Set<Long> = emptySet(),
         useFilterTaskType: Boolean = false,
         filterTaskType: TaskType = TaskType.Regular,
+        useFilterDayOfWeeks: Boolean = false,
+        filterDayOfWeeks: Set<DayOfWeek> = emptySet(),
+        sortBy: SortBy = SortBy.ASC
     ): Flow<List<TaskWithCategory>>
     suspend fun insertTask(taskEntity: TaskEntity)
     suspend fun updateTask(taskEntity: TaskEntity)

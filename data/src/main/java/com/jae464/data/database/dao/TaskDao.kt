@@ -55,6 +55,38 @@ interface TaskDao {
         filterTaskType: TaskType = TaskType.Regular,
     ): Flow<List<TaskWithCategory>>
 
+    @Transaction
+    @Query(
+        """
+            SELECT * FROM tasks
+            WHERE
+                CASE WHEN :usePeriod
+                    THEN created_at BETWEEN :startDate AND :endDate
+                    ELSE 1
+                END
+            AND
+                CASE WHEN :useFilterCategory
+                    THEN category_id IN (:filterCategoryIds)
+                    ELSE 1
+                END
+            AND
+                CASE WHEN :useFilterTaskType
+                    THEN task_type = :filterTaskType
+                    ELSE 1
+                END
+            ORDER BY created_at DESC
+        """
+    )
+    fun getFilteredTasksOrderByDesc(
+        usePeriod: Boolean = false,
+        startDate: LocalDate = LocalDate.now(),
+        endDate: LocalDate = LocalDate.now(),
+        useFilterCategory: Boolean = false,
+        filterCategoryIds: Set<Long> = emptySet(),
+        useFilterTaskType: Boolean = false,
+        filterTaskType: TaskType = TaskType.Regular,
+    ): Flow<List<TaskWithCategory>>
+
     @Query("SELECT * FROM tasks WHERE day_of_week LIKE '%' || :dayOfWeek || '%'")
     fun getTasksByDayOfWeek(dayOfWeek: String): Flow<List<TaskWithCategory>>
 
