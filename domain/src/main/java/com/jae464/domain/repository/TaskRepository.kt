@@ -2,6 +2,7 @@ package com.jae464.domain.repository
 
 import com.jae464.domain.model.DayOfWeek
 import com.jae464.domain.model.ProgressTask
+import com.jae464.domain.model.SortBy
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +20,9 @@ interface TaskRepository {
         filterCategoryIds: Set<Long> = emptySet(),
         useFilterTaskType: Boolean = false,
         filterTaskType: TaskType = TaskType.Regular,
+        useFilterDayOfWeeks: Boolean = false,
+        filterDayOfWeeks: Set<DayOfWeek> = emptySet(),
+        sortBy: SortBy = SortBy.ASC
     ): Flow<List<Task>>
     suspend fun saveTask(task: Task)
     suspend fun updateTask(task: Task)

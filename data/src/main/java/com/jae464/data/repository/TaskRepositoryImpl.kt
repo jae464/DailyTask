@@ -2,16 +2,13 @@ package com.jae464.data.repository
 
 import com.jae464.data.database.entity.toDomain
 import com.jae464.data.database.entity.toEntity
-import com.jae464.data.database.entity.toProgressTaskEntity
 import com.jae464.data.datasource.TaskLocalDataSource
 import com.jae464.domain.model.DayOfWeek
-import com.jae464.domain.model.ProgressTask
+import com.jae464.domain.model.SortBy
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.TaskType
 import com.jae464.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import javax.inject.Inject
@@ -49,10 +46,13 @@ class TaskRepositoryImpl @Inject constructor(
         useFilterCategory: Boolean,
         filterCategoryIds: Set<Long>,
         useFilterTaskType: Boolean,
-        filterTaskType: TaskType
+        filterTaskType: TaskType,
+        useFilterDayOfWeeks: Boolean,
+        filterDayOfWeeks: Set<DayOfWeek>,
+        sortBy: SortBy
     ): Flow<List<Task>> {
         return taskLocalDataSource.getFilteredTasks(
-            usePeriod, startDate, endDate, useFilterCategory, filterCategoryIds, useFilterTaskType, filterTaskType
+            usePeriod, startDate, endDate, useFilterCategory, filterCategoryIds, useFilterTaskType, filterTaskType, useFilterDayOfWeeks, filterDayOfWeeks, sortBy
         ).map { taskEntities ->
             taskEntities.map { it.toDomain() }
         }
