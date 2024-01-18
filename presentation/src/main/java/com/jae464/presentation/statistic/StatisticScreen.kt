@@ -113,8 +113,6 @@ fun StatisticScreen(
     var showCalendar by remember { mutableStateOf(true) }
     var showFilterOption by remember { mutableStateOf(false) }
 
-    val scope = rememberCoroutineScope()
-
     LaunchedEffect(event) {
         event.collect { event ->
             when (event) {
@@ -432,7 +430,7 @@ fun StatisticTabLayout(
                 selected = pagerState.currentPage == index,
                 onClick = {
                     scope.launch {
-                        pagerState.scrollToPage(index)
+                        pagerState.animateScrollToPage(index)
                     }
                 },
                 text = { Text(text = page.title) }
@@ -447,7 +445,8 @@ fun StatisticTabLayout(
                 val size = density.run { DpSize(it.width.toDp(), it.height.toDp()) }
                 Log.d("StatisticScreen", "Tab Height : $size")
             }
-            .wrapContentHeight(),
+            .wrapContentHeight()
+            .animateContentSize(),
         verticalAlignment = Alignment.Top
     ) {
         when (it) {
