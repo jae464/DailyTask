@@ -24,6 +24,18 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     fun getTask(taskId: String): Flow<TaskWithCategory>
 
+    @Query("""
+        SELECT * FROM tasks
+        WHERE title LIKE :searchQuery
+        ORDER BY
+            CASE
+                WHEN title = :exactMatch THEN 1
+                ELSE 2
+            END,
+            title
+    """)
+    fun getTasksByTitle(searchQuery: String, exactMatch: String): Flow<List<TaskWithCategory>>
+
     @Transaction
     @Query(
         """
@@ -43,6 +55,7 @@ interface TaskDao {
                     THEN task_type = :filterTaskType
                     ELSE 1
                 END
+            ORDER BY created_at ASC
         """
     )
     fun getFilteredTasks(

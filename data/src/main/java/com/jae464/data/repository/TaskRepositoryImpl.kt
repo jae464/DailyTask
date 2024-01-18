@@ -31,6 +31,12 @@ class TaskRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getTasksByTitle(title: String): Flow<List<Task>> {
+        return taskLocalDataSource.getTasksByTitle(title).map { taskEntities ->
+            taskEntities.map { it.toDomain() }
+        }
+    }
+
     override fun getTasksByDayOfWeek(dayOfWeeks: DayOfWeek): Flow<List<Task>> {
         return taskLocalDataSource.getTasksByDayOfWeek(dayOfWeeks).map { taskEntities ->
             taskEntities.map {
