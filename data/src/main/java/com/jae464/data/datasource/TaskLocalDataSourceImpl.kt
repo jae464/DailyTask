@@ -23,6 +23,11 @@ class TaskLocalDataSourceImpl @Inject constructor(
         return taskDao.getTask(taskId)
     }
 
+    override fun getTasksByTitle(title: String): Flow<List<TaskWithCategory>> {
+        val searchQuery = "%$title%"
+        return taskDao.getTasksByTitle(searchQuery, title)
+    }
+
     override fun getTasksByDayOfWeek(dayOfWeeks: DayOfWeek): Flow<List<TaskWithCategory>> {
         return taskDao.getTasksByDayOfWeek(dayOfWeeks.day)
     }
@@ -44,7 +49,10 @@ class TaskLocalDataSourceImpl @Inject constructor(
                 taskDao.getFilteredTasks(
                     usePeriod, startDate, endDate, useFilterCategory, filterCategoryIds, useFilterTaskType, filterTaskType
                 ).map { taskEntities ->
-                    taskEntities.filter { it.taskEntity.dayOfWeeks.intersect(filterDayOfWeeks).isNotEmpty() }
+                    if (useFilterDayOfWeeks) {
+                        taskEntities.filter { it.taskEntity.dayOfWeeks.intersect(filterDayOfWeeks).isNotEmpty() }
+                    }
+                    else taskEntities
                 }
             }
 
@@ -52,7 +60,10 @@ class TaskLocalDataSourceImpl @Inject constructor(
                 taskDao.getFilteredTasksOrderByDesc(
                     usePeriod, startDate, endDate, useFilterCategory, filterCategoryIds, useFilterTaskType, filterTaskType
                 ).map { taskEntities ->
-                    taskEntities.filter { it.taskEntity.dayOfWeeks.intersect(filterDayOfWeeks).isNotEmpty() }
+                    if (useFilterDayOfWeeks) {
+                        taskEntities.filter { it.taskEntity.dayOfWeeks.intersect(filterDayOfWeeks).isNotEmpty() }
+                    }
+                    else taskEntities
                 }
             }
         }

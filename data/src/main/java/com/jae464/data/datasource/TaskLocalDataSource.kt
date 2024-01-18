@@ -14,6 +14,7 @@ import java.time.LocalDate
 interface TaskLocalDataSource {
     fun getAllTasks(): Flow<List<TaskWithCategory>>
     fun getTask(taskId: String): Flow<TaskWithCategory>
+    fun getTasksByTitle(title: String): Flow<List<TaskWithCategory>>
     fun getTasksByDayOfWeek(dayOfWeeks: DayOfWeek): Flow<List<TaskWithCategory>>
     fun getFilteredTasks(
         usePeriod: Boolean = false,

@@ -14,6 +14,7 @@ import com.jae464.domain.usecase.progresstask.IsExistProgressTaskUseCase
 import com.jae464.domain.usecase.task.DeleteTaskUseCase
 import com.jae464.domain.usecase.task.GetAllTasksUseCase
 import com.jae464.domain.usecase.task.GetFilteredTasksUseCase
+import com.jae464.domain.usecase.task.GetTasksByTitleUseCase
 import com.jae464.presentation.home.ProgressingTaskManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
@@ -25,7 +26,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -38,19 +41,13 @@ class TaskListViewModel @Inject constructor(
     private val deleteTaskUseCase: DeleteTaskUseCase,
     private val isExistProgressTaskUseCase: IsExistProgressTaskUseCase,
     private val insertProgressTaskUseCase: InsertProgressTaskUseCase,
-    private val getFilteredTasksUseCase: GetFilteredTasksUseCase
+    private val getFilteredTasksUseCase: GetFilteredTasksUseCase,
+    private val getTasksByTitleUseCase: GetTasksByTitleUseCase
 ) : ViewModel() {
 
     private val progressingTaskManager = ProgressingTaskManager.getInstance()
 
     val categories = getAllCategoriesUseCase()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
-
-    private val tasks = getAllTasksUseCase()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -66,7 +63,7 @@ class TaskListViewModel @Inject constructor(
 
     private val filteredSearchText = MutableStateFlow("")
 
-    private val _sortBy = MutableStateFlow(SortBy.ASC)
+    private val _sortBy = MutableStateFlow(SortBy.DESC)
     val sortBy: StateFlow<SortBy> get() = _sortBy
 
     private val _filteredTaskType = MutableStateFlow(TaskType.All)
@@ -74,7 +71,6 @@ class TaskListViewModel @Inject constructor(
 
     private val _filteredDayOfWeeks = MutableStateFlow<List<DayOfWeek>>(emptyList())
     val filteredDayOfWeeks: StateFlow<List<DayOfWeek>> get() = _filteredDayOfWeeks
-
 
     // UIState
     val taskListUiState2 = MutableStateFlow<TaskListUiState>(TaskListUiState.Loading)
@@ -90,16 +86,27 @@ class TaskListViewModel @Inject constructor(
         viewModelScope.launch {
             searchText.debounce(500).collect {
                 filteredSearchText.value = it
-            }
-        }
-        getTasksJob?.cancel()
-        getTasksJob = viewModelScope.launch {
-            getAllTasksUseCase().collectLatest { tasks ->
-                if (tasks.isEmpty()) {
-                    taskListUiState2.value = TaskListUiState.Loading
+                if (it.isNotEmpty()) {
+                    getTasksByTitle(it)
                 }
                 else {
-                    taskListUiState2.value = TaskListUiState.Success(tasks)
+                    getFilteredTasks()
+                }
+            }
+        }
+        getFilteredTasks()
+    }
+
+    fun getTasksByTitle(title: String) {
+        getTasksJob?.cancel()
+        getTasksJob = viewModelScope.launch {
+            taskListUiState2.value = TaskListUiState.Loading
+            getTasksByTitleUseCase(title).collectLatest {
+                if (it.isEmpty()) {
+                    taskListUiState2.value = TaskListUiState.Empty
+                }
+                else {
+                    taskListUiState2.value = TaskListUiState.Success(it)
                 }
             }
         }
@@ -120,7 +127,7 @@ class TaskListViewModel @Inject constructor(
                 filterDayOfWeeks = filteredDayOfWeeks.value.toSet(),
                 sortBy = sortBy.value
             )
-                .collectLatest {tasks ->
+                .collectLatest { tasks ->
                     if (tasks.isEmpty()) {
                         taskListUiState2.value = TaskListUiState.Empty
                     }
@@ -130,7 +137,6 @@ class TaskListViewModel @Inject constructor(
                         )
                     }
                     _event.emit(TaskListEvent.HideBottomSheetDialog)
-
                 }
         }
     }
