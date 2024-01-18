@@ -87,6 +87,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -109,6 +112,7 @@ import com.jae464.domain.model.TaskType
 import com.jae464.presentation.common.CategoryFilterChips
 import com.jae464.presentation.extension.addFocusCleaner
 import com.jae464.presentation.utils.getHeader
+import com.jae464.presentation.utils.noRippleClickable
 import com.jae464.presentation.utils.toHourMinuteFormat
 import com.jae464.presentation.utils.toTimeFormat
 import kotlinx.coroutines.flow.collectLatest
@@ -147,6 +151,7 @@ fun TaskListScreen(
     var showBottomSheetDialog by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
+    var isShowingKeyboard by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -156,7 +161,8 @@ fun TaskListScreen(
                 is TaskListEvent.SendToastMessage -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
-                TaskListEvent.HideBottomSheetDialog -> showBottomSheetDialog = false
+                is TaskListEvent.HideBottomSheetDialog -> showBottomSheetDialog = false
+
             }
         }
     }
@@ -205,7 +211,8 @@ fun TaskListScreen(
                                     .padding(horizontal = 16.dp),
                                 text = searchText,
                                 onValueChanged = viewModel::setSearchText,
-                                focusManager = focusManager
+                                focusManager = focusManager,
+                                onChangedFocus = {isShowingKeyboard = it}
                             )
                             IconButton(onClick = {
                                 viewModel.setSearchText("")
@@ -266,7 +273,14 @@ fun TaskListScreen(
                     TaskList(
                         modifier = modifier,
                         taskListUiState = taskListUiState,
-                        onClickTask = onClickTask,
+                        onClickTask = {
+                            if (!isShowingKeyboard) {
+                                onClickTask(it)
+                            }
+                            else {
+                                focusManager.clearFocus()
+                            }
+                        },
                         onClickDelete = { task, anchoredState ->
                             showDeleteDialog = Pair(task, anchoredState)
                         },
@@ -476,10 +490,16 @@ fun SearchTextField(
     modifier: Modifier = Modifier,
     text: String,
     onValueChanged: (String) -> Unit,
-    focusManager: FocusManager
+    focusManager: FocusManager,
+    onChangedFocus: (Boolean) -> Unit
 ) {
+    val focusRequester by remember { mutableStateOf(FocusRequester()) }
     BasicTextField(
-        modifier = modifier,
+        modifier = modifier
+            .focusRequester(focusRequester)
+            .onFocusChanged {
+                onChangedFocus(it.isFocused)
+            },
         value = text,
         onValueChange = { onValueChanged(it) },
         keyboardOptions = KeyboardOptions(
@@ -505,11 +525,11 @@ fun TaskList(
     val focusManager = LocalFocusManager.current
     val isScrollInProgress = state.isScrollInProgress
 
-    LaunchedEffect(isScrollInProgress) {
-        if (isScrollInProgress) {
-            focusManager.clearFocus()
-        }
-    }
+//    LaunchedEffect(isScrollInProgress) {
+//        if (isScrollInProgress) {
+//            focusManager.clearFocus()
+//        }
+//    }
 
     LaunchedEffect(taskListUiState) {
         if (taskListUiState is TaskListUiState.Success) {
@@ -679,10 +699,10 @@ fun TaskItem(
                     Log.d("TaskListScreen", it.toString())
                     cardHeight = it.height
                 }
+                .noRippleClickable { onClickTask(task) }
                 .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
-            onClick = { onClickTask(task) }
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
