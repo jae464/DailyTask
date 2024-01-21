@@ -14,16 +14,19 @@ data class ProgressTask(
     val createdAt: LocalDate
 )
 
-fun Task.toProgressTask(): ProgressTask {
+fun Task.toProgressTask(
+    progressedTime: Int = 0,
+    createdAt: LocalDate = LocalDate.now()
+): ProgressTask {
     return ProgressTask(
         id = id,
         title = title,
         totalTime = progressTime,
-        progressedTime = 0,
+        progressedTime = progressedTime,
         task = this,
         category = category,
         memo = memo,
         todayMemo = "",
-        createdAt = LocalDate.now()
+        createdAt = createdAt
     )
 }

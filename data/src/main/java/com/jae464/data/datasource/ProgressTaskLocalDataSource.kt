@@ -31,4 +31,5 @@ interface ProgressTaskLocalDataSource {
     suspend fun updateTodayMemo(progressTaskId: String, todayMemo: String)
     suspend fun insertProgressTask(progressTaskEntity: ProgressTaskEntity)
     suspend fun isExistProgressTaskByDate(taskId: String, createdAt: LocalDate): Boolean
+    suspend fun deleteAllProgressTaskByTaskId(taskId: String)
 }
