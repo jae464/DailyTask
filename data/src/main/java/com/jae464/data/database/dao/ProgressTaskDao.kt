@@ -1,6 +1,7 @@
 package com.jae464.data.database.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -27,6 +28,9 @@ interface ProgressTaskDao {
     @Transaction
     @Query("SELECT * FROM progress_tasks WHERE created_at = :date")
     fun getProgressTaskByDate(date: LocalDate): Flow<List<ProgressTaskWithTask>>
+
+    @Query("DELETE FROM progress_tasks WHERE task_id = :taskId")
+    suspend fun deleteAllProgressTaskByTaskId(taskId: String)
 
     @Transaction
     @Query(

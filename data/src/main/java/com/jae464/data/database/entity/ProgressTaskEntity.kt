@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.jae464.domain.model.ProgressTask
 import java.time.LocalDate
+import java.util.UUID
 
 @Entity(
     tableName = "progress_tasks",
@@ -34,7 +35,7 @@ data class ProgressTaskEntity(
 
 fun ProgressTask.toEntity(): ProgressTaskEntity {
     return ProgressTaskEntity(
-        id = id,
+        id = UUID.randomUUID().toString(),
         title = title,
         totalTime = totalTime,
         progressedTime = progressedTime,

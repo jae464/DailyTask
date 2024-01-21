@@ -111,4 +111,8 @@ class ProgressTaskRepositoryImpl @Inject constructor(
     override suspend fun isExistProgressTaskByDate(taskId: String, createdAt: LocalDate): Boolean {
         return progressTaskLocalDataSource.isExistProgressTaskByDate(taskId, createdAt)
     }
+
+    override suspend fun deleteAllProgressTaskByTaskId(taskId: String) {
+        progressTaskLocalDataSource.deleteAllProgressTaskByTaskId(taskId)
+    }
 }

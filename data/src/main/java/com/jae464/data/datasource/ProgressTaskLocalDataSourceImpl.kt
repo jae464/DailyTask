@@ -71,4 +71,8 @@ class ProgressTaskLocalDataSourceImpl @Inject constructor(
         return progressTaskDao.isExistProgressTaskByDate(taskId, createdAt)
     }
 
+    override suspend fun deleteAllProgressTaskByTaskId(taskId: String) {
+        progressTaskDao.deleteAllProgressTaskByTaskId(taskId)
+    }
+
 }
