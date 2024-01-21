@@ -18,7 +18,9 @@ fun NavController.navigateToSetting(navOptions: NavOptions? = null) {
     this.navigate(settingRoute, navOptions)
 }
 
-fun NavGraphBuilder.settingScreen() {
+fun NavGraphBuilder.settingScreen(
+    onClickTestScreen: () -> Unit = {}
+) {
     composable(
         route = settingRoute,
 //        enterTransition = {
@@ -42,6 +44,8 @@ fun NavGraphBuilder.settingScreen() {
 //                towards = AnimatedContentTransitionScope.SlideDirection.End)
 //        }
     ) {
-        SettingScreen()
+        SettingScreen(
+            onClickTestScreen = onClickTestScreen
+        )
     }
 }
