@@ -607,10 +607,11 @@ fun DateCalendarContent(
                     localDates
                 ) { localDate ->
                     val isSelected = calendarState.selectedDates.contains(localDate)
+
                     Box(
                         modifier = Modifier
                             .background(
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                color = if (calendarState.highLightedDate == localDate) MaterialTheme.colorScheme.primary else if (isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent,
                                 shape = CircleShape
 
                             )
@@ -623,14 +624,14 @@ fun DateCalendarContent(
                             .wrapContentWidth()
                     ) {
                         val textColor =
-                            if (isSelected) MaterialTheme.colorScheme.onPrimary else if (localDate.month.value == selectedMonth) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimaryContainer
+                            if (calendarState.highLightedDate == localDate) MaterialTheme.colorScheme.onPrimary else if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else if (localDate.month.value == selectedMonth) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimaryContainer
                         Text(
                             text = localDate.dayOfMonth.toString(),
                             style = MaterialTheme.typography.labelSmall,
                             color = textColor,
                             modifier = Modifier
                                 .background(
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    color = if (calendarState.highLightedDate == localDate) MaterialTheme.colorScheme.primary else if (isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent,
                                     shape = CircleShape
                                 )
                                 .wrapContentHeight()

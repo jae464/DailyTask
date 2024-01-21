@@ -68,7 +68,7 @@ fun StatisticDetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val task by viewModel.task.collectAsStateWithLifecycle()
     val calendarState = rememberCalendarState(
-        calendarMode = CalendarMode.MULTISELECT
+        calendarMode = CalendarMode.MULTISELECT,
     )
     val selectedLocalDate by viewModel.selectedLocalDate.collectAsStateWithLifecycle()
 
@@ -77,6 +77,7 @@ fun StatisticDetailScreen(
     ) {
         calendarState.selectedYear = selectedLocalDate.year
         calendarState.selectedMonth = selectedLocalDate.month.value
+        calendarState.highLightedDate = selectedLocalDate
     }
 
     Scaffold(
