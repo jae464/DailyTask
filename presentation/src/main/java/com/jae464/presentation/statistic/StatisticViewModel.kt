@@ -56,13 +56,13 @@ class StatisticViewModel @Inject constructor(
 
     private var getProgressTaskJob: Job? = null
 
-    private val _filterCardHeight = MutableStateFlow(0)
+    private val _filterCardHeight = MutableStateFlow(Int.MAX_VALUE)
     val filterCardHeight: StateFlow<Int> get() = _filterCardHeight
 
-    private val _calendarHeight = MutableStateFlow(0)
+    private val _calendarHeight = MutableStateFlow(Int.MAX_VALUE)
     val calendarHeight: StateFlow<Int> get() = _calendarHeight
 
-    private val _loadButtonHeight = MutableStateFlow(0)
+    private val _loadButtonHeight = MutableStateFlow(Int.MAX_VALUE)
     val loadButtonHeight: StateFlow<Int> get() = _loadButtonHeight
 
     // Event
@@ -112,15 +112,21 @@ class StatisticViewModel @Inject constructor(
     }
 
     fun setCalendarHeight(height: Int) {
-        _calendarHeight.value = height
+        if (height < calendarHeight.value) {
+            _calendarHeight.value = height
+        }
     }
 
     fun setFilterCardHeight(height: Int) {
-        _filterCardHeight.value = height
+        if (height < filterCardHeight.value) {
+            _filterCardHeight.value = height
+        }
     }
 
     fun setLoadButtonHeight(height: Int) {
-        _loadButtonHeight.value = height
+        if (height < loadButtonHeight.value) {
+            _loadButtonHeight.value = height
+        }
     }
 
     fun scrollToFilterCard() {

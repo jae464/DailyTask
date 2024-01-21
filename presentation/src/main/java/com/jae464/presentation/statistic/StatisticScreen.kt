@@ -110,7 +110,7 @@ fun StatisticScreen(
     val context = LocalContext.current
 
     val scrollState = rememberScrollState()
-    var showCalendar by remember { mutableStateOf(true) }
+    var showCalendar by remember { mutableStateOf(false) }
     var showFilterOption by remember { mutableStateOf(false) }
 
     LaunchedEffect(event) {
@@ -152,9 +152,14 @@ fun StatisticScreen(
                             shape = RoundedCornerShape(16.dp)
                         )
                         .onSizeChanged {
+                            Log.d(TAG, "onSizeChanged ${it.height}")
                             viewModel.setCalendarHeight(it.height)
                         }
-                        .animateContentSize()
+                        .animateContentSize(
+                            finishedListener = { initialValue, targetValue ->
+                                Log.d(TAG, "initialValue : $initialValue targetValue : $targetValue")
+                            }
+                        )
                 ) {
                     Row(
                         modifier = Modifier
@@ -162,6 +167,9 @@ fun StatisticScreen(
                             .wrapContentHeight()
                             .noRippleClickable {
                                 showCalendar = !showCalendar
+                                if (showCalendar) {
+                                    showFilterOption = false
+                                }
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -174,6 +182,9 @@ fun StatisticScreen(
                         )
                         IconButton(onClick = {
                             showCalendar = !showCalendar
+                            if (showCalendar) {
+                                showFilterOption = false
+                            }
                         }) {
                             if (showCalendar) {
                                 Icon(
@@ -208,7 +219,10 @@ fun StatisticScreen(
                     showFilterOption = showFilterOption,
                     onChangedShowFilterOption = {
                         showFilterOption = it
-                        viewModel.scrollToFilterCard()
+                        if (showFilterOption) {
+                            showCalendar = false
+                            viewModel.scrollToFilterCard()
+                        }
                     },
                 )
                 LoadPieChartButton(
