@@ -13,6 +13,7 @@ import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import java.time.LocalDate
+import java.time.LocalTime
 
 @Composable
 fun rememberCalendarState(
@@ -22,7 +23,8 @@ fun rememberCalendarState(
     selectedYear: Int = LocalDate.now().year,
     selectedMonth: Int = LocalDate.now().month.value,
     calendarMode: CalendarMode = CalendarMode.INTERVAL,
-    selectedDates: List<LocalDate> = emptyList()
+    selectedDates: List<LocalDate> = emptyList(),
+    highLightedDate: LocalDate? = null
 ): CalendarState {
     return rememberSaveable(saver = CalendarState.Saver) {
         CalendarState(
@@ -32,7 +34,8 @@ fun rememberCalendarState(
             selectedYear = selectedYear,
             selectedMonth = selectedMonth,
             calendarMode = calendarMode,
-            selectedDates = selectedDates
+            selectedDates = selectedDates,
+            highLightedDate = highLightedDate
         )
     }
 }
@@ -45,7 +48,8 @@ class CalendarState constructor(
     selectedYear: Int = LocalDate.now().year,
     selectedMonth: Int = LocalDate.now().month.value,
     calendarMode: CalendarMode = CalendarMode.INTERVAL,
-    selectedDates: List<LocalDate> = emptyList()
+    selectedDates: List<LocalDate> = emptyList(),
+    highLightedDate: LocalDate? = null,
 ): ScrollableState {
     private var _startDate by mutableStateOf(startDate)
     var startDate: LocalDate?
@@ -96,6 +100,13 @@ class CalendarState constructor(
             _selectedDates = value
         }
 
+    private var _highLightedDate by mutableStateOf(highLightedDate)
+    var highLightedDate: LocalDate?
+        get() = _highLightedDate
+        set(value) {
+            _highLightedDate = value
+        }
+
     val prevMonth: Int
         get() {
             return LocalDate.of(selectedYear, selectedMonth, 1).minusMonths(1).monthValue
@@ -118,7 +129,8 @@ class CalendarState constructor(
                     it.selectedYear,
                     it.selectedMonth,
                     it.calendarMode,
-                    it.selectedDates.joinToString(",")
+                    it.selectedDates.joinToString(","),
+                    it.highLightedDate
                 )
             },
             restore = {
@@ -131,7 +143,8 @@ class CalendarState constructor(
                     selectedYear = it[3] as Int,
                     selectedMonth = it[4] as Int,
                     calendarMode = it[5] as CalendarMode,
-                    selectedDates = if (selectedDates.isBlank()) emptyList() else selectedDates.split(",").map { value -> LocalDate.parse(value) }
+                    selectedDates = if (selectedDates.isBlank()) emptyList() else selectedDates.split(",").map { value -> LocalDate.parse(value) },
+                    highLightedDate = it[7] as LocalDate?
                 )
             }
         )
