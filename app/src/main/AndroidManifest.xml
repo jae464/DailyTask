@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <application
         android:name=".DailyTaskApplication"
         android:allowBackup="true"
@@ -22,7 +23,6 @@
             android:theme="@style/Theme.DailyTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -37,7 +37,9 @@
         </provider>
 
         <service
-            android:name="com.jae464.presentation.home.ProgressTaskService"/>
+            android:name="com.jae464.presentation.home.ProgressTaskService"
+            android:foregroundServiceType="mediaPlayback"
+        />
 
     </application>
 
