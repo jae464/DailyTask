@@ -160,14 +160,16 @@ fun DetailProgressTask(
                     onClickSaveTodayMemo = onClickSaveTodayMemo,
                     savedTodayMemo = uiState.progressTaskUiModel.todayMemo
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(32.dp))
                 Text(
                     text = uiState.progressTaskUiModel.getRemainTimeString(),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    style = MaterialTheme.typography.displayMedium,
+                    color = if (uiState.progressTaskUiModel.isOverTime()) MaterialTheme.colorScheme.tertiary else Color.Black,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally),
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(32.dp))
                 if (uiState.progressTaskUiModel.isProgressing) {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
@@ -203,7 +205,7 @@ fun ProgressTaskContent(
         modifier = Modifier
             .wrapContentHeight()
             .fillMaxWidth(),
-        ) {
+    ) {
         Text(
             text = content,
             style = MaterialTheme.typography.bodyLarge,
@@ -212,6 +214,7 @@ fun ProgressTaskContent(
         )
     }
 }
+
 @Composable
 fun TodayMemoField(
     savedTodayMemo: String = "",
@@ -255,6 +258,6 @@ fun TodayMemoField(
             Log.d("DetailScreen", "onValueChange : $it")
             todayMemo = it
         },
-        )
+    )
 
 }
