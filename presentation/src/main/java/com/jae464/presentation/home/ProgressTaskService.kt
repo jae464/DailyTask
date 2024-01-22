@@ -49,8 +49,8 @@ class ProgressTaskService : LifecycleService() {
         notificationBuilder = NotificationCompat.Builder(applicationContext,
             CHANNEL_ID
         )
-            .setContentTitle(progressingTaskManager.getCurrentProgressTask()?.title ?: "")
-            .setContentText(progressingTaskManager.getCurrentProgressTask()?.progressedTime.toString())
+            .setContentTitle("현재 일정이 진행중입니다.")
+            .setContentText(progressingTaskManager.getCurrentProgressTask()?.title ?: "")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setSilent(true)
             .setOngoing(true)
@@ -73,8 +73,8 @@ class ProgressTaskService : LifecycleService() {
                     if (progressingTask.progressedTime % 10 == 0) {
                         updateProgressedTimeUseCase(progressingTask.id, progressingTask.progressedTime)
                     }
-                    notificationBuilder.setContentText(progressingTask.progressedTime.toString())
-                    manager.notify(NOTIFICATION_ID, notificationBuilder.build())
+//                    notificationBuilder.setContentText(progressingTask.progressedTime.toString())
+//                    manager.notify(NOTIFICATION_ID, notificationBuilder.build())
                     delay(1000)
                     progressingTaskManager.tick()
                 }
