@@ -94,6 +94,7 @@ class StatisticViewModel @Inject constructor(
                 }
                 else {
                     totalProgressTasksUiState.value = TotalProgressTasksUiState.Success(it.toTotalProgressTaskUiModels())
+                    _event.emit(StatisticEvent.ScrollToStatisticList(calendarHeight.value + filterCardHeight.value + loadButtonHeight.value))
                 }
             }
         }
