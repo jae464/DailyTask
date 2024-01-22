@@ -61,8 +61,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -112,15 +116,19 @@ fun StatisticScreen(
     val scrollState = rememberScrollState()
     var showCalendar by remember { mutableStateOf(false) }
     var showFilterOption by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(event) {
         event.collect { event ->
             when (event) {
                 is StatisticEvent.ScrollToFilterCard -> {
                     scrollState.animateScrollTo(event.offset)
+
                 }
                 is StatisticEvent.ScrollToStatisticList -> {
                     scrollState.animateScrollTo(event.offset)
+                    if (showCalendar) showCalendar = false
+                    if (showFilterOption) showFilterOption = false
                 }
             }
         }
@@ -157,7 +165,10 @@ fun StatisticScreen(
                         }
                         .animateContentSize(
                             finishedListener = { initialValue, targetValue ->
-                                Log.d(TAG, "initialValue : $initialValue targetValue : $targetValue")
+                                Log.d(
+                                    TAG,
+                                    "initialValue : $initialValue targetValue : $targetValue"
+                                )
                             }
                         )
                 ) {
@@ -235,10 +246,9 @@ fun StatisticScreen(
                             return@LoadPieChartButton
                         }
                         viewModel.getProgressTasks(startDate, endDate)
-                        viewModel.scrollToStatisticList()
-
+                        // 안되는 이유 : getProgressTasks를 하면 통계를 다시 불러오는데 불러오기 전에 통계가 빈 리스트일때(로딩중) 스크롤이 동작하므로 스크롤이 안됨
+//                        viewModel.scrollToStatisticList()
                     },
-                    scrollState = scrollState,
                     onChangedButtonSize = viewModel::setLoadButtonHeight
                 )
                 Column(
@@ -679,7 +689,6 @@ fun TotalProgressTaskItem(
 fun LoadPieChartButton(
     calendarState: CalendarState,
     onClickLoad: (LocalDate?, LocalDate?) -> Unit,
-    scrollState: ScrollState,
     onChangedButtonSize: (Int) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -689,7 +698,7 @@ fun LoadPieChartButton(
             .fillMaxWidth()
             .onSizeChanged {
 //                buttonHeight = it.height
-                           onChangedButtonSize(it.height)
+                onChangedButtonSize(it.height)
             },
         onClick = {
             Log.d(
@@ -697,6 +706,7 @@ fun LoadPieChartButton(
                 "startDate : ${calendarState.startDate} endDate : ${calendarState.endDate}"
             )
             onClickLoad(calendarState.startDate, calendarState.endDate)
+
 //            scope.launch {
 //                if (!scrollState.isScrollInProgress) {
 //                    scrollState.animateScrollTo(toYOffset + buttonHeight)
