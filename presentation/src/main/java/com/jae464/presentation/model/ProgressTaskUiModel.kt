@@ -31,6 +31,10 @@ data class ProgressTaskUiModel(
         val second = overTime % 3600 % 60
         return "%2d:%02d:%02d".format(hour, minute, second)
     }
+
+    fun isOverTime(): Boolean {
+        return remainTime < 0
+    }
 }
 
 fun ProgressTask.toProgressTaskUiModel(isProgressing: Boolean = false): ProgressTaskUiModel {
