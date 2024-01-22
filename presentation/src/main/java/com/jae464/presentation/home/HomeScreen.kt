@@ -3,6 +3,7 @@ package com.jae464.presentation.home
 import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -153,7 +154,9 @@ fun ProgressTaskItem(
             modifier = modifier
                 .fillMaxWidth(),
             shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.background
+            ),
             onClick = { onClickItem(progressTaskUiModel.id) }
         ) {
             Row(
@@ -163,6 +166,7 @@ fun ProgressTaskItem(
                 RoundedTimer(
                     time = progressTaskUiModel.getRemainTimeString(),
                     isProgressing = progressTaskUiModel.isProgressing,
+                    isOverTime = progressTaskUiModel.isOverTime(),
                     progress = progressTaskUiModel.progressedTime.toFloat() /  progressTaskUiModel.totalTime.toFloat()
                 )
                 Column(
@@ -217,13 +221,14 @@ fun RoundedTimer(
     modifier: Modifier = Modifier,
     time: String,
     isProgressing: Boolean,
+    isOverTime: Boolean,
     progress: Float = 0f
 ) {
     Box(
         modifier
             .size(64.dp)
             .background(
-                color = if (isProgressing) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
+                color = if (isOverTime) MaterialTheme.colorScheme.tertiary else if (isProgressing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
                 shape = CircleShape,
             ),
 //            .padding(2.dp),
