@@ -13,13 +13,24 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 
 const val settingRoute = "setting"
+const val themeSettingRoute = "theme_setting"
+const val categorySettingScreen = "category_setting"
 
 fun NavController.navigateToSetting(navOptions: NavOptions? = null) {
     this.navigate(settingRoute, navOptions)
 }
 
+fun NavController.navigateToThemeSetting(navOptions: NavOptions? = null) {
+    this.navigate(themeSettingRoute, navOptions)
+}
+
+fun NavController.navigateToCategorySetting(navOptions: NavOptions? = null) {
+    this.navigate(categorySettingScreen, navOptions = null)
+}
+
 fun NavGraphBuilder.settingScreen(
-    onClickTestScreen: () -> Unit = {}
+    onClickTestScreen: () -> Unit = {},
+    onClickPreference: (String) -> Unit = {}
 ) {
     composable(
         route = settingRoute,
@@ -45,7 +56,28 @@ fun NavGraphBuilder.settingScreen(
 //        }
     ) {
         SettingScreen(
-            onClickTestScreen = onClickTestScreen
+            onClickTestScreen = onClickTestScreen,
+            onClickPreference = onClickPreference
         )
+    }
+}
+
+fun NavGraphBuilder.themeSettingScreen(
+    onBackClick: () -> Unit
+) {
+    composable(
+        route = themeSettingRoute,
+    ) {
+        ThemeSettingScreen(onBackClick = onBackClick)
+    }
+}
+
+fun NavGraphBuilder.categorySettingScreen(
+    onBackClick: () -> Unit
+) {
+    composable(
+        route = categorySettingScreen,
+    ) {
+        CategorySettingScreen(onBackClick = onBackClick)
     }
 }
