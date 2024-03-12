@@ -1,5 +1,6 @@
 package com.jae464.presentation.setting
 
+import androidx.annotation.RequiresApi
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -10,6 +11,7 @@ fun NavController.navigateToTest(navOptions: NavOptions? = null) {
     this.navigate(progressTaskTestRoute, navOptions)
 }
 
+@RequiresApi(34)
 fun NavGraphBuilder.progressTaskTestScreen(
     onBackClick : () -> Unit
 ) {

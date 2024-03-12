@@ -1,9 +1,11 @@
 package com.jae464.data.di
 
 import com.jae464.data.repository.CategoryRepositoryImpl
+import com.jae464.data.repository.PreferenceRepositoryImpl
 import com.jae464.data.repository.ProgressTaskRepositoryImpl
 import com.jae464.data.repository.TaskRepositoryImpl
 import com.jae464.domain.repository.CategoryRepository
+import com.jae464.domain.repository.PreferenceRepository
 import com.jae464.domain.repository.ProgressTaskRepository
 import com.jae464.domain.repository.TaskRepository
 import dagger.Binds
@@ -32,4 +34,10 @@ interface RepositoryModule {
     fun bindProgressTaskRepository(
         progressTaskRepositoryImpl: ProgressTaskRepositoryImpl
     ): ProgressTaskRepository
+
+    @Binds
+    @Singleton
+    fun bindPreferenceRepository(
+        preferenceRepositoryImpl: PreferenceRepositoryImpl
+    ): PreferenceRepository
 }

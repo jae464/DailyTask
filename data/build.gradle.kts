@@ -43,6 +43,8 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.datastore)
+    implementation(libs.datastore.core)
     ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
