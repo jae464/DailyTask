@@ -1,6 +1,7 @@
 package com.jae464.presentation.setting
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +28,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingScreen(
-    onClickTestScreen: () -> Unit
+    onClickTestScreen: () -> Unit,
+    onClickPreference: (String) -> Unit = {},
 ) {
     Surface(
         modifier = Modifier
@@ -44,35 +46,39 @@ fun SettingScreen(
 //                Button(onClick = onClickTestScreen) {
 //                    Text(text = "테스트 화면으로 이동하기")
 //                }
-                SettingList()
-
+                SettingList(
+                    onClickItem = onClickPreference
+                )
             }
         }
     }
 }
 
 @Composable
-fun SettingList() {
+fun SettingList(
+    onClickItem: (String) -> Unit
+) {
     Column(
         modifier = Modifier
             .background(Color.White)
             .wrapContentHeight()
             .fillMaxWidth()
     ) {
-        SettingItem(title = "화면테마")
-        SettingItem(title = "카테고리")
+        SettingItem(title = "화면테마", onClickItem = onClickItem)
+        SettingItem(title = "카테고리", onClickItem = onClickItem)
     }
 }
 
 @Composable
 fun SettingItem(
     title: String,
-    onClickItem: () -> Unit = {}
+    onClickItem: (String) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .clickable { onClickItem(title) },
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         Row(
