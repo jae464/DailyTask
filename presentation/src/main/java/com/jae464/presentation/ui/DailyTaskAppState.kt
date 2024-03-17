@@ -46,13 +46,4 @@ class DailyTaskAppState(
             _intentData = value
         }
 
-//    val currentTopLevelDestination: TopLevelDestination?
-//        @Composable get() = when (currentDestination?.route) {
-//            TopLevelDestination.Home.route -> FOR_YOU
-//            TopLevelDestination.TaskList.route -> BOOKMARKS
-//            TopLevelDestination.Statistic.route -> INTERESTS
-//            TopLevelDestination.Setting.route ->
-//            else -> null
-//        }
-
 }

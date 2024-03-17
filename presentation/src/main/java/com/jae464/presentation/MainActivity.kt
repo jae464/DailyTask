@@ -160,8 +160,5 @@ fun BottomNavBar(navController: NavHostController, currentDest: NavDestination?)
 @Composable
 fun GreetingPreview() {
     DailyTaskTheme {
-//        HomeScreen(
-//
-//        )
     }
 }

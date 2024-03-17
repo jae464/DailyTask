@@ -1,12 +1,22 @@
 package com.jae464.presentation.navigation
 
 import android.util.Log
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -37,12 +47,15 @@ fun NavController.navigateToTopLevelDestination(topLevelDestination: TopLevelDes
         TopLevelDestination.Home -> {
             navigateToHome(navOptions = topLevelNavOptions)
         }
+
         TopLevelDestination.TaskList -> {
             navigateToTaskList(navOptions = topLevelNavOptions)
         }
+
         TopLevelDestination.Statistic -> {
             navigateToStatistic(navOptions = topLevelNavOptions)
         }
+
         TopLevelDestination.Setting -> {
             navigateToSetting(navOptions = topLevelNavOptions)
         }
@@ -50,12 +63,33 @@ fun NavController.navigateToTopLevelDestination(topLevelDestination: TopLevelDes
 }
 
 fun NavDestination?.isTopLevelDestinationInHierarchy(destination: TopLevelDestination): Boolean {
-//    Log.d("TopLevelDestination", this?.hierarchy.toString())
-//    this?.hierarchy?.forEach {
-//        Log.d("TopLevelDestination", it.toString())
-//    }
     return this?.hierarchy?.any {
         Log.d("TopLevelDestination", it.toString())
         it.route?.contains(destination.route, true) ?: false
     } ?: false
 }
+
+fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideEnterTransition(direction: AnimatedContentTransitionScope.SlideDirection): EnterTransition {
+    return fadeIn(
+        animationSpec = tween(
+            100, easing = LinearEasing
+        )
+    ) +
+            slideIntoContainer(
+                animationSpec = tween(100, easing = EaseIn),
+                towards = direction
+            )
+}
+
+fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideExitTransition(direction: AnimatedContentTransitionScope.SlideDirection): ExitTransition {
+    return fadeOut(
+        animationSpec = tween(
+            100, easing = LinearEasing
+        )
+    ) +
+            slideOutOfContainer(
+                animationSpec = tween(100, easing = EaseOut),
+                towards = direction
+            )
+}
+

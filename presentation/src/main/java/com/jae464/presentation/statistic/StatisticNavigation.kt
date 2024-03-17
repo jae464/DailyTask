@@ -11,6 +11,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.jae464.presentation.navigation.TopLevelDestination
+import com.jae464.presentation.navigation.getSlideEnterTransition
+import com.jae464.presentation.navigation.getSlideExitTransition
 
 const val statisticRoute = "statistic"
 
@@ -23,6 +26,28 @@ fun NavGraphBuilder.statisticScreen(
 ) {
     composable(
         route = statisticRoute,
+        enterTransition = {
+            when(initialState.destination.route) {
+                TopLevelDestination.Home.route, TopLevelDestination.TaskList.route -> {
+                    getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+                }
+                TopLevelDestination.Setting.route -> {
+                    getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.End)
+                }
+                else -> {null}
+            }
+        },
+        popExitTransition = {
+            when(targetState.destination.route) {
+                TopLevelDestination.Home.route, TopLevelDestination.TaskList.route -> {
+                    getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+                }
+                TopLevelDestination.Setting.route -> {
+                    getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+                }
+                else -> {null}
+            }
+        }
     ) {
         StatisticScreen(
             onClickProgressTask = onClickProgressTask
