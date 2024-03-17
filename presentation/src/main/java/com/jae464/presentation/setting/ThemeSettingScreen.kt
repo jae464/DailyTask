@@ -1,5 +1,6 @@
 package com.jae464.presentation.setting
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -14,6 +15,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -29,12 +31,14 @@ fun ThemeSettingScreen(onBackClick: () -> Unit) {
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
             )
             .fillMaxSize(),
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(onBackClick = onBackClick)
         }
     ) { padding ->
         Box(
             modifier = Modifier.padding(padding)
+                .background(MaterialTheme.colorScheme.surface),
         ) {
             Text(text = "테마 설정 화면")
         }

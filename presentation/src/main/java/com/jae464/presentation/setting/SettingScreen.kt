@@ -31,6 +31,8 @@ fun SettingScreen(
     onClickTestScreen: () -> Unit,
     onClickPreference: (String) -> Unit = {},
 ) {
+    val settingDestinations = SettingDestination.values().toList()
+
     Surface(
         modifier = Modifier
             .windowInsetsPadding(
@@ -43,10 +45,8 @@ fun SettingScreen(
             modifier = Modifier.padding(vertical = 16.dp)
         ) {
             Column {
-//                Button(onClick = onClickTestScreen) {
-//                    Text(text = "테스트 화면으로 이동하기")
-//                }
                 SettingList(
+                    destinations = settingDestinations,
                     onClickItem = onClickPreference
                 )
             }
@@ -56,6 +56,7 @@ fun SettingScreen(
 
 @Composable
 fun SettingList(
+    destinations: List<SettingDestination>,
     onClickItem: (String) -> Unit
 ) {
     Column(
@@ -64,21 +65,22 @@ fun SettingList(
             .wrapContentHeight()
             .fillMaxWidth()
     ) {
-        SettingItem(title = "화면테마", onClickItem = onClickItem)
-        SettingItem(title = "카테고리", onClickItem = onClickItem)
+        destinations.map {
+            SettingItem(destination = it, onClickItem = onClickItem)
+        }
     }
 }
 
 @Composable
 fun SettingItem(
-    title: String,
+    destination: SettingDestination,
     onClickItem: (String) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .clickable { onClickItem(title) },
+            .clickable { onClickItem(destination.route) },
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         Row(
@@ -86,8 +88,9 @@ fun SettingItem(
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = title,
-                style = MaterialTheme.typography.bodyLarge
+            Text(
+                text = destination.title,
+                style = MaterialTheme.typography.titleLarge
             )
         }
         Spacer(modifier = Modifier.height(16.dp))

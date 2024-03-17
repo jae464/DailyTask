@@ -163,7 +163,7 @@ fun DetailProgressTask(
                 Spacer(modifier = Modifier.height(32.dp))
                 Text(
                     text = uiState.progressTaskUiModel.getRemainTimeString(),
-                    style = MaterialTheme.typography.displayMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     color = if (uiState.progressTaskUiModel.isOverTime()) MaterialTheme.colorScheme.tertiary else Color.Black,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally),

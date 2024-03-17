@@ -3,17 +3,19 @@ package com.jae464.presentation.navigation
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.jae464.presentation.detail.detailScreen
 import com.jae464.presentation.detail.navigateToDetail
 import com.jae464.presentation.home.homeRoute
 import com.jae464.presentation.home.homeScreen
+import com.jae464.presentation.setting.categorySettingRoute
 import com.jae464.presentation.setting.categorySettingScreen
 import com.jae464.presentation.setting.navigateToCategorySetting
 import com.jae464.presentation.setting.navigateToTest
+import com.jae464.presentation.setting.navigateToThemeSetting
 import com.jae464.presentation.setting.progressTaskTestScreen
 import com.jae464.presentation.setting.settingScreen
+import com.jae464.presentation.setting.themeSettingRoute
 import com.jae464.presentation.setting.themeSettingScreen
 import com.jae464.presentation.statistic.navigateToStatisticDetail
 import com.jae464.presentation.statistic.statisticDetailScreen
@@ -65,7 +67,12 @@ fun DailyTaskNavHost(
         )
         settingScreen(
             onClickTestScreen = { navController.navigateToTest() },
-            onClickPreference = { navController.navigateToCategorySetting()}
+            onClickPreference = {
+                when (it) {
+                    themeSettingRoute -> navController.navigateToThemeSetting()
+                    categorySettingRoute -> navController.navigateToCategorySetting()
+                }
+            }
         )
         themeSettingScreen(
             onBackClick = { navController.popBackStack()}
