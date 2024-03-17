@@ -1,18 +1,14 @@
 package com.jae464.presentation.tasks
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.jae464.presentation.navigation.getSlideEnterTransition
+import com.jae464.presentation.navigation.getSlideExitTransition
 
 const val addTaskRoute = "add_task"
 
@@ -39,26 +35,12 @@ fun NavGraphBuilder.addTaskScreen(
                 type = NavType.StringType
                 defaultValue = ""
             }),
-//        enterTransition = {
-//            fadeIn(
-//                animationSpec = tween(
-//                    300, easing = LinearEasing
-//                )
-//            ) +
-//                    slideIntoContainer(
-//                animationSpec = tween(300, easing = EaseIn),
-//                towards = AnimatedContentTransitionScope.SlideDirection.Start)
-//        },
-//        exitTransition = {
-//            fadeOut(
-//                animationSpec = tween(
-//                    300, easing = LinearEasing
-//                )
-//            ) +
-//            slideOutOfContainer(
-//                animationSpec = tween(300, easing = EaseOut),
-//                towards = AnimatedContentTransitionScope.SlideDirection.End)
-//        }
+        enterTransition = {
+            getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+        },
+        exitTransition = {
+            getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+        }
     ) {
         AddTaskScreen(
             onBackClick = onBackClick

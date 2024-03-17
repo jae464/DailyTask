@@ -12,6 +12,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.jae464.presentation.navigation.TopLevelDestination
+import com.jae464.presentation.navigation.getSlideEnterTransition
+import com.jae464.presentation.navigation.getSlideExitTransition
 import com.jae464.presentation.ui.DailyTaskAppState
 
 const val homeRoute = "home"
@@ -27,6 +30,22 @@ fun NavGraphBuilder.homeScreen(
 ) {
     composable(
         route = homeRoute,
+        enterTransition = {
+            when(initialState.destination.route) {
+                TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route, TopLevelDestination.Setting.route -> {
+                    getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.End)
+                }
+                else -> {null}
+            }
+        },
+        popExitTransition = {
+            when(targetState.destination.route) {
+                TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route, TopLevelDestination.Setting.route -> {
+                    getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+                }
+                else -> {null}
+            }
+        }
     ) {
         HomeScreen(
             appState = appState,

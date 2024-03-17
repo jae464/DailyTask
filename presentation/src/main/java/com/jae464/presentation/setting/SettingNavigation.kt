@@ -11,6 +11,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.jae464.presentation.navigation.TopLevelDestination
+import com.jae464.presentation.navigation.getSlideEnterTransition
+import com.jae464.presentation.navigation.getSlideExitTransition
 
 const val settingRoute = "setting"
 const val themeSettingRoute = "theme_setting"
@@ -34,26 +37,22 @@ fun NavGraphBuilder.settingScreen(
 ) {
     composable(
         route = settingRoute,
-//        enterTransition = {
-//            fadeIn(
-//                animationSpec = tween(
-//                    300, easing = LinearEasing
-//                )
-//            ) +
-//                    slideIntoContainer(
-//                animationSpec = tween(300, easing = EaseIn),
-//                towards = AnimatedContentTransitionScope.SlideDirection.Start)
-//        },
-//        exitTransition = {
-//            fadeOut(
-//                animationSpec = tween(
-//                    300, easing = LinearEasing
-//                )
-//            ) +
-//            slideOutOfContainer(
-//                animationSpec = tween(300, easing = EaseOut),
-//                towards = AnimatedContentTransitionScope.SlideDirection.End)
-//        }
+        enterTransition = {
+            when(initialState.destination.route) {
+                TopLevelDestination.Home.route, TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route -> {
+                    getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+                }
+                else -> {null}
+            }
+        },
+        popExitTransition = {
+            when(targetState.destination.route) {
+                TopLevelDestination.Home.route, TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route -> {
+                    getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+                }
+                else -> {null}
+            }
+        }
     ) {
         SettingScreen(
             onClickTestScreen = onClickTestScreen,
