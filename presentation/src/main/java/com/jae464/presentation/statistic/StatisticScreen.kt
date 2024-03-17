@@ -714,7 +714,10 @@ fun LoadPieChartButton(
 //            }
         }
     ) {
-        Text(text = "불러오기")
+        Text(
+            text = "불러오기",
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
 
