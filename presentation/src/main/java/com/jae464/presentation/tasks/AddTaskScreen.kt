@@ -121,10 +121,10 @@ fun AddTaskScreen(
     Log.d(TAG, "AddTaskScreen Rendered()")
     Scaffold(
         containerColor = Color.White,
-        modifier = Modifier
-            .windowInsetsPadding(
-                WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-            ),
+//        modifier = Modifier
+//            .windowInsetsPadding(
+//                WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
+//            ),
         topBar = {
             AddTaskTopAppBar(
                 onBackClick = onBackClick,

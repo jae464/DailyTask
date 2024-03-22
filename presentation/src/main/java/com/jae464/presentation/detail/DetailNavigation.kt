@@ -14,6 +14,10 @@ import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.jae464.presentation.navigation.getSlideEnterTransition
+import com.jae464.presentation.navigation.getSlideExitTransition
+import com.jae464.presentation.navigation.getSlideInHorizontally
+import com.jae464.presentation.navigation.getSlideOutHorizontally
 
 const val detailRoute = "detail"
 
@@ -34,7 +38,15 @@ fun NavGraphBuilder.detailScreen(
                 type = NavType.StringType
                 defaultValue = ""
             }
-        )
+        ),
+        enterTransition = {
+//            getSlideInHorizontally(1)
+              getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+        },
+        popExitTransition = {
+//            getSlideOutHorizontally(1)
+            getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+        }
     ) {
         DetailScreen(
             onBackClick = onBackClick
