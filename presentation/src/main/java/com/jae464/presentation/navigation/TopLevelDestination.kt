@@ -10,6 +10,8 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
@@ -72,11 +74,11 @@ fun NavDestination?.isTopLevelDestinationInHierarchy(destination: TopLevelDestin
 fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideEnterTransition(direction: AnimatedContentTransitionScope.SlideDirection): EnterTransition {
     return fadeIn(
         animationSpec = tween(
-            100, easing = LinearEasing
+            200, easing = LinearEasing
         )
     ) +
             slideIntoContainer(
-                animationSpec = tween(100, easing = EaseIn),
+                animationSpec = tween(200, easing = EaseIn),
                 towards = direction
             )
 }
@@ -84,12 +86,27 @@ fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideEnterTransition(di
 fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideExitTransition(direction: AnimatedContentTransitionScope.SlideDirection): ExitTransition {
     return fadeOut(
         animationSpec = tween(
-            100, easing = LinearEasing
+            200, easing = LinearEasing
         )
     ) +
             slideOutOfContainer(
-                animationSpec = tween(100, easing = EaseOut),
+                animationSpec = tween(200, easing = EaseOut),
                 towards = direction
             )
 }
+
+fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideInHorizontally(direction: Int): EnterTransition {
+    return slideInHorizontally(
+        animationSpec = tween(200, easing = EaseIn),
+        initialOffsetX = { fullWidth ->  fullWidth * direction }
+    )
+}
+
+fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideOutHorizontally(direction: Int): ExitTransition {
+    return slideOutHorizontally(
+        animationSpec = tween(200, easing = EaseOut),
+        targetOffsetX = { fullWidth ->  fullWidth * direction }
+    )
+}
+
 

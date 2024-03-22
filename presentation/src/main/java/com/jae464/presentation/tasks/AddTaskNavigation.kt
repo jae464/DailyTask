@@ -38,7 +38,7 @@ fun NavGraphBuilder.addTaskScreen(
         enterTransition = {
             getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
         },
-        exitTransition = {
+        popExitTransition = {
             getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
         }
     ) {

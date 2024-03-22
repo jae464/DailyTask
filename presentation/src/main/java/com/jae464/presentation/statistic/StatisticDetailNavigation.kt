@@ -1,11 +1,14 @@
 package com.jae464.presentation.statistic
 
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.jae464.presentation.navigation.getSlideEnterTransition
+import com.jae464.presentation.navigation.getSlideExitTransition
 
 const val statisticDetailRoute = "statistic_detail"
 
@@ -29,7 +32,14 @@ fun NavGraphBuilder.statisticDetailScreen(onBackClick: () -> Unit) {
                 type = NavType.StringType
                 defaultValue = ""
             }
-        )
+        ),
+        enterTransition = {
+            getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+        },
+        popExitTransition = {
+            getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+        }
+
     ) {
         StatisticDetailScreen(
             taskId = it.arguments?.getString("taskId") ?: "",
