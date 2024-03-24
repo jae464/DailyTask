@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import com.jae464.presentation.navigation.TopLevelDestination
 import com.jae464.presentation.navigation.getSlideEnterTransition
 import com.jae464.presentation.navigation.getSlideExitTransition
+import com.jae464.presentation.navigation.getSlideInHorizontally
 
 const val settingRoute = "setting"
 const val themeSettingRoute = "theme_setting"
@@ -66,6 +67,12 @@ fun NavGraphBuilder.themeSettingScreen(
 ) {
     composable(
         route = themeSettingRoute,
+        enterTransition = {
+            getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+        },
+        popExitTransition = {
+            getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+        }
     ) {
         ThemeSettingScreen(onBackClick = onBackClick)
     }
@@ -76,6 +83,12 @@ fun NavGraphBuilder.categorySettingScreen(
 ) {
     composable(
         route = categorySettingRoute,
+        enterTransition = {
+            getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+        },
+        popExitTransition = {
+            getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+        }
     ) {
         CategorySettingScreen(onBackClick = onBackClick)
     }

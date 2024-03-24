@@ -74,7 +74,7 @@ fun NavDestination?.isTopLevelDestinationInHierarchy(destination: TopLevelDestin
 fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideEnterTransition(direction: AnimatedContentTransitionScope.SlideDirection): EnterTransition {
     return fadeIn(
         animationSpec = tween(
-            200, easing = LinearEasing
+            100, easing = LinearEasing
         )
     ) +
             slideIntoContainer(
@@ -86,7 +86,7 @@ fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideEnterTransition(di
 fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideExitTransition(direction: AnimatedContentTransitionScope.SlideDirection): ExitTransition {
     return fadeOut(
         animationSpec = tween(
-            200, easing = LinearEasing
+            100, easing = LinearEasing
         )
     ) +
             slideOutOfContainer(

@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -35,10 +36,12 @@ fun ThemeSettingScreen(onBackClick: () -> Unit) {
         topBar = {
             TopAppBar(onBackClick = onBackClick)
         }
-    ) { padding ->
+    ) {
+            padding ->
         Box(
-            modifier = Modifier.padding(padding)
-                .background(MaterialTheme.colorScheme.surface),
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
         ) {
             Text(text = "테마 설정 화면")
         }
