@@ -30,9 +30,14 @@ class CategorySettingViewModel @Inject constructor(
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CategorySettingUiState())
-    val uiState: StateFlow<CategorySettingUiState>
+    private val _uiState = MutableStateFlow<CategoryUiState>(CategoryUiState.Loading)
+    val uiState: StateFlow<CategoryUiState>
         get() = _uiState.asStateFlow()
+
+    private val _counter = MutableStateFlow(0)
+    val counter: StateFlow<Int>
+        get() = _counter.asStateFlow()
+
 
     init {
         getCategories()
@@ -41,18 +46,12 @@ class CategorySettingViewModel @Inject constructor(
     private fun getCategories() {
         viewModelScope.launch {
             getAllCategoriesUseCase().collectLatest { categories ->
-                _uiState.update {
-                    it.copy(
-                        categoryUiState = CategoryUiState.Success(categories)
-                    )
-                }
+                _uiState.value = CategoryUiState.Success(categories)
             }
         }
     }
 
     fun updateCounter(counter: Int) {
-        _uiState.update {
-            it.copy(testCounter = counter)
-        }
+        _counter.value = counter
     }
 }
