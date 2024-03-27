@@ -15,6 +15,7 @@ import com.jae464.presentation.navigation.TopLevelDestination
 import com.jae464.presentation.navigation.getSlideEnterTransition
 import com.jae464.presentation.navigation.getSlideExitTransition
 import com.jae464.presentation.navigation.getSlideInHorizontally
+import com.jae464.presentation.navigation.getSlideOutHorizontally
 
 const val settingRoute = "setting"
 const val themeSettingRoute = "theme_setting"
@@ -39,19 +40,34 @@ fun NavGraphBuilder.settingScreen(
     composable(
         route = settingRoute,
         enterTransition = {
-            when(initialState.destination.route) {
+            when (initialState.destination.route) {
                 TopLevelDestination.Home.route, TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route -> {
                     getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
                 }
-                else -> {null}
+
+                else -> {
+                    getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.End)
+                }
             }
         },
-        popExitTransition = {
+        exitTransition = {
             when(targetState.destination.route) {
                 TopLevelDestination.Home.route, TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route -> {
                     getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
                 }
-                else -> {null}
+                else -> {
+                    getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+                }
+            }
+        },
+        popExitTransition = {
+            when (targetState.destination.route) {
+                TopLevelDestination.Home.route, TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route -> {
+                    getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+                }
+                else -> {
+                    null
+                }
             }
         }
     ) {
@@ -70,6 +86,9 @@ fun NavGraphBuilder.themeSettingScreen(
         enterTransition = {
             getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
         },
+        exitTransition = {
+            getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+        },
         popExitTransition = {
             getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
         }
@@ -85,6 +104,9 @@ fun NavGraphBuilder.categorySettingScreen(
         route = categorySettingRoute,
         enterTransition = {
             getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+        },
+        exitTransition = {
+            getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
         },
         popExitTransition = {
             getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)

@@ -35,7 +35,19 @@ fun NavGraphBuilder.homeScreen(
                 TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route, TopLevelDestination.Setting.route -> {
                     getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.End)
                 }
-                else -> {null}
+                else -> {
+                    getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.End)
+                }
+            }
+        },
+        exitTransition = {
+            when(targetState.destination.route) {
+                TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route, TopLevelDestination.Setting.route -> {
+                    getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+                }
+                else -> {
+                    getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+                }
             }
         },
         popExitTransition = {
@@ -43,7 +55,9 @@ fun NavGraphBuilder.homeScreen(
                 TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route, TopLevelDestination.Setting.route -> {
                     getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.Start)
                 }
-                else -> {null}
+                else -> {
+                    getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.Start)
+                }
             }
         }
     ) {

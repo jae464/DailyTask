@@ -36,6 +36,9 @@ fun NavGraphBuilder.statisticDetailScreen(onBackClick: () -> Unit) {
         enterTransition = {
             getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
         },
+        exitTransition = {
+            getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+        },
         popExitTransition = {
             getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
         }

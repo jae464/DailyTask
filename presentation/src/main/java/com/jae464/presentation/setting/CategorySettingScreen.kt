@@ -58,6 +58,9 @@ fun CategorySettingScreen(
         ) {
             Column {
                 CategoryList(uiState)
+                CategoryList(uiState)
+                CategoryList(uiState)
+                CategoryList(uiState)
             }
         }
     }

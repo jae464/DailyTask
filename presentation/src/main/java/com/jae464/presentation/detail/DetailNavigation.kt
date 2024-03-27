@@ -43,6 +43,9 @@ fun NavGraphBuilder.detailScreen(
 //            getSlideInHorizontally(1)
               getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
         },
+        exitTransition = {
+            getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
+        },
         popExitTransition = {
 //            getSlideOutHorizontally(1)
             getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
