@@ -1,6 +1,7 @@
 package com.jae464.presentation.tasks
 
 import android.util.Log
+import android.view.RoundedCorner
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -210,7 +211,6 @@ fun AddTaskTopAppBar(
         actions = {
             IconButton(onClick = {
                 onSaveClick()
-
             }) {
                 Icon(
                     imageVector = Icons.Default.Save,
@@ -560,12 +560,21 @@ fun AddCategoryDialog(
 ) {
     var categoryName by remember { mutableStateOf("") }
     AlertDialog(
+        modifier = Modifier
+            .background(
+                color = Color.White,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(16.dp)
+        ,
         onDismissRequest = { onChangedShowDialog(false) },
         title = {
-            Column {
+            Column(
+
+            ) {
                 Text(
                     text = "새로운 카테고리 추가",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(16.dp))
