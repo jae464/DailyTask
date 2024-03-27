@@ -1,6 +1,8 @@
 package com.jae464.presentation.setting
 
 import android.util.Log
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,9 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
@@ -56,12 +61,7 @@ fun CategorySettingScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            Column {
-                CategoryList(uiState)
-                CategoryList(uiState)
-                CategoryList(uiState)
-                CategoryList(uiState)
-            }
+            CategoryList(categoryUiState = uiState)
         }
     }
 }
@@ -79,27 +79,12 @@ fun CategoryList(
 
         }
         is CategoryUiState.Success -> {
-            Column {
-                categoryUiState.categories.map {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = it.name)
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            IconButton(onClick = {  }) {
-                                Icon(imageVector = Icons.Rounded.Edit, contentDescription = "edit_category", tint = MaterialTheme.colorScheme.onPrimaryContainer)
-                            }
-                            IconButton(onClick = {  }) {
-                                Icon(imageVector = Icons.Rounded.Delete, contentDescription = "delete_category", tint = MaterialTheme.colorScheme.onPrimaryContainer)
-                            }
-                        }
-                    }
+            LazyColumn {
+                items(
+                    categoryUiState.categories,
+                    key = { it.id }
+                ) {
+                    CategoryItem(category = it)
                 }
             }
         }
@@ -107,13 +92,31 @@ fun CategoryList(
 }
 
 @Composable
-fun TestCounter(
-    counter: Int,
-    onChangeCounter: (Int) -> Unit
+fun CategoryItem(
+    category: Category
 ) {
-    Log.d("CategorySettingScreen", "TestCounter Rendered")
-    Text(text = counter.toString())
-    Button(onClick = { onChangeCounter(counter + 1) }) {
-
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = category.name)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            IconButton(onClick = {  }) {
+                Icon(imageVector = Icons.Rounded.Edit,
+                    contentDescription = "edit_category",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+            IconButton(onClick = {  }) {
+                Icon(imageVector = Icons.Rounded.Delete,
+                    contentDescription = "delete_category",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+        }
     }
 }
+
