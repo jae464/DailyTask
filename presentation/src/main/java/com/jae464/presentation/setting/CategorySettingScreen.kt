@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -92,7 +93,11 @@ fun CategorySettingScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            CategoryList(categoryUiState = uiState)
+            CategoryList(
+                categoryUiState = uiState,
+                onClickDeleteButton = viewModel::deleteCategory,
+                onClickChangeDefaultCategory = viewModel::changeDefaultCategory
+            )
 
             if (showCategoryAddDialog) {
                 // AddTaskScreen에 있는 AddCategoryDialog
@@ -110,22 +115,30 @@ fun CategorySettingScreen(
 @Composable
 fun CategoryList(
     categoryUiState: CategoryUiState,
+    onClickDeleteButton: (Long) -> Unit,
+    onClickChangeDefaultCategory: (Long) -> Unit
 ) {
     Log.d("CategorySettingScreen", "CategoryList Rendered")
-    when(categoryUiState) {
+    when (categoryUiState) {
         is CategoryUiState.Loading -> {
 
         }
+
         is CategoryUiState.Failure -> {
 
         }
+
         is CategoryUiState.Success -> {
             LazyColumn {
                 items(
                     categoryUiState.categories,
                     key = { it.id }
                 ) {
-                    CategoryItem(category = it)
+                    CategoryItem(
+                        category = it,
+                        onClickDeleteButton = onClickDeleteButton,
+                        onClickChangeDefaultCategory = onClickChangeDefaultCategory
+                    )
                 }
             }
         }
@@ -134,7 +147,10 @@ fun CategoryList(
 
 @Composable
 fun CategoryItem(
-    category: Category
+    category: Category,
+    onClickEditButton: () -> Unit = {},
+    onClickDeleteButton: (Long) -> Unit = {},
+    onClickChangeDefaultCategory: (Long) -> Unit = {}
 ) {
     Row(
         modifier = Modifier
@@ -145,15 +161,32 @@ fun CategoryItem(
     ) {
         Text(text = category.name)
         Row {
-            IconButton(onClick = {  }) {
-                Icon(imageVector = Icons.Rounded.Edit,
+            IconButton(onClick = { }) {
+                Icon(
+                    imageVector = Icons.Rounded.Edit,
                     contentDescription = "edit_category",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
-            IconButton(onClick = {  }) {
-                Icon(imageVector = Icons.Rounded.Delete,
-                    contentDescription = "delete_category",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            if (category.isDefault.not()) {
+                IconButton(onClick = {
+                    onClickDeleteButton(category.id)
+                }) {
+                    Icon(
+                        imageVector = Icons.Rounded.Delete,
+                        contentDescription = "delete_category",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                IconButton(onClick = {
+                    onClickChangeDefaultCategory(category.id)
+                }) {
+                    Icon(
+                        imageVector = Icons.Rounded.Star,
+                        contentDescription = "change_default_category",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
             }
         }
     }
@@ -188,6 +221,6 @@ fun CategorySettingTopAppBar(
             }
         }
 
-        )
+    )
 }
 

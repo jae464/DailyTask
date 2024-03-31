@@ -8,4 +8,5 @@ interface CategoryRepository {
     fun getCategory(categoryId: Long): Flow<Category>
     suspend fun addCategory(category: Category)
     suspend fun deleteCategory(categoryId: Long)
+    suspend fun editCategory(categoryId: Long, categoryName: String)
 }

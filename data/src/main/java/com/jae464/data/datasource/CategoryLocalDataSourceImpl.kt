@@ -23,4 +23,8 @@ class CategoryLocalDataSourceImpl @Inject constructor(
     override suspend fun deleteCategory(categoryId: Long) {
         categoryDao.deleteCategory(categoryId)
     }
+
+    override suspend fun editCategoryName(categoryId: Long, categoryName: String) {
+        categoryDao.updateCategoryName(categoryId, categoryName)
+    }
 }

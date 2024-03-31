@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.jae464.data.database.entity.CategoryEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -27,4 +28,12 @@ interface CategoryDao {
     )
     suspend fun deleteCategory(categoryId: Long)
 
+    @Query(
+        value = """
+            UPDATE categories
+            SET category_name = :categoryName
+            WHERE id = :categoryId 
+        """
+    )
+    suspend fun updateCategoryName(categoryId: Long, categoryName: String)
 }

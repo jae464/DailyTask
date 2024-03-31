@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.Category
 import com.jae464.domain.usecase.category.AddCategoryUseCase
+import com.jae464.domain.usecase.category.DeleteCategoryUseCase
+import com.jae464.domain.usecase.category.EditCategoryNameUseCase
 import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -35,7 +37,9 @@ sealed interface CategorySettingEvent {
 @HiltViewModel
 class CategorySettingViewModel @Inject constructor(
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
-    private val addCategoryUseCase: AddCategoryUseCase
+    private val addCategoryUseCase: AddCategoryUseCase,
+    private val editCategoryNameUseCase: EditCategoryNameUseCase,
+    private val deleteCategoryUseCase: DeleteCategoryUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CategoryUiState>(CategoryUiState.Loading)
@@ -66,7 +70,7 @@ class CategorySettingViewModel @Inject constructor(
         val available = isAvailableName(categoryName)
         viewModelScope.launch {
             if (available) {
-                addCategoryUseCase(Category(0L, categoryName))
+                addCategoryUseCase(Category(0L, categoryName, false))
             }
             else {
                 _event.emit(CategorySettingEvent.DuplicateCategoryName)
@@ -80,5 +84,21 @@ class CategorySettingViewModel @Inject constructor(
 
     fun updateCounter(counter: Int) {
         _counter.value = counter
+    }
+
+    fun editCategoryName(categoryId: Long, categoryName: String) {
+        viewModelScope.launch {
+            editCategoryNameUseCase(categoryId, categoryName)
+        }
+    }
+
+    fun deleteCategory(categoryId: Long) {
+        viewModelScope.launch {
+            deleteCategoryUseCase(categoryId)
+        }
+    }
+
+    fun changeDefaultCategory(categoryId: Long) {
+
     }
 }

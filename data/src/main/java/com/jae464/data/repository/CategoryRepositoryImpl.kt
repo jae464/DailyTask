@@ -35,4 +35,9 @@ class CategoryRepositoryImpl @Inject constructor(
     override suspend fun deleteCategory(categoryId: Long) {
         categoryLocalDataSource.deleteCategory(categoryId)
     }
+
+    override suspend fun editCategory(categoryId: Long, categoryName: String) {
+        categoryLocalDataSource.editCategoryName(categoryId, categoryName)
+    }
+
 }

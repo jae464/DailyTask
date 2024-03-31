@@ -8,4 +8,5 @@ interface CategoryLocalDataSource {
     fun getCategory(categoryId: Long): Flow<CategoryEntity>
     suspend fun insertCategory(categoryEntity: CategoryEntity)
     suspend fun deleteCategory(categoryId: Long)
+    suspend fun editCategoryName(categoryId: Long, categoryName: String)
 }

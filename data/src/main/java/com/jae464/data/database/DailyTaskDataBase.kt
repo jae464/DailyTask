@@ -40,8 +40,7 @@ abstract class DailyTaskDataBase : RoomDatabase() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
                 Executors.newSingleThreadExecutor().execute {
-                    db.execSQL("INSERT INTO categories (category_name) VALUES ('기타')")
-                    db.execSQL("INSERT INTO categories (category_name) VALUES ('학습')")
+                    db.execSQL("INSERT INTO categories (category_name, is_default) VALUES ('기타', true)")
                 }
             }
         }

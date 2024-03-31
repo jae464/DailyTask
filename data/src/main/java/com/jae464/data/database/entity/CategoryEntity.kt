@@ -12,19 +12,23 @@ data class CategoryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long,
     @ColumnInfo(name = "category_name")
-    val categoryName: String
+    val categoryName: String,
+    @ColumnInfo(name = "is_default")
+    val isDefault: Boolean = false,
 )
 
 fun CategoryEntity.toDomain(): Category {
     return Category(
         id = id,
-        name = categoryName
+        name = categoryName,
+        isDefault = isDefault
     )
 }
 
 fun Category.toEntity(): CategoryEntity {
     return CategoryEntity(
         id = 0L,
-        categoryName = name
+        categoryName = name,
+        isDefault = isDefault
     )
 }
