@@ -1,5 +1,6 @@
 [versions]
 androidGradlePlugin = "8.1.0"
+androidTools = "31.3.0"
 # AndroidX
 androidx-navigation = "2.7.5"
 androidx-lifecycle-compose = "2.6.1"
@@ -49,6 +50,7 @@ androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose"}
 androidx-compose-bom = {module = "androidx.compose:compose-bom", version.ref="androidx-compose-bom"}
 androidx-compose-ui = { module = "androidx.compose.ui:ui"}
+androidx-compose-ui-test = { module = "androidx.compose.ui:ui-test-junit4"}
 androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics"}
 androidx-compose-material = { module = "androidx.compose.material:material"}
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
@@ -92,6 +94,9 @@ androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4
 #datastore
 datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore"}
 datastore-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore"}
+
+android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin" }
+android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin"}
