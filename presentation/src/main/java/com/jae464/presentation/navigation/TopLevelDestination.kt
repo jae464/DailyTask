@@ -28,10 +28,11 @@ import com.jae464.presentation.home.navigateToHome
 import com.jae464.presentation.setting.navigateToSetting
 import com.jae464.presentation.statistic.navigateToStatistic
 import com.jae464.presentation.tasks.navigateToTaskList
+import com.jae464.presentation.tasks.navigateToTaskListDetail
 
 enum class TopLevelDestination(val icon: ImageVector, val route: String) {
     Home(Icons.Rounded.Home, "home"),
-    TaskList(Icons.Rounded.List, "task_list"),
+    TaskList(Icons.Rounded.List, "task_list_detail"),
     Statistic(Icons.Rounded.Info, "statistic"),
     Setting(Icons.Rounded.Settings, "setting"),
 }
@@ -51,7 +52,8 @@ fun NavController.navigateToTopLevelDestination(topLevelDestination: TopLevelDes
         }
 
         TopLevelDestination.TaskList -> {
-            navigateToTaskList(navOptions = topLevelNavOptions)
+//            navigateToTaskList(navOptions = topLevelNavOptions)
+            navigateToTaskListDetail(navOptions = topLevelNavOptions)
         }
 
         TopLevelDestination.Statistic -> {

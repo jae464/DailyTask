@@ -22,6 +22,7 @@ import com.jae464.presentation.statistic.statisticDetailScreen
 import com.jae464.presentation.statistic.statisticScreen
 import com.jae464.presentation.tasks.addTaskScreen
 import com.jae464.presentation.tasks.navigateToAddTask
+import com.jae464.presentation.tasks.taskListDetailScreen
 import com.jae464.presentation.tasks.taskListScreen
 import com.jae464.presentation.ui.DailyTaskAppState
 
@@ -90,6 +91,7 @@ fun DailyTaskNavHost(
                 navController.popBackStack()
             }
         )
+        taskListDetailScreen()
         // test screen
         progressTaskTestScreen(
             onBackClick = {

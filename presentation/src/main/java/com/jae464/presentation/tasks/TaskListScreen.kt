@@ -263,10 +263,11 @@ fun TaskListScreen(
         ) {
             when (taskListUiState) {
                 is TaskListUiState.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                    )
+                    // task가 없을때 에러 발생
+//                    CircularProgressIndicator(
+//                        modifier = Modifier
+//                            .align(Alignment.Center)
+//                    )
                 }
 
                 is TaskListUiState.Success -> {
