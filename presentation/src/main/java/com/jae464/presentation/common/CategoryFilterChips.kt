@@ -55,7 +55,9 @@ fun CategoryFilterChips(
                 border = FilterChipDefaults.filterChipBorder(
                     borderColor = MaterialTheme.colorScheme.primary,
                     disabledBorderColor = MaterialTheme.colorScheme.background,
-                    disabledSelectedBorderColor = MaterialTheme.colorScheme.onSecondary
+                    disabledSelectedBorderColor = MaterialTheme.colorScheme.onSecondary,
+                    enabled = true,
+                    selected = true,
                 )
             )
         }

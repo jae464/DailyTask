@@ -6,7 +6,7 @@ androidx-navigation = "2.7.5"
 androidx-lifecycle-compose = "2.6.1"
 androidx-core-ktx = "1.9.0"
 androidx-activity-compose = "1.7.2"
-androidx-compose-bom = "2023.03.00"
+androidx-compose-bom = "2023.10.01"
 androidx-hilt-navigation-compose = "1.0.0"
 androidx-hilt = "1.0.0"
 androidx-work = "2.8.0"
@@ -40,6 +40,7 @@ toolbar-compose = "2.3.5"
 bottomsheetdialog-compose = "1.4.0"
 
 material3-adaptive = "1.0.0-alpha08"
+material3="1.2.0-rc01"
 
 [libraries]
 #androidx
@@ -54,7 +55,7 @@ androidx-compose-ui = { module = "androidx.compose.ui:ui"}
 androidx-compose-ui-test = { module = "androidx.compose.ui:ui-test-junit4"}
 androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics"}
 androidx-compose-material = { module = "androidx.compose.material:material"}
-androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref="material3" }
 androidx-compose-material-iconsExtended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "material3-adaptive"}
 androidx-compose-material3-adaptive-layout = { module = "androidx.compose.material3.adaptive:adaptive-layout", version.ref = "material3-adaptive"}

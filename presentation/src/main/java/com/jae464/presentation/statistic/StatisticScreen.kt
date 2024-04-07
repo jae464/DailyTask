@@ -400,11 +400,11 @@ fun FilterOption(
                                 disabledContainerColor = MaterialTheme.colorScheme.onSecondary,
                                 disabledLabelColor = MaterialTheme.colorScheme.secondary
                             ),
-                            border = FilterChipDefaults.filterChipBorder(
-                                borderColor = MaterialTheme.colorScheme.primary,
-                                disabledBorderColor = MaterialTheme.colorScheme.background,
-                                disabledSelectedBorderColor = MaterialTheme.colorScheme.onSecondary
-                            )
+//                            border = FilterChipDefaults.filterChipBorder(
+//                                borderColor = MaterialTheme.colorScheme.primary,
+//                                disabledBorderColor = MaterialTheme.colorScheme.background,
+//                                disabledSelectedBorderColor = MaterialTheme.colorScheme.onSecondary,
+//                            )
                         )
                     }
                 }

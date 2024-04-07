@@ -805,7 +805,9 @@ fun <T> RectangleFilterChip(
             selectedBorderColor = MaterialTheme.colorScheme.primary,
             disabledBorderColor = MaterialTheme.colorScheme.onPrimaryContainer,
             borderWidth = 1.dp,
-            selectedBorderWidth = 1.dp
+            selectedBorderWidth = 1.dp,
+            enabled = true,
+            selected = true
         ),
         onClick = {
             onClickItem(item)
