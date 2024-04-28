@@ -101,8 +101,12 @@ fun AddTaskScreen(
     val context = LocalContext.current
 
     LaunchedEffect(categories) {
-        if (categories.isNotEmpty() && selectedCategory == null) {
+        if (categories.isEmpty()) return@LaunchedEffect
+        if (selectedCategory == null) {
             viewModel.onChangeSelectedCategory(categories.first())
+        }
+        else {
+            viewModel.onChangeSelectedCategory(categories.last())
         }
     }
 
@@ -122,10 +126,6 @@ fun AddTaskScreen(
     Log.d(TAG, "AddTaskScreen Rendered()")
     Scaffold(
         containerColor = Color.White,
-//        modifier = Modifier
-//            .windowInsetsPadding(
-//                WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-//            ),
         topBar = {
             AddTaskTopAppBar(
                 onBackClick = onBackClick,
