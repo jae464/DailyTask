@@ -20,7 +20,6 @@ import com.jae464.presentation.ui.DailyTaskAppState
 const val homeRoute = "home"
 
 fun NavController.navigateToHome(navOptions: NavOptions? = null) {
-    Log.d("HomeNavigation", "navigateToHome")
     this.navigate(homeRoute, navOptions)
 }
 

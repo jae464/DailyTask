@@ -31,7 +31,7 @@ interface TaskDao {
             CASE
                 WHEN title = :exactMatch THEN 1
                 ELSE 2
-            END,
+            END, 
             title
     """)
     fun getTasksByTitle(searchQuery: String, exactMatch: String): Flow<List<TaskWithCategory>>

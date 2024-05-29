@@ -488,7 +488,6 @@ fun DateCalendarContent(
     onChangedFocus: (CurrentFocus) -> Unit,
     onClickLocalDate: (LocalDate) -> Unit = {}
 ) {
-    Log.d("CustomCalendar", "DateCalendarContent Rendered")
     val currentMonth = LocalDate.of(selectedYear, selectedMonth, 1)
     val dayLengthOfCurrentMonth = currentMonth.lengthOfMonth()
     val beforeMonth = currentMonth.minusMonths(1)
@@ -498,9 +497,6 @@ fun DateCalendarContent(
     val firstDayOfWeek = currentMonth.dayOfWeek.value
     val lastDayOfWeek =
         LocalDate.of(selectedYear, selectedMonth, dayLengthOfCurrentMonth).dayOfWeek.value
-
-    Log.d("CustomCalendar", "첫번째 날의 요일 : $firstDayOfWeek")
-    Log.d("CustomCalendar", "마지막 날의 요일 : $lastDayOfWeek")
 
     val localDates = mutableListOf<LocalDate>()
     for (i in 1..dayLengthOfCurrentMonth) {
@@ -518,6 +514,7 @@ fun DateCalendarContent(
     }
 
     val dayOfWeeks = listOf("월", "화", "수", "목", "금", "토", "일")
+
     LazyVerticalGrid(
         modifier = Modifier
             .background(Color.Transparent)

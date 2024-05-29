@@ -25,7 +25,6 @@ fun CategoryFilterChips(
 ) {
     LazyRow(
         modifier = modifier
-//            .padding(start = 8.dp, end = 8.dp)
             .fillMaxWidth()
             .wrapContentHeight(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),

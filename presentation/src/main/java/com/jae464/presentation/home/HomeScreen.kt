@@ -59,11 +59,6 @@ fun HomeScreen(
     onClickItem: (String) -> Unit = {}
 ) {
     val progressUiTaskState by viewModel.progressUiTaskState.collectAsStateWithLifecycle()
-    val progressingTaskState by viewModel.progressingTask.collectAsStateWithLifecycle()
-
-    val context = LocalContext.current
-
-    Log.d("HomeScreen", "HomeScreen Rendered")
 
     if (appState.intentData.isNotBlank()) {
         onClickItem(appState.intentData)
@@ -80,7 +75,6 @@ fun HomeScreen(
     ) {
         ProgressTaskList(
             progressUiTaskState = progressUiTaskState,
-//            progressingTaskState = progressingTaskState,
             onClickStart = {
                 viewModel.startProgressTask(it)
             },
@@ -93,7 +87,6 @@ fun HomeScreen(
 fun ProgressTaskList(
     modifier: Modifier = Modifier,
     progressUiTaskState: ProgressTaskUiState,
-//    progressingTaskState: ProgressingState,
     onClickStart: (String) -> Unit,
     onClickItem: (String) -> Unit,
 ) {
@@ -143,7 +136,6 @@ fun ProgressTaskItem(
     onClickStart: (String) -> Unit,
     onClickItem: (String) -> Unit,
 ) {
-    val context = LocalContext.current
 
     Box(
         modifier = modifier
@@ -167,7 +159,6 @@ fun ProgressTaskItem(
                     time = progressTaskUiModel.getRemainTimeString(),
                     isProgressing = progressTaskUiModel.isProgressing,
                     isOverTime = progressTaskUiModel.isOverTime(),
-                    progress = progressTaskUiModel.progressedTime.toFloat() /  progressTaskUiModel.totalTime.toFloat()
                 )
                 Column(
                     modifier = Modifier
@@ -222,7 +213,6 @@ fun RoundedTimer(
     time: String,
     isProgressing: Boolean,
     isOverTime: Boolean,
-    progress: Float = 0f
 ) {
     Box(
         modifier
@@ -231,15 +221,8 @@ fun RoundedTimer(
                 color = if (isOverTime) MaterialTheme.colorScheme.tertiary else if (isProgressing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
                 shape = CircleShape,
             ),
-//            .padding(2.dp),
         contentAlignment = Alignment.Center
     ) {
-//        CircularProgressIndicator(
-//            progress = progress,
-//            modifier = Modifier.size(100.dp),
-//            color = MaterialTheme.colorScheme.outline,
-//            strokeWidth = 4.dp
-//        )
         Text(
             text = time,
             style = MaterialTheme.typography.bodyMedium,

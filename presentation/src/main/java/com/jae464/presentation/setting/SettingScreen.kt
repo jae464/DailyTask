@@ -98,7 +98,8 @@ fun SettingItem(
         ) {
             Text(
                 text = destination.title,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
             )
             IconButton(onClick = { onClickItem(destination.route) }) {
                 Icon(

@@ -211,11 +211,11 @@ fun ProgressTaskStatisticItem(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "전체 시간 : ${intToProgressTimeFormat(progressTask?.task?.progressTime ?: 0)}",
+                    text = "전체 시간 : ${intToProgressTimeFormat(progressTask.task.progressTime)}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "진행한 시간 : ${intToProgressTimeFormat(progressTask?.progressedTime ?: 0)}",
+                    text = "진행한 시간 : ${intToProgressTimeFormat(progressTask.progressedTime)}",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

@@ -36,8 +36,7 @@ fun ThemeSettingScreen(onBackClick: () -> Unit) {
         topBar = {
             TopAppBar(onBackClick = onBackClick)
         }
-    ) {
-            padding ->
+    ) { padding ->
         Box(
             modifier = Modifier
                 .padding(padding)
@@ -55,7 +54,7 @@ fun TopAppBar(
 ) {
     CenterAlignedTopAppBar(
         title = {
-          Text(text = "")
+            Text(text = "")
         },
         navigationIcon = {
             IconButton(onClick = {

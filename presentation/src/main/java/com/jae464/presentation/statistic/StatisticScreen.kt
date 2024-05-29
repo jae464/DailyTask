@@ -533,12 +533,10 @@ fun TotalProgressTaskList(
 //                    }
 //                }
 
-                // 방법 2. Column 사용
                 Column(
                     modifier = Modifier
                         .padding(16.dp)
                         .fillMaxWidth(),
-//                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     filteredTotalProgressTask.forEach {
                         Spacer(modifier = Modifier.height(16.dp))
@@ -554,25 +552,6 @@ fun TotalProgressTaskList(
                         )
                     }
                 }
-//                LazyColumn(
-//                    modifier = Modifier
-//                        .padding(16.dp)
-//                        .fillMaxWidth()
-//                        .wrapContentHeight(),
-//                    verticalArrangement = Arrangement.spacedBy(16.dp)
-//                ) {
-//                    items(
-//                        totalProgressTasksUiState.totalProgressTasks.filter { it.totalProgressedTime > 60 },
-//                        key = {it.title}
-//                    ) { totalProgressTask ->
-//                        TotalProgressTaskItem(totalProgressTaskUiModel = totalProgressTask)
-//                        Divider(
-//                            modifier = Modifier.padding(top = 16.dp),
-//                            color = MaterialTheme.colorScheme.surface,
-//                            thickness = 1.dp
-//                        )
-//                    }
-//                }
             }
         }
 
@@ -765,7 +744,6 @@ fun TotalProgressTaskPieChart(totalProgressTasksUiState: TotalProgressTasksUiSta
                     )
                 }.filter { it.value > 0f }
 
-            Log.d(TAG, "pieChartSlices : $pieChartSlices")
 
             val pieChartData = PieChartData(
                 slices = pieChartSlices,

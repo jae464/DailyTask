@@ -255,7 +255,6 @@ fun TodayMemoField(
             .height(200.dp),
         value = todayMemo,
         onValueChange = {
-            Log.d("DetailScreen", "onValueChange : $it")
             todayMemo = it
         },
     )

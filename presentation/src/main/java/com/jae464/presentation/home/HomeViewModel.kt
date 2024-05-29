@@ -62,12 +62,9 @@ class HomeViewModel @Inject constructor(
             ProgressTaskUiState.Loading
         }
         else {
-            Log.d(TAG, "tasks : $tasks progressTasks: $progressTasks")
             val progressTaskIds = progressTasks.map { it.task.id }
             val addProgressTasks = tasks.filter { task -> task.id !in progressTaskIds }
-            Log.d(TAG, "Have to Insert Progress Task : $addProgressTasks")
 
-            // 추가할 Task가 있는 경우
             if (addProgressTasks.isNotEmpty()) {
                 isUploading = true
                 updateProgressTasks(addProgressTasks)
@@ -101,7 +98,6 @@ class HomeViewModel @Inject constructor(
 
     private fun updateProgressTasks(tasks: List<Task>) {
         viewModelScope.launch {
-            Log.d(TAG, "ProgressTask 업데이트 합니다.")
             updateTodayProgressTasksUseCase(tasks)
             isUploading = false
         }

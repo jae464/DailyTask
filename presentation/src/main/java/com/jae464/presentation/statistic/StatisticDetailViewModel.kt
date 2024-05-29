@@ -61,7 +61,6 @@ class StatisticDetailViewModel @Inject constructor(
             getProgressTaskByTaskIdUseCase(usePeriod = usePeriod, taskId, startDate, endDate)
                 .collectLatest {
                     val filteredProgressTasks = it.filter { p -> p.progressedTime > 0 }
-                    Log.d("StatisticDetailViewModel", it.toString())
                     _uiState.value = StatisticDetailUiState.Success(filteredProgressTasks)
                     _selectedLocalDate.value = filteredProgressTasks.last().createdAt
                 }

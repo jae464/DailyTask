@@ -34,6 +34,7 @@ sealed interface CategoryUiState {
 sealed interface CategorySettingEvent {
     object DuplicateCategoryName : CategorySettingEvent
 }
+
 @HiltViewModel
 class CategorySettingViewModel @Inject constructor(
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,

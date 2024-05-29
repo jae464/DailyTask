@@ -22,7 +22,6 @@ import com.jae464.presentation.navigation.getSlideOutHorizontally
 const val detailRoute = "detail"
 
 fun NavController.navigateToDetail(progressTaskId: String, navOptions: NavOptions? = null) {
-    Log.d("DetailNavigation", "navigateToDetail")
     this.navigate("$detailRoute/$progressTaskId") {
         launchSingleTop = true
     }
