@@ -40,4 +40,8 @@ class CategoryRepositoryImpl @Inject constructor(
         categoryLocalDataSource.editCategoryName(categoryId, categoryName)
     }
 
+    override suspend fun changeDefaultCategory(categoryId: Long) {
+        categoryLocalDataSource.changeDefaultCategory(categoryId)
+    }
+
 }

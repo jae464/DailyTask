@@ -36,4 +36,14 @@ interface CategoryDao {
         """
     )
     suspend fun updateCategoryName(categoryId: Long, categoryName: String)
+
+    @Query("SELECT id FROM categories WHERE is_default = 1")
+    suspend fun getDefaultCategoryId(): Long
+
+    @Query("""
+        UPDATE categories
+        SET is_default = :isDefault
+        WHERE id = :categoryId
+    """)
+    suspend fun updateDefaultCategory(categoryId: Long, isDefault: Boolean)
 }

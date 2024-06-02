@@ -9,4 +9,5 @@ interface CategoryLocalDataSource {
     suspend fun insertCategory(categoryEntity: CategoryEntity)
     suspend fun deleteCategory(categoryId: Long)
     suspend fun editCategoryName(categoryId: Long, categoryName: String)
+    suspend fun changeDefaultCategory(categoryId: Long)
 }

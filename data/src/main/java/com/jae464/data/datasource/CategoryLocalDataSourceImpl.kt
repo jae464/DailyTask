@@ -1,5 +1,6 @@
 package com.jae464.data.datasource
 
+import android.util.Log
 import com.jae464.data.database.dao.CategoryDao
 import com.jae464.data.database.entity.CategoryEntity
 import kotlinx.coroutines.flow.Flow
@@ -8,6 +9,7 @@ import javax.inject.Inject
 class CategoryLocalDataSourceImpl @Inject constructor(
     private val categoryDao: CategoryDao
 ): CategoryLocalDataSource {
+
     override fun getAllCategories(): Flow<List<CategoryEntity>> {
         return categoryDao.getAllCategories()
     }
@@ -27,4 +29,11 @@ class CategoryLocalDataSourceImpl @Inject constructor(
     override suspend fun editCategoryName(categoryId: Long, categoryName: String) {
         categoryDao.updateCategoryName(categoryId, categoryName)
     }
+
+    override suspend fun changeDefaultCategory(categoryId: Long) {
+        val defaultCategoryId = categoryDao.getDefaultCategoryId()
+        categoryDao.updateDefaultCategory(defaultCategoryId, false)
+        categoryDao.updateDefaultCategory(categoryId, true)
+    }
+
 }

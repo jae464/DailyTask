@@ -1,10 +1,10 @@
 package com.jae464.presentation.setting
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.Category
 import com.jae464.domain.usecase.category.AddCategoryUseCase
+import com.jae464.domain.usecase.category.ChangeDefaultCategoryUseCase
 import com.jae464.domain.usecase.category.DeleteCategoryUseCase
 import com.jae464.domain.usecase.category.EditCategoryNameUseCase
 import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,7 +39,8 @@ class CategorySettingViewModel @Inject constructor(
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
     private val addCategoryUseCase: AddCategoryUseCase,
     private val editCategoryNameUseCase: EditCategoryNameUseCase,
-    private val deleteCategoryUseCase: DeleteCategoryUseCase
+    private val deleteCategoryUseCase: DeleteCategoryUseCase,
+    private val changeDefaultCategoryUseCase: ChangeDefaultCategoryUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CategoryUiState>(CategoryUiState.Loading)
@@ -100,6 +100,8 @@ class CategorySettingViewModel @Inject constructor(
     }
 
     fun changeDefaultCategory(categoryId: Long) {
-
+        viewModelScope.launch {
+            changeDefaultCategoryUseCase(categoryId)
+        }
     }
 }
