@@ -60,10 +60,11 @@ fun HomeScreen(
 ) {
     val progressUiTaskState by viewModel.progressUiTaskState.collectAsStateWithLifecycle()
 
-    if (appState.intentData.isNotBlank()) {
-        onClickItem(appState.intentData)
-        appState.intentData = ""
-    }
+
+//    if (appState.intentData.isNotBlank()) {
+//        onClickItem(appState.intentData)
+//        appState.intentData = ""
+//    }
 
     Surface(
         modifier = Modifier

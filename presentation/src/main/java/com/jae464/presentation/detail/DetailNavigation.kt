@@ -1,28 +1,23 @@
 package com.jae464.presentation.detail
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.jae464.presentation.navigation.getSlideEnterTransition
 import com.jae464.presentation.navigation.getSlideExitTransition
-import com.jae464.presentation.navigation.getSlideInHorizontally
-import com.jae464.presentation.navigation.getSlideOutHorizontally
 
-const val detailRoute = "detail"
+const val DETAIL_ROUTE = "detail"
+const val PROGRESS_TASK_ID = "progressTaskId"
+const val DEEP_LINK_URI_PATTERN = "https://www.jae464.com"
+const val DETAIL_DEEP_LINK_URI_PATTERN = "$DEEP_LINK_URI_PATTERN/$DETAIL_ROUTE/{progressTaskId}"
 
 fun NavController.navigateToDetail(progressTaskId: String, navOptions: NavOptions? = null) {
-    this.navigate("$detailRoute/$progressTaskId") {
+    this.navigate("$DETAIL_ROUTE/$progressTaskId") {
         launchSingleTop = true
     }
 }
@@ -31,22 +26,25 @@ fun NavGraphBuilder.detailScreen(
     onBackClick: () -> Unit
 ) {
     composable(
-        route = "$detailRoute/{progressTaskId}",
+        route = "$DETAIL_ROUTE/{$PROGRESS_TASK_ID}",
+        deepLinks = listOf(
+            navDeepLink {
+                uriPattern = DETAIL_DEEP_LINK_URI_PATTERN
+            }
+        ),
         arguments = listOf(
-            navArgument("progressTaskId") {
+            navArgument(PROGRESS_TASK_ID) {
                 type = NavType.StringType
                 defaultValue = ""
             }
         ),
         enterTransition = {
-//            getSlideInHorizontally(1)
               getSlideEnterTransition(AnimatedContentTransitionScope.SlideDirection.Start)
         },
         exitTransition = {
             getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
         },
         popExitTransition = {
-//            getSlideOutHorizontally(1)
             getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
         }
     ) {

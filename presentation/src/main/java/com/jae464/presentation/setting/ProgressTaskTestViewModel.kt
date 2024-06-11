@@ -2,7 +2,6 @@ package com.jae464.presentation.setting
 
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.MutableState
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -3,22 +3,25 @@ package com.jae464.presentation.home
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.Lifecycle
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.jae464.domain.usecase.progresstask.UpdateProgressedTimeUseCase
 import com.jae464.presentation.MainActivity
 import com.jae464.presentation.R
+import com.jae464.presentation.detail.DEEP_LINK_URI_PATTERN
+import com.jae464.presentation.detail.DETAIL_ROUTE
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.security.Provider.Service
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class ProgressTaskService : LifecycleService() {
@@ -39,8 +42,14 @@ class ProgressTaskService : LifecycleService() {
     private fun setForeground() {
         val intent = Intent(applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("progressTaskId", progressingTaskManager.getCurrentProgressTask()?.id)
+            action = Intent.ACTION_VIEW
+            data = "$DEEP_LINK_URI_PATTERN/$DETAIL_ROUTE/${progressingTaskManager.getCurrentProgressTask()?.id}".toUri()
+            component = ComponentName(
+                packageName,
+                "com.jae464.presentation.MainActivity"
+            )
         }
+
         val pendingIntent =
             PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
