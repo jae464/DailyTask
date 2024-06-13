@@ -50,3 +50,25 @@ fun ProgressTask.toProgressTaskUiModel(isProgressing: Boolean = false): Progress
         isProgressing = isProgressing
     )
 }
+
+fun ProgressTask.getRemainTimeString() : String {
+    val remainTime = totalTime - progressedTime
+    if (remainTime < 0) return getOverTimeString(remainTime)
+    val hour = remainTime / 3600
+    val minute = remainTime % 3600 / 60
+    val second = remainTime % 3600 % 60
+    return "%2d:%02d:%02d".format(hour, minute, second)
+}
+
+fun ProgressTask.isOverTime(): Boolean {
+    val remainTime = totalTime - progressedTime
+    return remainTime < 0
+}
+
+fun getOverTimeString(remainTime: Int): String {
+    val overTime = remainTime.absoluteValue
+    val hour = overTime / 3600
+    val minute = overTime % 3600 / 60
+    val second = overTime % 3600 % 60
+    return "%2d:%02d:%02d".format(hour, minute, second)
+}

@@ -1,9 +1,6 @@
 package com.jae464.presentation.home
 
-import android.content.Intent
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,29 +32,37 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.jae464.presentation.model.ProgressTaskUiModel
-import com.jae464.presentation.model.toProgressTaskUiModel
-import com.jae464.presentation.ui.DailyTaskAppState
+import com.jae464.domain.model.ProgressTask
+import com.jae464.presentation.model.getRemainTimeString
+import com.jae464.presentation.model.isOverTime
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onClickItem: (String) -> Unit = {}
 ) {
-    val progressUiTaskState by viewModel.progressUiTaskState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    HomeScreen(
+        uiState = uiState,
+        event = viewModel::handleEvent,
+        onClickItem = onClickItem
+    )
+}
+
+@Composable
+fun HomeScreen(
+    uiState: HomeUiState,
+    event: (HomeUiEvent) -> Unit,
+    onClickItem: (String) -> Unit
+) {
     Surface(
         modifier = Modifier
             .windowInsetsPadding(
@@ -67,9 +72,9 @@ fun HomeScreen(
         color = MaterialTheme.colorScheme.surface
     ) {
         ProgressTaskList(
-            progressUiTaskState = progressUiTaskState,
+            progressUiTaskState = uiState.progressTaskState,
             onClickStart = {
-                viewModel.startProgressTask(it)
+                event(HomeUiEvent.StartProgressTask(it))
             },
             onClickItem = onClickItem,
         )
@@ -77,16 +82,9 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeScreen(
-
-) {
-
-}
-
-@Composable
 fun ProgressTaskList(
     modifier: Modifier = Modifier,
-    progressUiTaskState: ProgressTaskUiState,
+    progressUiTaskState: ProgressTaskState,
     onClickStart: (String) -> Unit,
     onClickItem: (String) -> Unit,
 ) {
@@ -96,7 +94,7 @@ fun ProgressTaskList(
             .padding(horizontal = 16.dp)
     ) {
         when (progressUiTaskState) {
-            is ProgressTaskUiState.Success -> {
+            is ProgressTaskState.Success -> {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier
@@ -109,12 +107,14 @@ fun ProgressTaskList(
                         ProgressTaskItem(
                             progressTaskUiModel = progressTaskUiModel,
                             onClickStart = onClickStart,
-                            onClickItem = onClickItem
+                            onClickItem = onClickItem,
+                            isProgressing = progressUiTaskState.progressingTaskId == progressTaskUiModel.id
                         )
                     }
                 }
             }
-            is ProgressTaskUiState.Empty -> {
+
+            is ProgressTaskState.Empty -> {
                 Text(
                     text = "오늘 진행할 일정이 존재하지 않습니다.",
                     style = MaterialTheme.typography.titleLarge,
@@ -132,7 +132,8 @@ fun ProgressTaskList(
 @Composable
 fun ProgressTaskItem(
     modifier: Modifier = Modifier,
-    progressTaskUiModel: ProgressTaskUiModel,
+    progressTaskUiModel: ProgressTask,
+    isProgressing: Boolean,
     onClickStart: (String) -> Unit,
     onClickItem: (String) -> Unit,
 ) {
@@ -157,7 +158,7 @@ fun ProgressTaskItem(
             ) {
                 RoundedTimer(
                     time = progressTaskUiModel.getRemainTimeString(),
-                    isProgressing = progressTaskUiModel.isProgressing,
+                    isProgressing = isProgressing,
                     isOverTime = progressTaskUiModel.isOverTime(),
                 )
                 Column(
@@ -166,7 +167,7 @@ fun ProgressTaskItem(
                         .weight(1f)
                 ) {
                     Text(
-                        text = "${progressTaskUiModel.taskType}/${progressTaskUiModel.categoryName}",
+                        text = "${progressTaskUiModel.task.taskType}/${progressTaskUiModel.category.name}",
                         color = MaterialTheme.colorScheme.onSecondary,
                         style = MaterialTheme.typography.bodySmall,
                     )
@@ -192,15 +193,14 @@ fun ProgressTaskItem(
                         onClickStart(progressTaskUiModel.id)
                     },
                     modifier = Modifier
-                        .wrapContentSize()
-                    ,
+                        .wrapContentSize(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     ),
                     shape = RoundedCornerShape(32.dp),
-                    ) {
-                    Text(fontWeight = FontWeight.Bold, text = if (progressTaskUiModel.isProgressing) "중지" else "시작")
+                ) {
+                    Text(fontWeight = FontWeight.Bold, text = if (isProgressing) "중지" else "시작")
                 }
             }
         }

@@ -66,7 +66,7 @@ class DetailViewModel @Inject constructor(
         // 기존 진행중인 ProgressTask 업데이트
         stopCurrentProgressingTask()
         context.startService(progressTaskServiceIntent)
-        progressingTaskManager.startProgressTask(progressTask, context)
+        progressingTaskManager.startProgressTask(progressTask)
         startCollectProgressingTask()
     }
 

@@ -23,8 +23,8 @@ class ProgressingTaskManager {
 
     private var progressTask: ProgressTask? = null
 
-    fun startProgressTask(progressTask: ProgressTask, context: Context) {
-        _progressingState.value = ProgressingState.Progressing(progressTask.toProgressTaskUiModel(true))
+    fun startProgressTask(progressTask: ProgressTask) {
+        _progressingState.value = ProgressingState.Progressing(progressTask)
         this.progressTask = progressTask
     }
 
@@ -32,7 +32,7 @@ class ProgressingTaskManager {
         if (progressingState.value is ProgressingState.Progressing) {
             if (this.progressTask != null) {
                 this.progressTask = this.progressTask!!.copy(progressedTime = progressTask!!.progressedTime + 1)
-                _progressingState.value = ProgressingState.Progressing(progressTask!!.toProgressTaskUiModel(true))
+                _progressingState.value = ProgressingState.Progressing(progressTask!!)
             }
         }
     }
@@ -62,5 +62,5 @@ class ProgressingTaskManager {
 
 sealed interface ProgressingState {
     object Ready : ProgressingState
-    data class Progressing(val progressTask: ProgressTaskUiModel): ProgressingState
+    data class Progressing(val progressTask: ProgressTask): ProgressingState
 }

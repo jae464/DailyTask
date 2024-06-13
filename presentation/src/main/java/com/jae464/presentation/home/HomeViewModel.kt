@@ -5,39 +5,36 @@ import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jae464.domain.model.ProgressTask
 import com.jae464.domain.model.Task
 import com.jae464.domain.model.toDayOfWeek
-import com.jae464.domain.usecase.task.GetTasksByDayOfWeekUseCase
 import com.jae464.domain.usecase.progresstask.GetTodayProgressTaskUseCase
 import com.jae464.domain.usecase.progresstask.UpdateProgressedTimeUseCase
 import com.jae464.domain.usecase.progresstask.UpdateTodayProgressTasksUseCase
+import com.jae464.domain.usecase.task.GetTasksByDayOfWeekUseCase
 import com.jae464.presentation.model.ProgressTaskUiModel
 import com.jae464.presentation.model.toProgressTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
 data class HomeUiState(
-    val progressTaskState: ProgressTaskState = ProgressTaskState.Loading
+    val progressTaskState: ProgressTaskState = ProgressTaskState.Loading,
 )
 
 sealed interface HomeUiEvent {
-
+    data class StartProgressTask(val id: String) : HomeUiEvent
 }
 
 sealed interface HomeUiEffect {
@@ -53,17 +50,27 @@ class HomeViewModel @Inject constructor(
     private val updateProgressedTimeUseCase: UpdateProgressedTimeUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(HomeUiState(ProgressTaskState.Loading))
+    private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     private val _effect = MutableSharedFlow<HomeUiEffect>()
     val effect = _effect.asSharedFlow()
 
     private val progressingTaskManager = ProgressingTaskManager.getInstance()
-    val progressingTask = progressingTaskManager.progressingState
+    private val progressingTask = progressingTaskManager.progressingState
+
+    private var isUploading = false
 
     init {
         getProgressTasks()
+    }
+
+    fun handleEvent(event: HomeUiEvent) {
+        when (event) {
+            is HomeUiEvent.StartProgressTask -> {
+                startProgressTask(event.id)
+            }
+        }
     }
 
     private fun getProgressTasks() {
@@ -72,77 +79,43 @@ class HomeViewModel @Inject constructor(
             getTasksByDayOfWeekUseCase(LocalDate.now().dayOfWeek.toDayOfWeek()),
             progressingTask
         ) { progressTasks, tasks, progressingTask ->
-            Log.d("HomeViewModel", "getProgressTasks: $progressTasks $tasks $progressingTask")
+
             val progressTaskIds = progressTasks.map { it.task.id }
             val addProgressTasks = tasks.filter { task -> task.id !in progressTaskIds }
 
-            if (addProgressTasks.isNotEmpty()) {
-                updateProgressTasks(addProgressTasks)
-                ProgressTaskState.Loading
-            }
-
-        }.onEach {
-            Log.d(TAG, "getProgressTasks: $it")
-        }.launchIn(viewModelScope)
-    }
-
-
-
-    private var isUploading = false
-
-    val tasks =
-        getTasksByDayOfWeekUseCase(LocalDate.now().dayOfWeek.toDayOfWeek())
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = null
-            )
-
-    private val progressTasks =
-        getTodayProgressTaskUseCase().stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
-        )
-
-    val progressUiTaskState: StateFlow<ProgressTaskUiState> = combine(
-        tasks,
-        progressTasks,
-        progressingTask
-    ) { tasks, progressTasks, progressingTask ->
-        if (tasks == null || progressTasks == null || isUploading) {
-            ProgressTaskUiState.Loading
-        } else {
-            val progressTaskIds = progressTasks.map { it.task.id }
-            val addProgressTasks = tasks.filter { task -> task.id !in progressTaskIds }
-
-            if (addProgressTasks.isNotEmpty()) {
+            if (addProgressTasks.isNotEmpty() && !isUploading) {
                 isUploading = true
                 updateProgressTasks(addProgressTasks)
-                ProgressTaskUiState.Loading
+                ProgressTaskState.Loading
             } else {
                 if (progressTasks.isEmpty()) {
-                    ProgressTaskUiState.Empty
+                    ProgressTaskState.Empty
                 } else {
                     if (progressingTask is ProgressingState.Progressing) {
-                        ProgressTaskUiState.Success(progressTasks.map {
-                            if (it.id == progressingTask.progressTask.id) {
-                                progressingTask.progressTask
-                            } else {
-                                it.toProgressTaskUiModel()
-                            }
-                        })
+                        ProgressTaskState.Success(
+                            progressTasks = progressTasks.map {
+                                if (it.id == progressingTask.progressTask.id) {
+                                    progressingTask.progressTask
+                                } else {
+                                    it
+                                }
+                            },
+                            progressingTaskId = progressingTask.progressTask.id
+                        )
                     } else {
-                        ProgressTaskUiState.Success(progressTasks.map { it.toProgressTaskUiModel() })
+                        ProgressTaskState.Success(
+                            progressTasks = progressTasks,
+                            progressingTaskId = ""
+                        )
                     }
                 }
             }
-        }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = ProgressTaskUiState.Loading
-    )
+        }.onEach {
+            _uiState.update { state ->
+                state.copy(progressTaskState = it)
+            }
+        }.launchIn(viewModelScope)
+    }
 
     private fun updateProgressTasks(tasks: List<Task>) {
         viewModelScope.launch {
@@ -151,24 +124,24 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun startProgressTask(id: String) {
-        val progressTask = progressTasks.value?.firstOrNull { it.id == id } ?: return
+    private fun startProgressTask(id: String) {
+        val progressTaskState = uiState.value.progressTaskState
+        val progressingTaskState = progressingTaskManager.progressingState.value
+        var progressingTaskId = ""
 
-        if (progressingTaskManager.progressingState.value is ProgressingState.Progressing) {
-            val progressingTaskId = progressingTaskManager.getCurrentProgressTask()?.id
+        if (progressTaskState is ProgressTaskState.Success) {
+            val progressTask = progressTaskState.progressTasks.firstOrNull { it.id == id } ?: return
 
-            stopCurrentProgressingTask()
+            if (progressingTaskState is ProgressingState.Progressing) {
+                progressingTaskId = progressingTaskState.progressTask.id
+                stopCurrentProgressingTask()
+            }
 
             if (progressingTaskId != id) {
                 val service = Intent(context, ProgressTaskService::class.java)
                 context.startService(service)
-                progressingTaskManager.startProgressTask(progressTask, context)
-
+                progressingTaskManager.startProgressTask(progressTask)
             }
-        } else {
-            val service = Intent(context, ProgressTaskService::class.java)
-            context.startService(service)
-            progressingTaskManager.startProgressTask(progressTask, context)
         }
     }
 
@@ -187,16 +160,13 @@ class HomeViewModel @Inject constructor(
     companion object {
         const val TAG = "HomeViewModel"
     }
+
 }
 
 sealed interface ProgressTaskState {
     object Loading : ProgressTaskState
-    data class Success(val progressTasks: List<ProgressTaskUiModel>) : ProgressTaskState
-    object Empty : ProgressTaskState
-}
+    data class Success(val progressTasks: List<ProgressTask>, val progressingTaskId: String) :
+        ProgressTaskState
 
-sealed interface ProgressTaskUiState {
-    object Loading : ProgressTaskUiState
-    data class Success(val progressTasks: List<ProgressTaskUiModel>) : ProgressTaskUiState
-    object Empty : ProgressTaskUiState
+    object Empty : ProgressTaskState
 }
