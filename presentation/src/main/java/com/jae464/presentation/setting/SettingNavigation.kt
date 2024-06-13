@@ -1,12 +1,6 @@
 package com.jae464.presentation.setting
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -14,15 +8,14 @@ import androidx.navigation.compose.composable
 import com.jae464.presentation.navigation.TopLevelDestination
 import com.jae464.presentation.navigation.getSlideEnterTransition
 import com.jae464.presentation.navigation.getSlideExitTransition
-import com.jae464.presentation.navigation.getSlideInHorizontally
-import com.jae464.presentation.navigation.getSlideOutHorizontally
 
-const val settingRoute = "setting"
+
+const val SETTING_ROUTE = "setting"
 const val themeSettingRoute = "theme_setting"
 const val categorySettingRoute = "category_setting"
 
 fun NavController.navigateToSetting(navOptions: NavOptions? = null) {
-    this.navigate(settingRoute, navOptions)
+    this.navigate(SETTING_ROUTE, navOptions)
 }
 
 fun NavController.navigateToThemeSetting(navOptions: NavOptions? = null) {
@@ -38,7 +31,7 @@ fun NavGraphBuilder.settingScreen(
     onClickPreference: (String) -> Unit = {}
 ) {
     composable(
-        route = settingRoute,
+        route = SETTING_ROUTE,
         enterTransition = {
             when (initialState.destination.route) {
                 TopLevelDestination.Home.route, TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route -> {

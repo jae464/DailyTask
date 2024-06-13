@@ -10,10 +10,10 @@ import com.jae464.presentation.navigation.getSlideEnterTransition
 import com.jae464.presentation.navigation.getSlideExitTransition
 import com.jae464.presentation.ui.DailyTaskAppState
 
-const val homeRoute = "home"
+const val HOME_ROUTE = "home"
 
 fun NavController.navigateToHome(navOptions: NavOptions? = null) {
-    this.navigate(homeRoute, navOptions)
+    this.navigate(HOME_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.homeScreen(
@@ -21,7 +21,7 @@ fun NavGraphBuilder.homeScreen(
     onClickItem: (String) -> Unit = {}
 ) {
     composable(
-        route = homeRoute,
+        route = HOME_ROUTE,
         enterTransition = {
             when(initialState.destination.route) {
                 TopLevelDestination.TaskList.route, TopLevelDestination.Statistic.route, TopLevelDestination.Setting.route -> {

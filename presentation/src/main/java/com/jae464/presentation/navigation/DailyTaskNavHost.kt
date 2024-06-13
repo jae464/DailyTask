@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import com.jae464.presentation.detail.detailScreen
 import com.jae464.presentation.detail.navigateToDetail
-import com.jae464.presentation.home.homeRoute
+import com.jae464.presentation.home.HOME_ROUTE
 import com.jae464.presentation.home.homeScreen
 import com.jae464.presentation.setting.categorySettingRoute
 import com.jae464.presentation.setting.categorySettingScreen
@@ -28,7 +28,7 @@ import com.jae464.presentation.ui.DailyTaskAppState
 @Composable
 fun DailyTaskNavHost(
     appState: DailyTaskAppState,
-    startDestination: String = homeRoute
+    startDestination: String = HOME_ROUTE
 ) {
 
     val navController = appState.navController

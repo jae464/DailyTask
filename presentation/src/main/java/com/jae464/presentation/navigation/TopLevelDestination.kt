@@ -24,16 +24,20 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.navOptions
+import com.jae464.presentation.home.HOME_ROUTE
 import com.jae464.presentation.home.navigateToHome
+import com.jae464.presentation.setting.SETTING_ROUTE
 import com.jae464.presentation.setting.navigateToSetting
+import com.jae464.presentation.statistic.STATISTIC_ROUTE
 import com.jae464.presentation.statistic.navigateToStatistic
+import com.jae464.presentation.tasks.TASK_LIST_ROUTE
 import com.jae464.presentation.tasks.navigateToTaskList
 
 enum class TopLevelDestination(val icon: ImageVector, val route: String) {
-    Home(Icons.Rounded.Home, "home"),
-    TaskList(Icons.Rounded.List, "task_list"),
-    Statistic(Icons.Rounded.Info, "statistic"),
-    Setting(Icons.Rounded.Settings, "setting"),
+    Home(Icons.Rounded.Home, HOME_ROUTE),
+    TaskList(Icons.Rounded.List, TASK_LIST_ROUTE),
+    Statistic(Icons.Rounded.Info, STATISTIC_ROUTE),
+    Setting(Icons.Rounded.Settings, SETTING_ROUTE),
 }
 
 

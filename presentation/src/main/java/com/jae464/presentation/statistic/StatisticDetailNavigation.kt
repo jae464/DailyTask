@@ -10,15 +10,15 @@ import androidx.navigation.navArgument
 import com.jae464.presentation.navigation.getSlideEnterTransition
 import com.jae464.presentation.navigation.getSlideExitTransition
 
-const val statisticDetailRoute = "statistic_detail"
+const val STATISTIC_DETAIL_ROUTE = "statistic_detail"
 
 fun NavController.navigateToStatisticDetail(args: StatisticDetailNavigationArgument,navOptions: NavOptions? = null) {
-    this.navigate("${statisticRoute}?taskId=${args.taskId}&startDate=${args.startDate}&endDate=${args.endDate}", navOptions)
+    this.navigate("${STATISTIC_DETAIL_ROUTE}?taskId=${args.taskId}&startDate=${args.startDate}&endDate=${args.endDate}", navOptions)
 }
 
 fun NavGraphBuilder.statisticDetailScreen(onBackClick: () -> Unit) {
     composable(
-        route = "$statisticRoute?taskId={taskId}&startDate={startDate}&endDate={endDate}",
+        route = "$STATISTIC_DETAIL_ROUTE?taskId={taskId}&startDate={startDate}&endDate={endDate}",
         arguments = listOf(
             navArgument("taskId") {
                 type = NavType.StringType

@@ -10,16 +10,16 @@ import androidx.navigation.navArgument
 import com.jae464.presentation.navigation.getSlideEnterTransition
 import com.jae464.presentation.navigation.getSlideExitTransition
 
-const val addTaskRoute = "add_task"
+const val ADD_TASK_ROUTE = "add_task"
 
 fun NavController.navigateToAddTask(taskId: String? = null, navOptions: NavOptions? = null) {
     if (taskId == null) {
-        this.navigate(addTaskRoute) {
+        this.navigate(ADD_TASK_ROUTE) {
             launchSingleTop = true
         }
     }
     else {
-        this.navigate("$addTaskRoute?taskId=$taskId") {
+        this.navigate("$ADD_TASK_ROUTE?taskId=$taskId") {
             launchSingleTop = true
         }
     }
