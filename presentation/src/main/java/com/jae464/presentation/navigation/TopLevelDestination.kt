@@ -95,18 +95,5 @@ fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideExitTransition(dir
             )
 }
 
-fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideInHorizontally(direction: Int): EnterTransition {
-    return slideInHorizontally(
-        animationSpec = tween(200, easing = EaseIn),
-        initialOffsetX = { fullWidth ->  fullWidth * direction }
-    )
-}
-
-fun AnimatedContentTransitionScope<NavBackStackEntry>.getSlideOutHorizontally(direction: Int): ExitTransition {
-    return slideOutHorizontally(
-        animationSpec = tween(200, easing = EaseOut),
-        targetOffsetX = { fullWidth ->  fullWidth * direction }
-    )
-}
 
 

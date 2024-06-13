@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -62,7 +63,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             DailyTaskTheme {
-                // A surface container using the 'background' color from the theme
                 val appState = rememberDailyTaskAppState()
                 val navController = appState.navController
                 val currentDest = appState.currentDestination
@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { padding ->
-                    Row(
+                    Box(
                         modifier = Modifier
                             .padding(padding)
                             .fillMaxSize()
@@ -108,7 +108,6 @@ fun BottomNavBar(navController: NavHostController, currentDest: NavDestination?)
     ) {
         topDestinations.forEach { destination ->
             NavigationBarItem(
-//                selected = navBackStackEntry?.destination?.route == destination.route,
                 selected = currentDest.isTopLevelDestinationInHierarchy(destination),
                 onClick = {
                     navController.navigateToTopLevelDestination(destination)
