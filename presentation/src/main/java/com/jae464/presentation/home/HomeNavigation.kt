@@ -54,7 +54,6 @@ fun NavGraphBuilder.homeScreen(
         }
     ) {
         HomeScreen(
-            appState = appState,
             onClickItem = onClickItem
         )
     }

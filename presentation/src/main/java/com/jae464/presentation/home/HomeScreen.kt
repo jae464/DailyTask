@@ -53,8 +53,6 @@ import com.jae464.presentation.ui.DailyTaskAppState
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
-    appState: DailyTaskAppState,
     viewModel: HomeViewModel = hiltViewModel(),
     onClickItem: (String) -> Unit = {}
 ) {
@@ -76,6 +74,13 @@ fun HomeScreen(
             onClickItem = onClickItem,
         )
     }
+}
+
+@Composable
+fun HomeScreen(
+
+) {
+
 }
 
 @Composable
