@@ -16,12 +16,42 @@ import com.jae464.presentation.home.ProgressingTaskManager
 import com.jae464.presentation.model.toProgressTaskUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class DetailUiState(
+    val progressTaskState: ProgressTaskState = ProgressTaskState.Loading
+)
+
+sealed interface ProgressTaskState {
+    object Loading: ProgressTaskState
+    data class Success(val progressTask: ProgressTask, val isProgressing: Boolean): ProgressTaskState
+}
+
+sealed interface DetailUiEvent {
+    object StartProgressTask : DetailUiEvent
+    object StopProgressTask: DetailUiEvent
+    data class UpdateTodayMemo(val todayMemo: String): DetailUiEvent
+}
+
+sealed interface DetailUiEffect {
+
+}
 
 @HiltViewModel
 class DetailViewModel @Inject constructor(
@@ -33,70 +63,71 @@ class DetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val TAG = "DetailViewModel"
-    private val progressingTaskManager = ProgressingTaskManager.getInstance()
+    private val _uiState = MutableStateFlow(DetailUiState())
+    val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
-    private val _uiState: MutableStateFlow<DetailUiState> = MutableStateFlow(DetailUiState.Loading)
-    val uiState = _uiState.asStateFlow()
+    private val _uiEffect = MutableSharedFlow<DetailUiEffect>()
+    val uiEffect: SharedFlow<DetailUiEffect> = _uiEffect.asSharedFlow()
 
-    private var collectProgressingTaskJob: Job? = null
     private lateinit var progressTask: ProgressTask
+    private val progressingTaskManager = ProgressingTaskManager.getInstance()
+    private val progressingTask = progressingTaskManager.progressingState
     private var progressTaskServiceIntent: Intent = Intent(context, ProgressTaskService::class.java)
 
     init {
-        val currentProgressingTask = progressingTaskManager.getCurrentProgressTask()
-        viewModelScope.launch {
-            getProgressTaskUseCase(savedStateHandle["progressTaskId"] ?: "")
-                .collectLatest {
-                    if (it == null) {
-                        _uiState.emit(DetailUiState.Loading)
-                    } else {
-                        if (uiState.value is DetailUiState.Success) return@collectLatest
-                        progressTask = it
-                        val isProgressing = currentProgressingTask?.id == savedStateHandle["progressTaskId"]
-                        _uiState.emit(DetailUiState.Success(it.toProgressTaskUiModel(isProgressing)))
-                        if (currentProgressingTask?.id == savedStateHandle["progressTaskId"] && collectProgressingTaskJob == null) {
-                            startCollectProgressingTask()
-                        }
-                    }
-                }
-        }
+        getProgressTask()
     }
 
-    fun startProgressTask(context: Context) {
-        // 기존 진행중인 ProgressTask 업데이트
-        stopCurrentProgressingTask()
-        context.startService(progressTaskServiceIntent)
-        progressingTaskManager.startProgressTask(progressTask)
-        startCollectProgressingTask()
-    }
-
-    private fun startCollectProgressingTask() {
-        if (collectProgressingTaskJob == null) {
-            collectProgressingTaskJob = viewModelScope.launch {
-                progressingTaskManager.progressingState.collectLatest {
-                    if (it is ProgressingState.Progressing) {
-                        progressTask = progressTask.copy(progressedTime = it.progressTask.progressedTime)
-                        _uiState.emit(
-                            DetailUiState.Success(
-                                progressTask.toProgressTaskUiModel(true)
-                            )
-                        )
-                    }
-                }
+    fun handleEvent(event: DetailUiEvent) {
+        when(event) {
+            is DetailUiEvent.StartProgressTask -> {
+                startProgressTask()
+            }
+            is DetailUiEvent.StopProgressTask -> {
+                stopProgressTask()
+            }
+            is DetailUiEvent.UpdateTodayMemo -> {
+                updateTodayMemo(event.todayMemo)
             }
         }
     }
 
-    fun stopProgressTask() {
-        stopCurrentProgressingTask()
-        collectProgressingTaskJob?.cancel()
-        collectProgressingTaskJob = null
-        viewModelScope.launch {
-            _uiState.emit(DetailUiState.Success(progressTask.toProgressTaskUiModel(false)))
-        }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun getProgressTask() {
+        savedStateHandle.getStateFlow(key = PROGRESS_TASK_ID, "").flatMapLatest {
+            if (it.isBlank()) {
+                flowOf(ProgressTaskState.Loading)
+            }
+            else {
+                combine(getProgressTaskUseCase(it), progressingTask) { progressTask, progressingTask ->
+                    if (progressTask == null) flowOf(ProgressTaskState.Loading)
+                    else {
+                        if (progressingTask is ProgressingState.Progressing && progressingTask.progressTask.id == progressTask.id) {
+                            ProgressTaskState.Success(progressingTask.progressTask, true)
+                        }
+                        else {
+                            ProgressTaskState.Success(progressTask, false)
+                        }
+                    }
+                }
+            }
+        }.onEach { progressTaskState ->
+            if (progressTaskState is ProgressTaskState.Success) {
+                this.progressTask = progressTaskState.progressTask
+                _uiState.update {  state ->
+                    state.copy(progressTaskState = progressTaskState)
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 
-    private fun stopCurrentProgressingTask() {
+    private fun startProgressTask() {
+        stopProgressTask()
+        context.startService(progressTaskServiceIntent)
+        progressingTaskManager.startProgressTask(progressTask)
+    }
+
+    private fun stopProgressTask() {
         if (progressingTaskManager.progressingState.value is ProgressingState.Progressing) {
             val progressingTaskId = progressingTaskManager.getCurrentProgressTask()?.id ?: return
             context.stopService(progressTaskServiceIntent)
@@ -107,17 +138,14 @@ class DetailViewModel @Inject constructor(
         }
     }
 
-    fun updateTodayMemo(todayMemo: String) {
+    private fun updateTodayMemo(todayMemo: String) {
         val progressTaskId = progressTask.id
         viewModelScope.launch {
             updateTodayMemoUseCase(progressTaskId, todayMemo)
         }
     }
 
-
-}
-
-sealed interface DetailUiState {
-    object Loading : DetailUiState
-    data class Success(val progressTaskUiModel: ProgressTaskUiModel) : DetailUiState
+    companion object {
+        const val PROGRESS_TASK_ID = "progressTaskId"
+    }
 }
