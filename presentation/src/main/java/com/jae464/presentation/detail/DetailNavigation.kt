@@ -23,7 +23,8 @@ fun NavController.navigateToDetail(progressTaskId: String, navOptions: NavOption
 }
 
 fun NavGraphBuilder.detailScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onShowSnackbar: suspend (String, String?) -> Boolean
 ) {
     composable(
         route = "$DETAIL_ROUTE/{$PROGRESS_TASK_ID}",
@@ -49,7 +50,8 @@ fun NavGraphBuilder.detailScreen(
         }
     ) {
         DetailScreen(
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            onShowSnackbar = onShowSnackbar
         )
     }
 }

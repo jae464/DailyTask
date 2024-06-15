@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -21,8 +22,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,6 +75,9 @@ class MainActivity : ComponentActivity() {
                 val isShowBottomNavigation = TopLevelDestination.values().map { it.route }.contains(
                     appState.currentDestination?.route
                 )
+                val snackbarHostState = remember {
+                    SnackbarHostState()
+                }
 
                 Scaffold(
                     modifier = Modifier
@@ -76,6 +85,7 @@ class MainActivity : ComponentActivity() {
                             WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
                         ),
                     containerColor = Color.Transparent,
+                    snackbarHost = { SnackbarHost(hostState = snackbarHostState, modifier = Modifier.imePadding() ) },
                     bottomBar = {
                         if (isShowBottomNavigation) {
                             BottomNavBar(navController = navController, currentDest = currentDest)
@@ -87,7 +97,13 @@ class MainActivity : ComponentActivity() {
                             .padding(padding)
                             .fillMaxSize()
                     ) {
-                        DailyTaskNavHost(appState = appState)
+                        DailyTaskNavHost(appState = appState, onShowSnackbar = { message, action ->
+                            snackbarHostState.showSnackbar(
+                                message = message,
+                                actionLabel = action,
+                                duration = SnackbarDuration.Short
+                            ) == SnackbarResult.ActionPerformed
+                        })
                     }
                 }
             }

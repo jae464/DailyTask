@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,10 +52,22 @@ import com.jae464.presentation.model.isOverTime
 fun DetailScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
+    onShowSnackbar: suspend (String, String?) -> Boolean,
     viewModel: DetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiEffect = viewModel.uiEffect
     val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(uiEffect) {
+        uiEffect.collect {
+            when (it) {
+                is DetailUiEffect.UpdateTodayMemoCompleted -> {
+                    onShowSnackbar("오늘의 메모 저장이 완료되었습니다.", null)
+                }
+            }
+        }
+    }
 
     DetailScreen(
         uiState = uiState,
@@ -93,7 +106,6 @@ fun DetailScreen(
                 onClickStop = { event(DetailUiEvent.StopProgressTask) },
                 onClickSaveTodayMemo = {
                     event(DetailUiEvent.UpdateTodayMemo(it))
-                    Toast.makeText(context, "메모가 저장되었습니다.", Toast.LENGTH_SHORT).show()
                 }
             )
         }

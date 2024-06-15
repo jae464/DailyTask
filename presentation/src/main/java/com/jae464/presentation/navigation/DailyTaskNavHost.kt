@@ -28,6 +28,7 @@ import com.jae464.presentation.ui.DailyTaskAppState
 @Composable
 fun DailyTaskNavHost(
     appState: DailyTaskAppState,
+    onShowSnackbar: suspend (String, String?) -> Boolean,
     startDestination: String = HOME_ROUTE
 ) {
 
@@ -83,7 +84,8 @@ fun DailyTaskNavHost(
         detailScreen(
             onBackClick = {
                 navController.navigateUp()
-            }
+            },
+            onShowSnackbar = onShowSnackbar
         )
         statisticDetailScreen(
             onBackClick = {

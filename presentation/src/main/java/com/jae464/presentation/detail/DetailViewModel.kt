@@ -50,7 +50,7 @@ sealed interface DetailUiEvent {
 }
 
 sealed interface DetailUiEffect {
-
+    object UpdateTodayMemoCompleted: DetailUiEffect
 }
 
 @HiltViewModel
@@ -63,6 +63,7 @@ class DetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val TAG = "DetailViewModel"
+
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
@@ -142,6 +143,7 @@ class DetailViewModel @Inject constructor(
         val progressTaskId = progressTask.id
         viewModelScope.launch {
             updateTodayMemoUseCase(progressTaskId, todayMemo)
+            _uiEffect.emit(DetailUiEffect.UpdateTodayMemoCompleted)
         }
     }
 
