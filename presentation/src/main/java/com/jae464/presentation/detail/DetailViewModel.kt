@@ -103,7 +103,7 @@ class DetailViewModel @Inject constructor(
                     if (progressTask == null) flowOf(ProgressTaskState.Loading)
                     else {
                         if (progressingTask is ProgressingState.Progressing && progressingTask.progressTask.id == progressTask.id) {
-                            ProgressTaskState.Success(progressingTask.progressTask, true)
+                            ProgressTaskState.Success(progressTask.copy(progressedTime = progressingTask.progressTask.progressedTime), true)
                         }
                         else {
                             ProgressTaskState.Success(progressTask, false)
