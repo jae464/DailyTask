@@ -18,7 +18,8 @@ fun NavController.navigateToTaskList(navOptions: NavOptions? = null) {
 
 fun NavGraphBuilder.taskListScreen(
     onClickAddTask: () -> Unit,
-    onClickTask: (Task) -> Unit
+    onClickTask: (Task) -> Unit,
+    onShowSnackbar: suspend (String, String?) -> Boolean,
 ) {
     composable(
         route = TASK_LIST_ROUTE,
@@ -63,7 +64,7 @@ fun NavGraphBuilder.taskListScreen(
         }
     ) {
         TaskListScreen(
-            onClickAddTask = onClickAddTask, onClickTask = onClickTask
+            onClickAddTask = onClickAddTask, onClickTask = onClickTask, onShowSnackbar = onShowSnackbar
         )
     }
 }

@@ -1,5 +1,8 @@
 package com.jae464.presentation.tasks
 
+import android.content.Context
+import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.Category
@@ -15,8 +18,13 @@ import com.jae464.domain.usecase.task.DeleteTaskUseCase
 import com.jae464.domain.usecase.task.GetAllTasksUseCase
 import com.jae464.domain.usecase.task.GetFilteredTasksUseCase
 import com.jae464.domain.usecase.task.GetTasksByTitleUseCase
+import com.jae464.presentation.home.ProgressTaskService
 import com.jae464.presentation.home.ProgressingTaskManager
+import com.jae464.presentation.sampledata.categories
+import com.jae464.presentation.statistic.FilterOption
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,19 +32,64 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.w3c.dom.Text
 import java.time.LocalDate
 import javax.inject.Inject
+
+data class TaskListUiState(
+    val categories: List<Category> = emptyList(),
+    val tasks: TasksState = TasksState.Loading,
+    val selectedCategories: List<Category> = emptyList(),
+    val searchText: String = "",
+    val sortBy: SortBy = SortBy.DESC,
+    val selectedTaskType: TaskType = TaskType.All,
+    val selectedDayOfWeeks: List<DayOfWeek> = emptyList(),
+    val showBottomSheetDialog: Boolean = false
+)
+
+data class TaskFilterOption(
+    val selectedCategories: List<Category> = emptyList(),
+    val searchText: String = "",
+    val sortBy: SortBy = SortBy.DESC,
+    val selectedTaskType: TaskType = TaskType.All,
+    val selectedDayOfWeeks: List<DayOfWeek> = emptyList()
+)
+
+sealed interface TaskListUiEvent {
+    data class UpdateSearchText(val text: String): TaskListUiEvent
+    data class UpdateSelectedCategories(val categories: List<Category>): TaskListUiEvent
+    data class InsertProgressTask(val task: Task): TaskListUiEvent
+    data class DeleteTask(val task: Task): TaskListUiEvent
+    data class UpdateFilterOptions(val sortBy: SortBy, val taskType: TaskType, val dayOfWeeks: List<DayOfWeek>): TaskListUiEvent
+    data class ToggleBottomSheetDialog(val isShow: Boolean): TaskListUiEvent
+}
+
+sealed interface TaskListUiEffect {
+    object InsertProgressTaskCompleted : TaskListUiEffect
+    object DeleteTaskCompleted : TaskListUiEffect
+}
+
+sealed interface TasksState {
+    object Loading: TasksState
+    data class Success(val tasks: List<Task>): TasksState
+    object Empty: TasksState
+}
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
 class TaskListViewModel @Inject constructor(
-    private val getAllTasksUseCase: GetAllTasksUseCase,
+    @ApplicationContext private val context: Context,
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
     private val isExistProgressTaskUseCase: IsExistProgressTaskUseCase,
@@ -46,126 +99,116 @@ class TaskListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val progressingTaskManager = ProgressingTaskManager.getInstance()
+    private val _uiState = MutableStateFlow(TaskListUiState())
+    val uiState : StateFlow<TaskListUiState> = _uiState.asStateFlow()
 
-    val categories = getAllCategoriesUseCase()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
+    private val _uiEffect = MutableSharedFlow<TaskListUiEffect>()
+    val uiEffect : SharedFlow<TaskListUiEffect> = _uiEffect.asSharedFlow()
 
-    private val _filteredCategories = MutableStateFlow<List<Category>>(emptyList())
-    val filteredCategories: StateFlow<List<Category>>
-        get() = _filteredCategories
+    private val _filterOption = MutableStateFlow(TaskFilterOption())
+    val filterOption: StateFlow<TaskFilterOption> = _filterOption.asStateFlow()
 
     private val _searchText = MutableStateFlow("")
-    val searchText: StateFlow<String> get() = _searchText
-
-    private val filteredSearchText = MutableStateFlow("")
-
-    private val _sortBy = MutableStateFlow(SortBy.DESC)
-    val sortBy: StateFlow<SortBy> get() = _sortBy
-
-    private val _filteredTaskType = MutableStateFlow(TaskType.All)
-    val filteredTaskType: StateFlow<TaskType> get() = _filteredTaskType
-
-    private val _filteredDayOfWeeks = MutableStateFlow<List<DayOfWeek>>(emptyList())
-    val filteredDayOfWeeks: StateFlow<List<DayOfWeek>> get() = _filteredDayOfWeeks
-
-    // UIState
-    val taskListUiState2 = MutableStateFlow<TaskListUiState>(TaskListUiState.Loading)
-
-    private var getTasksJob: Job? = null
-
-    // Event
-    private val _event = MutableSharedFlow<TaskListEvent>()
-    val event: SharedFlow<TaskListEvent>
-        get() = _event
+    val searchText: StateFlow<String> = _searchText.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            searchText.debounce(500).collect {
-                filteredSearchText.value = it
-                if (it.isNotEmpty()) {
-                    getTasksByTitle(it)
-                }
-                else {
-                    getFilteredTasks()
-                }
+        getCategories()
+        getTasks()
+    }
+
+    fun handleEvent(event: TaskListUiEvent) {
+        when(event) {
+            is TaskListUiEvent.DeleteTask -> {
+                deleteTask(event.task)
+            }
+            is TaskListUiEvent.InsertProgressTask -> {
+                insertProgressTaskToday(event.task)
+            }
+            is TaskListUiEvent.UpdateSearchText -> {
+                updateSearchText(event.text)
+            }
+            is TaskListUiEvent.UpdateFilterOptions -> {
+                updateFilterOptions(event.sortBy, event.taskType, event.dayOfWeeks)
+            }
+            is TaskListUiEvent.UpdateSelectedCategories -> {
+                updateSelectedCategories(event.categories)
+            }
+            is TaskListUiEvent.ToggleBottomSheetDialog -> {
+                _uiState.update { state -> state.copy(showBottomSheetDialog = event.isShow) }
             }
         }
-        getFilteredTasks()
     }
 
-    fun getTasksByTitle(title: String) {
-        getTasksJob?.cancel()
-        getTasksJob = viewModelScope.launch {
-            taskListUiState2.value = TaskListUiState.Loading
-            getTasksByTitleUseCase(title).collectLatest {
-                if (it.isEmpty()) {
-                    taskListUiState2.value = TaskListUiState.Empty
-                }
-                else {
-                    taskListUiState2.value = TaskListUiState.Success(it)
-                }
+    private fun getCategories() {
+        getAllCategoriesUseCase().onEach {
+            _uiState.update { state -> state.copy(categories = it) }
+        }.launchIn(viewModelScope)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun getTasks() {
+        filterOption.flatMapLatest {
+            if (it.searchText.isNotBlank()) {
+                getTasksByTitleUseCase(it.searchText)
             }
-        }
-    }
-
-    fun getFilteredTasks() {
-        getTasksJob?.cancel()
-        getTasksJob = viewModelScope.launch {
-            val useFilterTaskType = filteredTaskType.value != TaskType.All
-            val useFilterCategory = filteredCategories.value.isNotEmpty()
-            val useFilterDayOfWeeks = filteredDayOfWeeks.value.isNotEmpty()
-            getFilteredTasksUseCase(
-                useFilterTaskType = useFilterTaskType,
-                filterTaskType = filteredTaskType.value,
-                useFilterCategory = useFilterCategory,
-                filterCategoryIds = filteredCategories.value.map { it.id }.toSet(),
-                useFilterDayOfWeeks = useFilterDayOfWeeks,
-                filterDayOfWeeks = filteredDayOfWeeks.value.toSet(),
-                sortBy = sortBy.value
-            )
-                .collectLatest { tasks ->
-                    if (tasks.isEmpty()) {
-                        taskListUiState2.value = TaskListUiState.Empty
-                    }
-                    else {
-                        taskListUiState2.value = TaskListUiState.Success(
-                            tasks
-                        )
-                    }
-                    _event.emit(TaskListEvent.HideBottomSheetDialog)
-                }
-        }
-    }
-
-    fun deleteTask(task: Task) {
-        viewModelScope.launch {
-            // 삭제하려는 일정이 현재 진행중인 일정이면 진행을 멈춘다.
-            if ((progressingTaskManager.getCurrentProgressTask()?.task?.id ?: "") == task.id) {
-                progressingTaskManager.stopProgressTask()
+            else {
+                getFilteredTasksUseCase(
+                    sortBy = it.sortBy,
+                    useFilterTaskType = it.selectedTaskType != TaskType.All,
+                    filterTaskType = it.selectedTaskType,
+                    useFilterCategory = it.selectedCategories.isNotEmpty(),
+                    filterCategoryIds = it.selectedCategories.map { category -> category.id }.toSet(),
+                    useFilterDayOfWeeks = it.selectedDayOfWeeks.isNotEmpty(),
+                    filterDayOfWeeks = it.selectedDayOfWeeks.toSet()
+                )
             }
-            deleteTaskUseCase(task.id)
-        }
+        }.onEach {
+            Log.d(TAG, it.toString())
+            _uiState.update { state -> state.copy(tasks = TasksState.Success(it)) }
+        }.launchIn(viewModelScope)
+
+        searchText.debounce(500).flatMapLatest {
+            getTasksByTitleUseCase(it)
+        }.onEach {
+            _uiState.update { state -> state.copy(tasks = TasksState.Success(it)) }
+        }.launchIn(viewModelScope)
     }
 
-    fun filterCategories(filteredCategories: List<Category>) {
-        _filteredCategories.value = filteredCategories
-        getFilteredTasks()
-    }
-
-    fun setSearchText(text: String) {
+    private fun updateSearchText(text: String) {
         _searchText.value = text
     }
 
-    fun insertProgressTaskToday(task: Task) {
+    private fun updateSelectedCategories(categories: List<Category>) {
+        _filterOption.update { state ->
+            state.copy(selectedCategories = categories)
+        }
+    }
+
+    private fun updateFilterOptions(sortBy: SortBy, taskType: TaskType, dayOfWeeks: List<DayOfWeek>) {
+        _filterOption.update { state ->
+            state.copy(sortBy = sortBy, selectedTaskType = taskType, selectedDayOfWeeks = dayOfWeeks)
+        }
+        _uiState.update { state -> state.copy(showBottomSheetDialog = false) }
+    }
+
+    private fun deleteTask(task: Task) {
+        viewModelScope.launch {
+            if ((progressingTaskManager.getCurrentProgressTask()?.task?.id ?: "") == task.id) {
+                val service = Intent(context, ProgressTaskService::class.java)
+                context.stopService(service)
+                progressingTaskManager.stopProgressTask()
+            }
+            deleteTaskUseCase(task.id)
+            _uiEffect.emit(TaskListUiEffect.DeleteTaskCompleted)
+        }
+    }
+
+    private fun insertProgressTaskToday(task: Task) {
         viewModelScope.launch {
             val isExist = checkIsExistProgressToday(task.id)
             if (!isExist) {
                 insertProgressTaskUseCase(task.toProgressTask())
-                _event.emit(TaskListEvent.SendToastMessage("오늘 할일에 추가되었습니다."))
+                _uiEffect.emit(TaskListUiEffect.InsertProgressTaskCompleted)
             }
         }
     }
@@ -174,26 +217,7 @@ class TaskListViewModel @Inject constructor(
         return isExistProgressTaskUseCase(taskId, LocalDate.now())
     }
 
-    fun setSortBy(sortBy: SortBy) {
-        _sortBy.value = sortBy
+    companion object {
+        const val TAG = "TaskListViewModel"
     }
-
-    fun setTaskType(taskType: TaskType) {
-        _filteredTaskType.value = taskType
-    }
-
-    fun setFilteredDayOfWeeks(dayOfWeeks: List<DayOfWeek>) {
-        _filteredDayOfWeeks.value = dayOfWeeks
-    }
-}
-
-sealed interface TaskListUiState {
-    object Loading : TaskListUiState
-    data class Success(val tasks: List<Task>) : TaskListUiState
-    object Empty : TaskListUiState
-}
-
-sealed interface TaskListEvent {
-    data class SendToastMessage(val message: String) : TaskListEvent
-    object HideBottomSheetDialog : TaskListEvent
 }

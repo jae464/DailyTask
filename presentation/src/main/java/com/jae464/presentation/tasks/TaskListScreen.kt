@@ -77,11 +77,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -123,52 +126,66 @@ import me.onebone.toolbar.ScrollStrategy
 import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalToolbarApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun TaskListScreen(
     modifier: Modifier = Modifier,
     onClickAddTask: () -> Unit,
     onClickTask: (Task) -> Unit,
+    onShowSnackbar: suspend (String, String?) -> Boolean,
     viewModel: TaskListViewModel = hiltViewModel()
 ) {
-    val toolbarState = rememberCollapsingToolbarScaffoldState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiEffect = viewModel.uiEffect
 
-    val taskListUiState by viewModel.taskListUiState2.collectAsStateWithLifecycle()
-    val event = viewModel.event
-
-    val categories by viewModel.categories.collectAsStateWithLifecycle()
-    val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
+    val filterOption by viewModel.filterOption.collectAsStateWithLifecycle()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
-    val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
-    val selectedTaskType by viewModel.filteredTaskType.collectAsStateWithLifecycle()
-    val selectedDayOfWeeks by viewModel.filteredDayOfWeeks.collectAsStateWithLifecycle()
 
+
+    LaunchedEffect(uiEffect) {
+        uiEffect.collectLatest { effect ->
+            when (effect) {
+                is TaskListUiEffect.DeleteTaskCompleted -> {
+                    onShowSnackbar("일정이 삭제되었습니다.", null)
+                }
+                is TaskListUiEffect.InsertProgressTaskCompleted -> {
+                    onShowSnackbar("오늘 할 일정으로 등록되었습니다.", null)
+                }
+            }
+        }
+    }
+    TaskListScreen(
+        uiState = uiState,
+        event = viewModel::handleEvent,
+        filterOption = filterOption,
+        searchText = searchText,
+        onClickAddTask = onClickAddTask,
+        onClickTask = onClickTask,
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun TaskListScreen(
+    uiState: TaskListUiState,
+    event: (TaskListUiEvent) -> Unit,
+    filterOption: TaskFilterOption,
+    searchText: String,
+    onClickAddTask: () -> Unit,
+    onClickTask: (Task) -> Unit,
+) {
+    val toolbarState = rememberCollapsingToolbarScaffoldState()
     var showDeleteDialog by remember {
         mutableStateOf<Pair<Task?, AnchoredDraggableState<DragValue>?>>(
             Pair(null, null)
         )
-    } // 삭제할 taskId 저장
-    var showBottomSheetDialog by remember { mutableStateOf(false) }
+    }
 
     val focusManager = LocalFocusManager.current
     var isShowingKeyboard by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-
-    LaunchedEffect(event) {
-        event.collectLatest { event ->
-            when (event) {
-                is TaskListEvent.SendToastMessage -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                }
-                is TaskListEvent.HideBottomSheetDialog -> showBottomSheetDialog = false
-
-            }
-        }
-    }
 
     CollapsingToolbarScaffold(
-        modifier = modifier
+        modifier = Modifier
             .background(MaterialTheme.colorScheme.surface)
             .windowInsetsPadding(
                 WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
@@ -210,12 +227,14 @@ fun TaskListScreen(
                                     .weight(1f)
                                     .padding(horizontal = 16.dp),
                                 text = searchText,
-                                onValueChanged = viewModel::setSearchText,
+                                onValueChanged = {
+                                    event(TaskListUiEvent.UpdateSearchText(it))
+                                },
                                 focusManager = focusManager,
-                                onChangedFocus = {isShowingKeyboard = it}
+                                onChangedFocus = { isShowingKeyboard = it }
                             )
                             IconButton(onClick = {
-                                viewModel.setSearchText("")
+                                event(TaskListUiEvent.UpdateSearchText(""))
                             }) {
                                 Icon(
                                     imageVector = Icons.Default.Cancel,
@@ -233,7 +252,8 @@ fun TaskListScreen(
                     Row {
                         IconButton(
                             onClick = {
-                                showBottomSheetDialog = true
+//                                showBottomSheetDialog = true
+                                event(TaskListUiEvent.ToggleBottomSheetDialog(true))
                             },
                             modifier = Modifier.padding(start = 8.dp)
 
@@ -245,9 +265,11 @@ fun TaskListScreen(
                         }
                         CategoryFilterChips(
                             modifier = Modifier.padding(horizontal = 8.dp),
-                            categories = categories,
-                            filteredCategories = filteredCategories,
-                            onChangedFilteredCategories = viewModel::filterCategories
+                            categories = uiState.categories,
+                            filteredCategories = filterOption.selectedCategories,
+                            onChangedFilteredCategories = {
+                                event(TaskListUiEvent.UpdateSelectedCategories(it))
+                            }
                         )
                     }
                 }
@@ -256,39 +278,39 @@ fun TaskListScreen(
         scrollStrategy = ScrollStrategy.EnterAlwaysCollapsed
     ) {
         Box(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .addFocusCleaner(focusManager)
         ) {
-            when (taskListUiState) {
-                is TaskListUiState.Loading -> {
+            when (uiState.tasks) {
+                is TasksState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .align(Alignment.Center)
                     )
                 }
 
-                is TaskListUiState.Success -> {
+                is TasksState.Success -> {
                     TaskList(
-                        modifier = modifier,
-                        taskListUiState = taskListUiState,
+                        taskListUiState = uiState.tasks,
                         onClickTask = {
                             if (!isShowingKeyboard) {
                                 onClickTask(it)
-                            }
-                            else {
+                            } else {
                                 focusManager.clearFocus()
                             }
                         },
                         onClickDelete = { task, anchoredState ->
                             showDeleteDialog = Pair(task, anchoredState)
                         },
-                        onClickAddProgressTask = viewModel::insertProgressTaskToday
+                        onClickAddProgressTask = {
+                            event(TaskListUiEvent.InsertProgressTask(it))
+                        }
                     )
                 }
 
-                is TaskListUiState.Empty -> {
+                is TasksState.Empty -> {
                     Text(
                         text = "새로운 일정을 추가해주세요.",
                         style = MaterialTheme.typography.titleLarge,
@@ -316,7 +338,7 @@ fun TaskListScreen(
                     confirmButton = {
                         TextButton(onClick = {
                             if (showDeleteDialog.first != null) {
-                                viewModel.deleteTask(showDeleteDialog.first!!)
+                                event(TaskListUiEvent.DeleteTask(showDeleteDialog.first!!))
                                 showDeleteDialog = Pair(null, null)
                             }
                         }) {
@@ -326,18 +348,17 @@ fun TaskListScreen(
                 )
             }
 
-            if (showBottomSheetDialog) {
+            if (uiState.showBottomSheetDialog) {
                 FilterBottomSheetDialog(
                     onChangeShowBottomSheetDialog = {
-                        showBottomSheetDialog = it
+                        event(TaskListUiEvent.ToggleBottomSheetDialog(it))
                     },
-                    selectedSortBy = sortBy,
-                    onChangedSortBy = viewModel::setSortBy,
-                    selectedTaskType = selectedTaskType,
-                    onChangedTaskType = viewModel::setTaskType,
-                    selectedDayOfWeeks = selectedDayOfWeeks,
-                    onChangedSelectedDayOfWeeks = viewModel::setFilteredDayOfWeeks,
-                    onClickLoadButton = viewModel::getFilteredTasks
+                    selectedSortBy = filterOption.sortBy,
+                    selectedTaskType = filterOption.selectedTaskType,
+                    selectedDayOfWeeks = filterOption.selectedDayOfWeeks,
+                    onClickLoadButton = { sortBy, taskType, dayOfWeeks ->
+                        event(TaskListUiEvent.UpdateFilterOptions(sortBy, taskType, dayOfWeeks))
+                    }
                 )
             }
         }
@@ -359,18 +380,18 @@ fun TaskListScreen(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FilterBottomSheetDialog(
     onChangeShowBottomSheetDialog: (Boolean) -> Unit,
     selectedSortBy: SortBy,
-    onChangedSortBy: (SortBy) -> Unit,
     selectedTaskType: TaskType,
-    onChangedTaskType: (TaskType) -> Unit,
     selectedDayOfWeeks: List<DayOfWeek>,
-    onChangedSelectedDayOfWeeks: (List<DayOfWeek>) -> Unit,
-    onClickLoadButton: () -> Unit
+    onClickLoadButton: (SortBy, TaskType, List<DayOfWeek>) -> Unit
 ) {
+    var sSortBy by remember { mutableStateOf(selectedSortBy) }
+    var sTaskType by remember { mutableStateOf(selectedTaskType) }
+    var sDayOfWeeks by remember { mutableStateOf(selectedDayOfWeeks) }
+
     BottomSheetDialog(
         onDismissRequest = {
             onChangeShowBottomSheetDialog(false)
@@ -407,9 +428,11 @@ fun FilterBottomSheetDialog(
                     SortBy.values().map {
                         RectangleFilterChip(
                             title = it.title,
-                            item =  it,
-                            isSelected = selectedSortBy == it,
-                            onClickItem = onChangedSortBy
+                            item = it,
+                            isSelected = sSortBy == it,
+                            onClickItem = { sortBy ->
+                                sSortBy = sortBy
+                            }
                         )
                     }
                 }
@@ -429,9 +452,9 @@ fun FilterBottomSheetDialog(
                     TaskType.values().map {
                         RectangleFilterChip(
                             title = it.taskName,
-                            item =  it,
-                            isSelected = selectedTaskType == it,
-                            onClickItem = onChangedTaskType
+                            item = it,
+                            isSelected = sTaskType == it,
+                            onClickItem = { taskType -> sTaskType = taskType}
                         )
                     }
                 }
@@ -447,26 +470,23 @@ fun FilterBottomSheetDialog(
                         RectangleFilterChip(
                             title = it.day + "요일",
                             item = it,
-                            isSelected = selectedDayOfWeeks.contains(it),
+                            isSelected = sDayOfWeeks.contains(it),
                             onClickItem = { dayOfWeek ->
-                                if (selectedDayOfWeeks.contains(dayOfWeek)) {
-                                    onChangedSelectedDayOfWeeks(selectedDayOfWeeks.minus(dayOfWeek))
-                                }
-                                else {
-                                    onChangedSelectedDayOfWeeks(selectedDayOfWeeks.plus(dayOfWeek))
+                                sDayOfWeeks = if (sDayOfWeeks.contains(dayOfWeek)) {
+                                    sDayOfWeeks.minus(dayOfWeek)
+                                } else {
+                                    sDayOfWeeks.plus(dayOfWeek)
                                 }
                             }
                         )
                     }
-//                    DayOfWeek.values().map {
-//                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Button(
-                        onClick = onClickLoadButton,
+                        onClick = {onClickLoadButton(sSortBy, sTaskType, sDayOfWeeks)},
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -516,7 +536,7 @@ fun SearchTextField(
 @Composable
 fun TaskList(
     modifier: Modifier = Modifier,
-    taskListUiState: TaskListUiState,
+    taskListUiState: TasksState,
     onClickTask: (Task) -> Unit,
     onClickDelete: (Task, AnchoredDraggableState<DragValue>) -> Unit,
     onClickAddProgressTask: (Task) -> Unit,
@@ -525,19 +545,19 @@ fun TaskList(
     val focusManager = LocalFocusManager.current
     val isScrollInProgress = state.isScrollInProgress
 
-//    LaunchedEffect(isScrollInProgress) {
-//        if (isScrollInProgress) {
-//            focusManager.clearFocus()
-//        }
-//    }
+    LaunchedEffect(isScrollInProgress) {
+        if (isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
 
     LaunchedEffect(taskListUiState) {
-        if (taskListUiState is TaskListUiState.Success) {
+        if (taskListUiState is TasksState.Success) {
             state.animateScrollToItem(0)
         }
     }
 
-    if (taskListUiState is TaskListUiState.Success) {
+    if (taskListUiState is TasksState.Success) {
         LazyColumn(
             state = state,
             verticalArrangement = Arrangement.spacedBy(24.dp),
@@ -761,6 +781,7 @@ fun TaskItem(
     }
 }
 
+
 @Composable
 fun RoundedBackgroundText(
     text: String,
@@ -799,7 +820,7 @@ fun <T> RectangleFilterChip(
             selectedLabelColor = MaterialTheme.colorScheme.primary,
             disabledLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
 
-        ),
+            ),
         border = FilterChipDefaults.filterChipBorder(
             selectedBorderColor = MaterialTheme.colorScheme.primary,
             disabledBorderColor = MaterialTheme.colorScheme.onPrimaryContainer,

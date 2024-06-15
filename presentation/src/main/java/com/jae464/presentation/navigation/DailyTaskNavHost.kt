@@ -54,7 +54,8 @@ fun DailyTaskNavHost(
             },
             onClickTask = { task ->
                 navController.navigateToAddTask(task.id)
-            }
+            },
+            onShowSnackbar = onShowSnackbar
         )
         addTaskScreen(
             onBackClick = {
@@ -93,10 +94,10 @@ fun DailyTaskNavHost(
             }
         )
         // test screen
-        progressTaskTestScreen(
-            onBackClick = {
-                navController.popBackStack()
-            }
-        )
+//        progressTaskTestScreen(
+//            onBackClick = {
+//                navController.popBackStack()
+//            }
+//        )
     }
 }
