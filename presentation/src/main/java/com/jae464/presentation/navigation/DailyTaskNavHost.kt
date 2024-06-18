@@ -60,7 +60,8 @@ fun DailyTaskNavHost(
         addTaskScreen(
             onBackClick = {
                 navController.popBackStack()
-            }
+            },
+            onShowSnackbar = onShowSnackbar
         )
         statisticScreen(
             onClickProgressTask = {

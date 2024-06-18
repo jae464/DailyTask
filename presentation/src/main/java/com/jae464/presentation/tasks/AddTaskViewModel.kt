@@ -19,15 +19,55 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import javax.inject.Inject
+
+data class AddTaskUiState (
+    val title: String = "",
+    val progressTimeHour: Int = 0,
+    val progressTimeMinute: Int = 0,
+    val selectedTaskType: TaskType = TaskType.Regular,
+    val selectedDayOfWeeks: List<DayOfWeek> = emptyList(),
+    val useAlarm: Boolean = false,
+    val alarmTime: LocalDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 0)),
+    val selectedCategory: Category? = null,
+    val memo: String = "",
+    val categories: CategoriesState = CategoriesState.Loading
+)
+
+sealed interface AddTaskUiEvent {
+    data class AddCategory(val categoryName: String) : AddTaskUiEvent
+    data class SaveTask(val task: Task) : AddTaskUiEvent
+    data class SetSelectedCategory(val category: Category) : AddTaskUiEvent
+    data class SetTitle(val title: String) : AddTaskUiEvent
+    data class SetProgressTimeHour(val hour: Int) : AddTaskUiEvent
+    data class SetProgressTimeMinute(val minute: Int) : AddTaskUiEvent
+    data class SetSelectedTaskType(val taskType: TaskType) : AddTaskUiEvent
+    data class SetSelectedDayOfWeeks(val dayOfWeeks: List<DayOfWeek>) : AddTaskUiEvent
+    data class SetUseAlarm(val useAlarm: Boolean) : AddTaskUiEvent
+    data class SetAlarmTime(val alarmTime: LocalDateTime) : AddTaskUiEvent
+    data class SetMemo(val memo: String) : AddTaskUiEvent
+}
+
+sealed interface AddTaskUiEffect {
+    object EmptyTitle : AddTaskUiEffect
+    object EmptyProgressTime : AddTaskUiEffect
+    object EmptyDayOfWeeks : AddTaskUiEffect
+    object SaveCompleted : AddTaskUiEffect
+}
+
+sealed interface CategoriesState {
+    object Loading: CategoriesState
+    data class Success(val categories: List<Category>) : CategoriesState
+}
 
 @HiltViewModel
 class AddTaskViewModel @Inject constructor(
@@ -39,64 +79,95 @@ class AddTaskViewModel @Inject constructor(
     private val addCategoryUseCase: AddCategoryUseCase
 ): ViewModel() {
 
-    val saveCompleted = MutableStateFlow(false)
+    private val taskId = savedStateHandle.get<String>("taskId") ?: ""
 
-    private val _addTaskUiState: MutableStateFlow<AddTaskUiState> = MutableStateFlow(AddTaskUiState.Loading)
-    val addTaskUiState: StateFlow<AddTaskUiState> get() = _addTaskUiState
+    private val _uiState = MutableStateFlow(AddTaskUiState())
+    val uiState: StateFlow<AddTaskUiState> get() = _uiState.asStateFlow()
 
-    private val savedTaskId: String? = savedStateHandle.get<String>("taskId")
-
-    private val _title = MutableStateFlow("")
-    val title: StateFlow<String> get() = _title
-
-    private val _progressTimeHour = MutableStateFlow(0)
-    val progressTimeHour: StateFlow<Int> get() = _progressTimeHour
-
-    private val _progressTimeMinute = MutableStateFlow(0)
-    val progressTimeMinute: StateFlow<Int> get() = _progressTimeMinute
-
-    private val _selectedTaskType = MutableStateFlow(TaskType.Regular)
-    val selectedTaskType: StateFlow<TaskType> get() = _selectedTaskType
-
-    private val _selectedDayOfWeeks = MutableStateFlow<List<DayOfWeek>>(emptyList())
-    val selectedDayOfWeeks: StateFlow<List<DayOfWeek>> get() = _selectedDayOfWeeks
-
-    private val _useAlarm = MutableStateFlow(false)
-    val useAlarm: StateFlow<Boolean> get() = _useAlarm
-
-    private val _alarmTime = MutableStateFlow(LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 0)))
-    val alarmTime: StateFlow<LocalDateTime> get() = _alarmTime
-
-    private val _selectedCategory = MutableStateFlow<Category?>(null)
-    val selectedCategory: StateFlow<Category?> get() = _selectedCategory
-
-    private val _memo = MutableStateFlow("")
-    val memo: StateFlow<String> get() = _memo
-
-    // event
-    private val _event = MutableSharedFlow<AddTaskEvent>()
-    val event: SharedFlow<AddTaskEvent> get() = _event
+    private val _uiEffect = MutableSharedFlow<AddTaskUiEffect>()
+    val uiEffect: SharedFlow<AddTaskUiEffect> get() = _uiEffect
 
     init {
-        Log.d("AddTaskViewModel", savedTaskId.toString())
-        if (!savedTaskId.isNullOrEmpty()) {
-            viewModelScope.launch {
-                getTaskUseCase(savedTaskId).collectLatest { task ->
-                    _addTaskUiState.value = AddTaskUiState.Success(task)
-                    _title.value = task.title
-                    _progressTimeHour.value = task.progressTime.getHour()
-                    _progressTimeMinute.value = task.progressTime.getMinute()
-                    _selectedTaskType.value = task.taskType
-                    _selectedDayOfWeeks.value = task.dayOfWeeks
-                    _useAlarm.value = task.useAlarm
-                    _alarmTime.value = task.alarmTime
-                    _selectedCategory.value = task.category
-                    _memo.value = task.memo
-                }
-            }
+        fetchCategories()
+        fetchTask()
+    }
+
+    fun handleEvent(event: AddTaskUiEvent) {
+        when (event) {
+            is AddTaskUiEvent.AddCategory -> addCategory(event.categoryName)
+            is AddTaskUiEvent.SaveTask -> saveTask(event.task)
+            is AddTaskUiEvent.SetSelectedCategory -> setSelectedCategory(event.category)
+            is AddTaskUiEvent.SetTitle -> setTitle(event.title)
+            is AddTaskUiEvent.SetProgressTimeHour -> setProgressTimeHour(event.hour)
+            is AddTaskUiEvent.SetProgressTimeMinute -> setProgressTimeMinute(event.minute)
+            is AddTaskUiEvent.SetSelectedTaskType -> setSelectedTaskType(event.taskType)
+            is AddTaskUiEvent.SetSelectedDayOfWeeks -> setSelectedDayOfWeeks(event.dayOfWeeks)
+            is AddTaskUiEvent.SetUseAlarm -> setUseAlarm(event.useAlarm)
+            is AddTaskUiEvent.SetAlarmTime -> setAlarmTime(event.alarmTime)
+            is AddTaskUiEvent.SetMemo -> setMemo(event.memo)
         }
-        else {
-            _addTaskUiState.value = AddTaskUiState.Empty
+    }
+
+    private fun setAlarmTime(alarmTime: LocalDateTime) {
+        _uiState.update { state -> state.copy(alarmTime = alarmTime) }
+    }
+
+    private fun setUseAlarm(useAlarm: Boolean) {
+        _uiState.update { state -> state.copy(useAlarm = useAlarm) }
+    }
+
+    private fun setSelectedDayOfWeeks(dayOfWeeks: List<DayOfWeek>) {
+        _uiState.update { state -> state.copy(selectedDayOfWeeks = dayOfWeeks) }
+    }
+
+    private fun setSelectedTaskType(taskType: TaskType) {
+        _uiState.update { state -> state.copy(selectedTaskType = taskType) }
+    }
+
+    private fun setProgressTimeMinute(minute: Int) {
+        _uiState.update { state -> state.copy(progressTimeMinute = minute) }
+    }
+
+    private fun setProgressTimeHour(hour: Int) {
+        _uiState.update { state -> state.copy(progressTimeHour = hour) }
+    }
+
+    private fun setMemo(memo: String) {
+        _uiState.update { state -> state.copy(memo = memo) }
+    }
+
+    private fun setTitle(title: String) {
+        _uiState.update { state -> state.copy(title = title) }
+    }
+
+    private fun setSelectedCategory(category: Category) {
+        _uiState.update { state -> state.copy(selectedCategory = category) }
+    }
+
+    private fun fetchCategories() {
+        getAllCategoriesUseCase().onEach {
+            _uiState.update { state -> state.copy(categories = CategoriesState.Success(it)) }
+            if (taskId.isEmpty() && it.isNotEmpty()) {
+                _uiState.update { state -> state.copy(selectedCategory = it.first()) }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun fetchTask() {
+        if (taskId.isNotBlank()) {
+            getTaskUseCase(taskId).onEach {
+                _uiState.update { state -> state.copy(
+                    title = it.title,
+                    progressTimeHour = it.progressTime.getHour(),
+                    progressTimeMinute = it.progressTime.getMinute(),
+                    selectedTaskType = it.taskType,
+                    selectedDayOfWeeks = it.dayOfWeeks,
+                    useAlarm = it.useAlarm,
+                    alarmTime = it.alarmTime,
+                    selectedCategory = it.category,
+                    memo = it.memo
+                )}
+            }.launchIn(viewModelScope)
         }
     }
 
@@ -105,114 +176,40 @@ class AddTaskViewModel @Inject constructor(
         Log.d("AddTaskViewModel", "onCleared()")
     }
 
-    // 모든 카테고리 가져오기
-    val categories = getAllCategoriesUseCase()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
-
-    fun saveTask() {
+    private fun saveTask(task: Task) {
         viewModelScope.launch {
-            if (selectedCategory.value == null) return@launch
-            if (title.value.isEmpty()) {
-                _event.emit(AddTaskEvent.ShowToastMessage("제목을 입력해주세요."))
+            if (task.title.isEmpty()) {
+                _uiEffect.emit(AddTaskUiEffect.EmptyTitle)
                 return@launch
             }
-            if (progressTimeHour.value == 0 && progressTimeMinute.value == 0) {
-                _event.emit(AddTaskEvent.ShowToastMessage("진행시간을 설정해주세요."))
+            if (task.progressTime == 0) {
+                _uiEffect.emit(AddTaskUiEffect.EmptyProgressTime)
                 return@launch
             }
-            if (selectedTaskType.value == TaskType.Regular && selectedDayOfWeeks.value.isEmpty()) {
-                _event.emit(AddTaskEvent.ShowToastMessage("하나 이상의 요일을 설정해주세요."))
+            if (task.taskType == TaskType.Regular && task.dayOfWeeks.isEmpty()) {
+                _uiEffect.emit(AddTaskUiEffect.EmptyDayOfWeeks)
                 return@launch
             }
-
-            if (!savedTaskId.isNullOrEmpty()) {
-                updateTaskUseCase(
-                    Task(
-                        id = savedTaskId,
-                        title = title.value,
-                        progressTime = progressTimeHour.value * 3600 + progressTimeMinute.value * 60,
-                        taskType = selectedTaskType.value,
-                        dayOfWeeks = selectedDayOfWeeks.value,
-                        useAlarm = useAlarm.value,
-                        alarmTime = alarmTime.value,
-                        memo = memo.value,
-                        category = selectedCategory.value!!
-                    )
-                )
+            if (taskId.isNotEmpty()) {
+                updateTaskUseCase(task)
             }
             else {
-                saveTaskUseCase(
-                    Task(
-                        id = "",
-                        title = title.value,
-                        progressTime = progressTimeHour.value * 3600 + progressTimeMinute.value * 60,
-                        taskType = selectedTaskType.value,
-                        dayOfWeeks = selectedDayOfWeeks.value,
-                        useAlarm = useAlarm.value,
-                        alarmTime = alarmTime.value,
-                        memo = memo.value,
-                        category = selectedCategory.value!!
-                    )
-                )
+                saveTaskUseCase(task)
             }
-            _event.emit(AddTaskEvent.SaveCompleted)
+            _uiEffect.emit(AddTaskUiEffect.SaveCompleted)
         }
     }
 
-    fun addCategory(categoryName: String) {
+    private fun addCategory(categoryName: String) {
         viewModelScope.launch {
             addCategoryUseCase(Category(0L, categoryName))
         }
     }
 
-    fun onChangeTitle(title: String) {
-        _title.value = title
+
+    companion object {
+        const val TAG = "AddTaskViewModel"
     }
 
-    fun onChangeProgressTimeHour(hour: Int) {
-        _progressTimeHour.value = hour
-    }
 
-    fun onChangeProgressTimeMinute(minute: Int) {
-        _progressTimeMinute.value = minute
-    }
-
-    fun onChangeSelectedTaskType(taskType: TaskType) {
-        _selectedTaskType.value = taskType
-    }
-
-    fun onChangeSelectedDayOfWeeks(dayOfWeeks: List<DayOfWeek>) {
-        _selectedDayOfWeeks.value = dayOfWeeks
-    }
-
-    fun onChangeUseAlarm(useAlarm: Boolean) {
-        _useAlarm.value = useAlarm
-    }
-
-    fun onChangeAlarmTime(alarmTime: LocalDateTime) {
-        _alarmTime.value = alarmTime
-    }
-
-    fun onChangeSelectedCategory(category: Category) {
-        _selectedCategory.value = category
-    }
-
-    fun onChangeMemo(memo: String) {
-        _memo.value = memo
-    }
-}
-
-sealed interface AddTaskUiState {
-    object Loading: AddTaskUiState
-    data class Success(val task: Task): AddTaskUiState
-    object Empty: AddTaskUiState
-}
-
-sealed interface AddTaskEvent {
-    object SaveCompleted : AddTaskEvent
-    data class ShowToastMessage(val message: String) : AddTaskEvent
 }

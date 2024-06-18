@@ -26,10 +26,11 @@ fun NavController.navigateToAddTask(taskId: String? = null, navOptions: NavOptio
 }
 
 fun NavGraphBuilder.addTaskScreen(
+    onShowSnackbar: suspend (String, String?) -> Boolean,
     onBackClick: () -> Unit
 ) {
     composable(
-        route = "$addTaskScreenRoute?taskId={taskId}",
+        route = "$ADD_TASK_ROUTE?taskId={taskId}",
         arguments = listOf(
             navArgument("taskId") {
                 type = NavType.StringType
@@ -46,7 +47,8 @@ fun NavGraphBuilder.addTaskScreen(
         }
     ) {
         AddTaskScreen(
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            onShowSnackbar =  onShowSnackbar
         )
     }
 }

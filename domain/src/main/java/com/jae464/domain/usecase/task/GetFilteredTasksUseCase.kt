@@ -22,7 +22,7 @@ class GetFilteredTasksUseCase @Inject constructor(
         filterTaskType: TaskType = TaskType.Regular,
         useFilterDayOfWeeks: Boolean = false,
         filterDayOfWeeks: Set<DayOfWeek> = emptySet(),
-        sortBy: SortBy = SortBy.ASC
+        sortBy: SortBy = SortBy.DESC
     ): Flow<List<Task>> = taskRepository.getFilteredTasks(
         usePeriod,
         startDate,
