@@ -4,7 +4,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,11 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -53,21 +48,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.boundsInRoot
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -91,8 +79,6 @@ import com.jae464.presentation.common.calendar.rememberCalendarState
 import com.jae464.presentation.statistic.model.StatisticViewMode
 import com.jae464.presentation.statistic.model.TotalProgressTaskUiModel
 import com.jae464.presentation.utils.noRippleClickable
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -103,36 +89,44 @@ fun StatisticScreen(
     viewModel: StatisticViewModel = hiltViewModel(),
     onClickProgressTask: (StatisticDetailNavigationArgument) -> Unit = {}
 ) {
-    val totalProgressTasksUiState by viewModel.totalProgressTasksUiState.collectAsStateWithLifecycle()
-    val categories by viewModel.categories.collectAsStateWithLifecycle()
-    val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
-    val filteredTaskType by viewModel.filteredTaskType.collectAsStateWithLifecycle()
-    val filteredDayOfWeeks by viewModel.filteredDayOfWeeks.collectAsStateWithLifecycle()
-    val event = viewModel.event
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiEffect = viewModel.uiEffect
+
+    LaunchedEffect(uiEffect) {
+        uiEffect.collect { uiEffect ->
+            when (uiEffect) {
+                is StatisticUiEffect.ScrollToFilterCard -> {
+
+                }
+
+                is StatisticUiEffect.ScrollToStatisticList -> {
+
+                }
+            }
+        }
+    }
+
+    StatisticScreen(
+        uiState = uiState,
+        event = viewModel::handleEvent,
+        onClickProgressTask = onClickProgressTask,
+    )
+
+
+}
+
+@Composable
+fun StatisticScreen(
+    uiState: StatisticUiState,
+    event: (StatisticUiEvent) -> Unit,
+    onClickProgressTask: (StatisticDetailNavigationArgument) -> Unit = {},
+) {
+
 
     val calendarState = rememberCalendarState()
     val context = LocalContext.current
 
     val scrollState = rememberScrollState()
-    var showCalendar by remember { mutableStateOf(false) }
-    var showFilterOption by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-
-    LaunchedEffect(event) {
-        event.collect { event ->
-            when (event) {
-                is StatisticEvent.ScrollToFilterCard -> {
-                    scrollState.animateScrollTo(event.offset)
-
-                }
-                is StatisticEvent.ScrollToStatisticList -> {
-                    scrollState.animateScrollTo(event.offset)
-                    if (showCalendar) showCalendar = false
-                    if (showFilterOption) showFilterOption = false
-                }
-            }
-        }
-    }
 
     Surface(
         modifier = Modifier.windowInsetsPadding(
@@ -161,7 +155,7 @@ fun StatisticScreen(
                         )
                         .onSizeChanged {
                             Log.d(TAG, "onSizeChanged ${it.height}")
-                            viewModel.setCalendarHeight(it.height)
+                            event(StatisticUiEvent.SetCalendarHeight(it.height))
                         }
                         .animateContentSize(
                             finishedListener = { initialValue, targetValue ->
@@ -177,10 +171,7 @@ fun StatisticScreen(
                             .fillMaxWidth()
                             .wrapContentHeight()
                             .noRippleClickable {
-                                showCalendar = !showCalendar
-                                if (showCalendar) {
-                                    showFilterOption = false
-                                }
+                                event(StatisticUiEvent.ToggleCalendar(!uiState.showCalendar))
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -192,12 +183,9 @@ fun StatisticScreen(
                             fontWeight = FontWeight.Bold
                         )
                         IconButton(onClick = {
-                            showCalendar = !showCalendar
-                            if (showCalendar) {
-                                showFilterOption = false
-                            }
+                            event(StatisticUiEvent.ToggleCalendar(!uiState.showCalendar))
                         }) {
-                            if (showCalendar) {
+                            if (uiState.showCalendar) {
                                 Icon(
                                     imageVector = Icons.Default.ArrowDropDown,
                                     contentDescription = "drop-down"
@@ -210,30 +198,26 @@ fun StatisticScreen(
                             }
                         }
                     }
-                    if (showCalendar) {
+                    if (uiState.showCalendar) {
                         CustomCalendar(
                             calendarState = calendarState,
                         )
                     }
                 }
                 FilterOption(
-                    categories = categories,
-                    filteredCategories = filteredCategories,
-                    onChangedFilteredCategories = viewModel::filterCategories,
-                    filteredTaskType = filteredTaskType,
-                    onChangedFilteredTaskType = viewModel::filterTaskType,
-                    filteredDayOfWeeks = filteredDayOfWeeks,
-                    onChangedFilteredDayOfWeeks = viewModel::filterDayOfWeeks,
+                    categories = uiState.categories,
+                    filteredCategories = uiState.filteredCategories,
+                    onChangedFilteredCategories = { event(StatisticUiEvent.SetFilteredCategories(it)) },
+                    filteredTaskType = uiState.filteredTaskType,
+                    onChangedFilteredTaskType = { event(StatisticUiEvent.SetFilteredTaskType(it)) },
+                    filteredDayOfWeeks = uiState.filteredDayOfWeeks,
+                    onChangedFilteredDayOfWeeks = { event(StatisticUiEvent.SetFilteredDayOfWeeks(it)) },
                     onChangedSize = {
-                        viewModel.setFilterCardHeight(it)
+                        event(StatisticUiEvent.SetFilterCardHeight(it))
                     },
-                    showFilterOption = showFilterOption,
+                    showFilterOption = uiState.showFilterOption,
                     onChangedShowFilterOption = {
-                        showFilterOption = it
-                        if (showFilterOption) {
-                            showCalendar = false
-                            viewModel.scrollToFilterCard()
-                        }
+                        event(StatisticUiEvent.ToggleFilterOption(it))
                     },
                 )
                 LoadPieChartButton(
@@ -245,11 +229,18 @@ fun StatisticScreen(
                                 .show()
                             return@LoadPieChartButton
                         }
-                        viewModel.getProgressTasks(startDate, endDate)
-                        // 안되는 이유 : getProgressTasks를 하면 통계를 다시 불러오는데 불러오기 전에 통계가 빈 리스트일때(로딩중) 스크롤이 동작하므로 스크롤이 안됨
-//                        viewModel.scrollToStatisticList()
+                        event(
+                            StatisticUiEvent.OnClickLoadButton(
+                                startDate,
+                                endDate,
+                                uiState.categories,
+                                uiState.filteredTaskType,
+                                uiState.filteredDayOfWeeks
+                            )
+                        )
+
                     },
-                    onChangedButtonSize = viewModel::setLoadButtonHeight
+                    onChangedButtonSize = { event(StatisticUiEvent.SetLoadButtonHeight(it)) }
                 )
                 Column(
                     modifier = Modifier
@@ -260,7 +251,7 @@ fun StatisticScreen(
                 ) {
                     StatisticTabLayout(
                         calendarState = calendarState,
-                        totalProgressTasksUiState = totalProgressTasksUiState,
+                        totalProgressTasksUiState = uiState.totalProgressTasksUiState,
                         onClickProgressTask = onClickProgressTask
                     )
                 }
