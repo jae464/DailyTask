@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    kotlin("kapt")
+//    kotlin("kapt")
 }
 
 android {
@@ -54,5 +54,5 @@ dependencies {
     androidTestImplementation(libs.kotlinx.coroutines.test)
 
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
 }

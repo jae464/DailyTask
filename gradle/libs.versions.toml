@@ -19,16 +19,16 @@ androidx-test-ext-junit = "1.1.5"
 androidx-test-espresso = "3.5.1"
 
 # Kotlin
-kotlin = "1.8.10"
+kotlin = "2.0.0"
 kotlin-compose-compiler = "1.4.3"
-ksp = "1.8.10-1.0.9"
+ksp = "2.0.0-1.0.21"
 kotlin-coroutine = "1.6.4"
 
 # Room
 room = "2.5.0"
 
 # Hilt
-hilt = "2.44"
+hilt = "2.47"
 
 # YCharts
 ycharts = "2.1.0"
@@ -97,6 +97,7 @@ datastore-core = { module = "androidx.datastore:datastore-preferences-core", ver
 
 android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin" }
 android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
+ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin"}
@@ -105,4 +106,5 @@ android-library = { id = "com.android.library",  version.ref="androidGradlePlugi
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp"}
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt"}
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
