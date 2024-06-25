@@ -1,23 +1,23 @@
-package com.jae464.presentation.home
+package com.jae464.presentation
 
-import android.content.Context
-import android.util.Log
-import androidx.compose.runtime.Stable
-import androidx.work.Constraints
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.jae464.domain.model.ProgressTask
-import com.jae464.presentation.model.ProgressTaskUiModel
-import com.jae464.presentation.model.toProgressTaskUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ProgressingTaskManager {
+sealed interface ProgressingState {
+    object Ready : ProgressingState
+    data class Progressing(val progressTask: ProgressTask): ProgressingState
+}
 
-    private var _progressingState: MutableStateFlow<ProgressingState> = MutableStateFlow(ProgressingState.Ready)
+@Singleton
+class ProgressingTaskManager @Inject constructor() {
+
+    private var _progressingState: MutableStateFlow<ProgressingState> = MutableStateFlow(
+        ProgressingState.Ready
+    )
     val progressingState: StateFlow<ProgressingState>
         get() = _progressingState.asStateFlow()
 
@@ -47,20 +47,4 @@ class ProgressingTaskManager {
     fun getCurrentProgressTask(): ProgressTask? {
         return this.progressTask
     }
-
-    companion object {
-        private var INSTANCE: ProgressingTaskManager? = null
-
-        @Synchronized
-        fun getInstance(): ProgressingTaskManager {
-            return INSTANCE ?: ProgressingTaskManager().also {
-                INSTANCE = it
-            }
-        }
-    }
-}
-
-sealed interface ProgressingState {
-    object Ready : ProgressingState
-    data class Progressing(val progressTask: ProgressTask): ProgressingState
 }

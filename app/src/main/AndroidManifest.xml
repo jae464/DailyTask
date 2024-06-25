@@ -43,7 +43,7 @@
         </provider>
 
         <service
-            android:name="com.jae464.presentation.home.ProgressTaskService"
+            android:name="com.jae464.presentation.ProgressTaskService"
             android:foregroundServiceType="mediaPlayback"
         />
 

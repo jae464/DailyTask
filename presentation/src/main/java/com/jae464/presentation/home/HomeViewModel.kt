@@ -2,7 +2,6 @@ package com.jae464.presentation.home
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.ProgressTask
@@ -12,8 +11,9 @@ import com.jae464.domain.usecase.progresstask.GetTodayProgressTaskUseCase
 import com.jae464.domain.usecase.progresstask.UpdateProgressedTimeUseCase
 import com.jae464.domain.usecase.progresstask.UpdateTodayProgressTasksUseCase
 import com.jae464.domain.usecase.task.GetTasksByDayOfWeekUseCase
-import com.jae464.presentation.model.ProgressTaskUiModel
-import com.jae464.presentation.model.toProgressTaskUiModel
+import com.jae464.presentation.ProgressTaskService
+import com.jae464.presentation.ProgressingState
+import com.jae464.presentation.ProgressingTaskManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -44,6 +44,7 @@ sealed interface HomeUiEffect {
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val progressingTaskManager: ProgressingTaskManager,
     private val getTasksByDayOfWeekUseCase: GetTasksByDayOfWeekUseCase,
     private val getTodayProgressTaskUseCase: GetTodayProgressTaskUseCase,
     private val updateTodayProgressTasksUseCase: UpdateTodayProgressTasksUseCase,
@@ -56,7 +57,6 @@ class HomeViewModel @Inject constructor(
     private val _effect = MutableSharedFlow<HomeUiEffect>()
     val effect = _effect.asSharedFlow()
 
-    private val progressingTaskManager = ProgressingTaskManager.getInstance()
     private val progressingTask = progressingTaskManager.progressingState
 
     private var isUploading = false
@@ -126,7 +126,7 @@ class HomeViewModel @Inject constructor(
 
     private fun startProgressTask(id: String) {
         val progressTaskState = uiState.value.progressTaskState
-        val progressingTaskState = progressingTaskManager.progressingState.value
+        val progressingTaskState = progressingTask.value
         var progressingTaskId = ""
 
         if (progressTaskState is ProgressTaskState.Success) {
@@ -146,7 +146,9 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun stopCurrentProgressingTask() {
-        if (progressingTaskManager.progressingState.value is ProgressingState.Progressing) {
+        val progressingTaskState = progressingTask.value
+
+        if (progressingTaskState is ProgressingState.Progressing) {
             val progressingTaskId = progressingTaskManager.getCurrentProgressTask()?.id ?: return
             val service = Intent(context, ProgressTaskService::class.java)
             context.stopService(service)

@@ -1,4 +1,4 @@
-package com.jae464.presentation.home
+package com.jae464.presentation
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -12,8 +12,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.jae464.domain.usecase.progresstask.UpdateProgressedTimeUseCase
-import com.jae464.presentation.MainActivity
-import com.jae464.presentation.R
 import com.jae464.presentation.detail.DEEP_LINK_URI_PATTERN
 import com.jae464.presentation.detail.DETAIL_ROUTE
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,15 +24,15 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ProgressTaskService : LifecycleService() {
 
-    private val TAG = "ProgressTaskService"
     @Inject
     lateinit var updateProgressedTimeUseCase: UpdateProgressedTimeUseCase
-    private lateinit var notificationBuilder: NotificationCompat.Builder
-    private val progressingTaskManager = ProgressingTaskManager.getInstance()
+    @Inject
+    lateinit var progressingTaskManager: ProgressingTaskManager
+
     private var timerJob: Job? = null
+    private lateinit var notificationBuilder: NotificationCompat.Builder
 
     override fun onCreate() {
-        Log.d(TAG, "${this.hashCode()} service onCreate")
         super.onCreate()
         setForeground()
     }
@@ -71,9 +69,6 @@ class ProgressTaskService : LifecycleService() {
     }
 
     private fun startTimer() {
-        val manager = getSystemService(
-            NotificationManager::class.java
-        )
         timerJob?.cancel()
         timerJob = lifecycleScope.launch {
             while (true) {
@@ -82,8 +77,6 @@ class ProgressTaskService : LifecycleService() {
                     if (progressingTask.progressedTime % 10 == 0) {
                         updateProgressedTimeUseCase(progressingTask.id, progressingTask.progressedTime)
                     }
-//                    notificationBuilder.setContentText(progressingTask.progressedTime.toString())
-//                    manager.notify(NOTIFICATION_ID, notificationBuilder.build())
                     delay(1000)
                     progressingTaskManager.tick()
                 }
@@ -98,7 +91,7 @@ class ProgressTaskService : LifecycleService() {
     private fun createChannel() {
         val name = "일정 관리"
         val description = "현재 진행중인 일정"
-        val mChannel = NotificationChannel(ProgressTaskWorker.CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT)
+        val mChannel = NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT)
         mChannel.description = description
         val notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -106,13 +99,11 @@ class ProgressTaskService : LifecycleService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "${this.hashCode()} onStartCommand")
         startTimer()
         return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onDestroy() {
-        Log.d(TAG, "${this.hashCode()} service onDestroy")
         stopTimer()
         super.onDestroy()
     }

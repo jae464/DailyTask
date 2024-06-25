@@ -9,22 +9,18 @@ import com.jae464.domain.model.ProgressTask
 import com.jae464.domain.usecase.progresstask.GetProgressTaskUseCase
 import com.jae464.domain.usecase.progresstask.UpdateProgressedTimeUseCase
 import com.jae464.domain.usecase.progresstask.UpdateTodayMemoUseCase
-import com.jae464.presentation.home.ProgressTaskService
-import com.jae464.presentation.model.ProgressTaskUiModel
-import com.jae464.presentation.home.ProgressingState
-import com.jae464.presentation.home.ProgressingTaskManager
-import com.jae464.presentation.model.toProgressTaskUiModel
+import com.jae464.presentation.ProgressTaskService
+import com.jae464.presentation.ProgressingState
+import com.jae464.presentation.ProgressingTaskManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -56,6 +52,7 @@ sealed interface DetailUiEffect {
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val progressingTaskManager: ProgressingTaskManager,
     private val savedStateHandle: SavedStateHandle,
     private val getProgressTaskUseCase: GetProgressTaskUseCase,
     private val updateProgressedTimeUseCase: UpdateProgressedTimeUseCase,
@@ -71,7 +68,6 @@ class DetailViewModel @Inject constructor(
     val uiEffect: SharedFlow<DetailUiEffect> = _uiEffect.asSharedFlow()
 
     private lateinit var progressTask: ProgressTask
-    private val progressingTaskManager = ProgressingTaskManager.getInstance()
     private val progressingTask = progressingTaskManager.progressingState
     private var progressTaskServiceIntent: Intent = Intent(context, ProgressTaskService::class.java)
 

@@ -15,35 +15,26 @@ import com.jae464.domain.usecase.category.GetAllCategoriesUseCase
 import com.jae464.domain.usecase.progresstask.InsertProgressTaskUseCase
 import com.jae464.domain.usecase.progresstask.IsExistProgressTaskUseCase
 import com.jae464.domain.usecase.task.DeleteTaskUseCase
-import com.jae464.domain.usecase.task.GetAllTasksUseCase
 import com.jae464.domain.usecase.task.GetFilteredTasksUseCase
 import com.jae464.domain.usecase.task.GetTasksByTitleUseCase
-import com.jae464.presentation.home.ProgressTaskService
-import com.jae464.presentation.home.ProgressingTaskManager
-import com.jae464.presentation.sampledata.categories
-import com.jae464.presentation.statistic.FilterOption
+import com.jae464.presentation.ProgressTaskService
+import com.jae464.presentation.ProgressingTaskManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.w3c.dom.Text
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -90,6 +81,7 @@ sealed interface TasksState {
 @HiltViewModel
 class TaskListViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val progressingTaskManager: ProgressingTaskManager,
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
     private val isExistProgressTaskUseCase: IsExistProgressTaskUseCase,
@@ -98,7 +90,6 @@ class TaskListViewModel @Inject constructor(
     private val getTasksByTitleUseCase: GetTasksByTitleUseCase
 ) : ViewModel() {
 
-    private val progressingTaskManager = ProgressingTaskManager.getInstance()
     private val _uiState = MutableStateFlow(TaskListUiState())
     val uiState : StateFlow<TaskListUiState> = _uiState.asStateFlow()
 
