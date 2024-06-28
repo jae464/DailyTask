@@ -42,7 +42,7 @@ sealed interface ProgressTaskState {
 sealed interface DetailUiEvent {
     data object StartProgressTask : DetailUiEvent
     data object StopProgressTask: DetailUiEvent
-    data class SetTodayMemoCompleted(val todayMemo: String): DetailUiEvent
+    data class SetTodayMemo(val todayMemo: String): DetailUiEvent
 }
 
 sealed interface DetailUiEffect {
@@ -83,7 +83,7 @@ class DetailViewModel @Inject constructor(
             is DetailUiEvent.StopProgressTask -> {
                 stopProgressTask()
             }
-            is DetailUiEvent.SetTodayMemoCompleted -> {
+            is DetailUiEvent.SetTodayMemo -> {
                 updateTodayMemo(event.todayMemo)
             }
         }

@@ -62,9 +62,10 @@ fun DetailScreen(
     LaunchedEffect(uiEffect) {
         uiEffect.collect {
             when (it) {
-                is DetailUiEffect.UpdateTodayMemoCompleted -> {
+                is DetailUiEffect.SetTodayMemoCompleted -> {
                     onShowSnackbar("오늘의 메모 저장이 완료되었습니다.", null)
                 }
+
             }
         }
     }
@@ -105,7 +106,7 @@ fun DetailScreen(
                 onClickStart = { event(DetailUiEvent.StartProgressTask) },
                 onClickStop = { event(DetailUiEvent.StopProgressTask) },
                 onClickSaveTodayMemo = {
-                    event(DetailUiEvent.UpdateTodayMemo(it))
+                    event(DetailUiEvent.SetTodayMemo(it))
                 }
             )
         }

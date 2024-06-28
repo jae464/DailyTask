@@ -79,7 +79,7 @@ class AddTaskViewModel @Inject constructor(
     private val addCategoryUseCase: AddCategoryUseCase
 ): ViewModel() {
 
-    private val taskId = savedStateHandle.get<String>("taskId") ?: ""
+    private val taskId = savedStateHandle.get<String>(TASK_ID_KEY) ?: ""
 
     private val _uiState = MutableStateFlow(AddTaskUiState())
     val uiState: StateFlow<AddTaskUiState> get() = _uiState.asStateFlow()
@@ -209,6 +209,7 @@ class AddTaskViewModel @Inject constructor(
 
     companion object {
         const val TAG = "AddTaskViewModel"
+        const val TASK_ID_KEY = "taskId"
     }
 
 

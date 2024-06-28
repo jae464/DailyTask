@@ -9,17 +9,41 @@ import com.jae464.domain.usecase.progresstask.GetProgressTaskByTaskIdUseCase
 import com.jae464.domain.usecase.task.GetTaskUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
+
+data class StatisticDetailUiState(
+    val title: String = "",
+    val progressTasks: ProgressTaskState = ProgressTaskState.Loading,
+    val selectedLocalDate: LocalDate = LocalDate.now()
+)
+
+sealed interface StatisticDetailUiEvent {
+    data class SetSelectedLocalDate(val localDate: LocalDate) : StatisticDetailUiEvent
+}
+
+sealed interface StatisticDetailUiEffect {
+
+}
+
+sealed interface ProgressTaskState {
+    data class Success(val progressTasks: List<ProgressTask>) : ProgressTaskState
+    data object Loading : ProgressTaskState
+}
 
 @HiltViewModel
 class StatisticDetailViewModel @Inject constructor(
@@ -27,53 +51,67 @@ class StatisticDetailViewModel @Inject constructor(
     private val getProgressTaskByTaskIdUseCase: GetProgressTaskByTaskIdUseCase,
     private val getTaskUseCase: GetTaskUseCase
 ) : ViewModel() {
-    private val _uiState: MutableStateFlow<StatisticDetailUiState> =  MutableStateFlow(StatisticDetailUiState.Loading)
+
+    private val taskId = savedStateHandle.get<String>(TASK_ID_KEY) ?: ""
+    private val startDateStr = savedStateHandle.get<String>(START_DATE_KEY) ?: ""
+    private val endDateStr = savedStateHandle.get<String>(END_DATE_KEY) ?: ""
+
+    private val _uiState = MutableStateFlow(StatisticDetailUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val _selectedLocalDate : MutableStateFlow<LocalDate> = MutableStateFlow(LocalDate.now())
-    val selectedLocalDate = _selectedLocalDate.asStateFlow()
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val task = savedStateHandle.getStateFlow(key = "taskId", initialValue = "")
-        .flatMapLatest {
-            if (it.isNotBlank()) {
-                getTaskUseCase(it)
-            }
-            else flowOf(null)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
-        )
-
+    private val _uiEffect = MutableSharedFlow<StatisticDetailUiEffect>()
+    val uiEffect = _uiEffect.asSharedFlow()
 
     init {
-        val taskId = savedStateHandle["taskId"] ?: ""
-        val startDateStr = savedStateHandle["startDate"] ?: ""
-        val endDateStr = savedStateHandle["endDate"] ?: ""
+        fetchTaskTitle()
+        fetchProgressTasks()
+    }
+
+    fun handleEvent(event: StatisticDetailUiEvent) {
+        when (event) {
+            is StatisticDetailUiEvent.SetSelectedLocalDate -> {
+                setSelectedLocalDate(event.localDate)
+            }
+        }
+    }
+
+    private fun fetchTaskTitle() {
+        getTaskUseCase(taskId).onEach {
+            _uiState.update { state ->
+                state.copy(title = it.title)
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun fetchProgressTasks() {
         val usePeriod = startDateStr.isNotEmpty() && endDateStr.isNotEmpty()
         val startDate = if (usePeriod) LocalDate.parse(startDateStr) else LocalDate.now()
         val endDate = if (usePeriod) LocalDate.parse(endDateStr) else LocalDate.now()
+        Log.d(
+            "StatisticDetailViewModel",
+            "taskId = ${taskId} startDate = ${startDate} endDate = ${endDate}"
+        )
+        getProgressTaskByTaskIdUseCase(usePeriod, taskId, startDate, endDate).onEach {
+            val filteredProgressTasks = it.filter { p -> p.progressedTime > 0 }
+            _uiState.update { state ->
+                state.copy(
+                    progressTasks = ProgressTaskState.Success(filteredProgressTasks),
+                    selectedLocalDate = filteredProgressTasks.last().createdAt
+                )
+            }
+        }.launchIn(viewModelScope)
+    }
 
-        Log.d("StatisticDetailViewModel", "taskId = ${taskId} startDate = ${startDate} endDate = ${endDate}")
-        viewModelScope.launch {
-            getProgressTaskByTaskIdUseCase(usePeriod = usePeriod, taskId, startDate, endDate)
-                .collectLatest {
-                    val filteredProgressTasks = it.filter { p -> p.progressedTime > 0 }
-                    _uiState.value = StatisticDetailUiState.Success(filteredProgressTasks)
-                    _selectedLocalDate.value = filteredProgressTasks.last().createdAt
-                }
+    private fun setSelectedLocalDate(localDate: LocalDate) {
+        _uiState.update { state ->
+            state.copy(selectedLocalDate = localDate)
         }
-
     }
 
-    fun setSelectedLocalDate(localDate: LocalDate) {
-        _selectedLocalDate.value = localDate
+    companion object {
+        const val TAG = "StatisticDetailViewModel"
+        const val TASK_ID_KEY = "taskId"
+        const val START_DATE_KEY = "startDate"
+        const val END_DATE_KEY = "endDate"
     }
-}
-
-sealed interface StatisticDetailUiState {
-    object Loading : StatisticDetailUiState
-    data class Success(val progressTasks: List<ProgressTask>) : StatisticDetailUiState
 }

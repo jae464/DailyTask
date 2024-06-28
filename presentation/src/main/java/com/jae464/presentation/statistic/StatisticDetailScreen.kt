@@ -66,33 +66,43 @@ fun StatisticDetailScreen(
     viewModel: StatisticDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val task by viewModel.task.collectAsStateWithLifecycle()
+
+    StatisticDetailScreen(
+        uiState = uiState,
+        event = viewModel::handleEvent,
+        onBackClick = onBackClick
+    )
+
+}
+
+@Composable
+fun StatisticDetailScreen(
+    uiState: StatisticDetailUiState,
+    event: (StatisticDetailUiEvent) -> Unit = {},
+    onBackClick: () -> Unit
+) {
     val calendarState = rememberCalendarState(
         calendarMode = CalendarMode.MULTISELECT,
     )
-    val selectedLocalDate by viewModel.selectedLocalDate.collectAsStateWithLifecycle()
 
     LaunchedEffect(
-        selectedLocalDate
+        uiState.selectedLocalDate
     ) {
-        calendarState.selectedYear = selectedLocalDate.year
-        calendarState.selectedMonth = selectedLocalDate.month.value
-        calendarState.highLightedDate = selectedLocalDate
+        calendarState.selectedYear = uiState.selectedLocalDate.year
+        calendarState.selectedMonth = uiState.selectedLocalDate.month.value
+        calendarState.highLightedDate = uiState.selectedLocalDate
     }
 
     Scaffold(
-        modifier = modifier
-            .windowInsetsPadding(
-                WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-            )
+        modifier = Modifier
             .fillMaxSize(),
         topBar = {
-            StatisticDetailTopAppBar(title = task?.title ?: "", onBackClick = onBackClick)
+            StatisticDetailTopAppBar(title = uiState.title, onBackClick = onBackClick)
         },
         containerColor = MaterialTheme.colorScheme.surface
     ) { padding ->
         Box(
-            modifier = modifier
+            modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
         ) {
@@ -110,10 +120,9 @@ fun StatisticDetailScreen(
                         )
 
                 ) {
-                    MultiSelectCalendar(uiState = uiState, calendarState = calendarState,
-                        onClickLocalDate =
-                            viewModel::setSelectedLocalDate
-                        )
+                    MultiSelectCalendar(progressTaskState = uiState.progressTasks, calendarState = calendarState,
+                        onClickLocalDate = { event(StatisticDetailUiEvent.SetSelectedLocalDate(it)) }
+                    )
                 }
 
                 Column(
@@ -126,8 +135,8 @@ fun StatisticDetailScreen(
                         .fillMaxWidth()
                 ) {
                     ProgressTaskStatistic(
-                        uiState,
-                        selectedLocalDate = selectedLocalDate,
+                        progressTaskState = uiState.progressTasks,
+                        selectedLocalDate = uiState.selectedLocalDate,
                     )
                 }
 
@@ -139,11 +148,11 @@ fun StatisticDetailScreen(
 
 @Composable
 fun ProgressTaskStatistic(
-    uiState: StatisticDetailUiState,
+    progressTaskState: ProgressTaskState,
     selectedLocalDate: LocalDate,
 ) {
-    if (uiState is StatisticDetailUiState.Success) {
-        val progressTask = uiState.progressTasks.firstOrNull { it.createdAt == selectedLocalDate }
+    if (progressTaskState is ProgressTaskState.Success) {
+        val progressTask = progressTaskState.progressTasks.firstOrNull { it.createdAt == selectedLocalDate }
         if (progressTask != null) {
             ProgressTaskStatisticItem(
                 progressTask = progressTask,
@@ -249,12 +258,12 @@ fun ProgressTaskStatisticItem(
 
 @Composable
 fun MultiSelectCalendar(
-    uiState: StatisticDetailUiState,
+    progressTaskState: ProgressTaskState,
     calendarState: CalendarState,
     onClickLocalDate: (LocalDate) -> Unit
 ) {
-    if (uiState is StatisticDetailUiState.Success) {
-        calendarState.selectedDates = uiState.progressTasks
+    if (progressTaskState is ProgressTaskState.Success) {
+        calendarState.selectedDates = progressTaskState.progressTasks
             .filter {
                 it.progressedTime > 0
             }
