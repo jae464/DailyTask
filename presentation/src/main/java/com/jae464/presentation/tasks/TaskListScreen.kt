@@ -228,13 +228,13 @@ fun TaskListScreen(
                                     .padding(horizontal = 16.dp),
                                 text = searchText,
                                 onValueChanged = {
-                                    event(TaskListUiEvent.UpdateSearchText(it))
+                                    event(TaskListUiEvent.SetSearchText(it))
                                 },
                                 focusManager = focusManager,
                                 onChangedFocus = { isShowingKeyboard = it }
                             )
                             IconButton(onClick = {
-                                event(TaskListUiEvent.UpdateSearchText(""))
+                                event(TaskListUiEvent.SetSearchText(""))
                             }) {
                                 Icon(
                                     imageVector = Icons.Default.Cancel,
@@ -268,7 +268,7 @@ fun TaskListScreen(
                             categories = uiState.categories,
                             filteredCategories = filterOption.selectedCategories,
                             onChangedFilteredCategories = {
-                                event(TaskListUiEvent.UpdateSelectedCategories(it))
+                                event(TaskListUiEvent.SetSelectedCategories(it))
                             }
                         )
                     }
@@ -357,7 +357,7 @@ fun TaskListScreen(
                     selectedTaskType = filterOption.selectedTaskType,
                     selectedDayOfWeeks = filterOption.selectedDayOfWeeks,
                     onClickLoadButton = { sortBy, taskType, dayOfWeeks ->
-                        event(TaskListUiEvent.UpdateFilterOptions(sortBy, taskType, dayOfWeeks))
+                        event(TaskListUiEvent.SetFilterOptions(sortBy, taskType, dayOfWeeks))
                     }
                 )
             }

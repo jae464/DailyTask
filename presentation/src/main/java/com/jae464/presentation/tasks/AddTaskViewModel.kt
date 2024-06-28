@@ -58,14 +58,14 @@ sealed interface AddTaskUiEvent {
 }
 
 sealed interface AddTaskUiEffect {
-    object EmptyTitle : AddTaskUiEffect
-    object EmptyProgressTime : AddTaskUiEffect
-    object EmptyDayOfWeeks : AddTaskUiEffect
-    object SaveCompleted : AddTaskUiEffect
+    data object EmptyTitle : AddTaskUiEffect
+    data object EmptyProgressTime : AddTaskUiEffect
+    data object EmptyDayOfWeeks : AddTaskUiEffect
+    data object SaveCompleted : AddTaskUiEffect
 }
 
 sealed interface CategoriesState {
-    object Loading: CategoriesState
+    data object Loading: CategoriesState
     data class Success(val categories: List<Category>) : CategoriesState
 }
 

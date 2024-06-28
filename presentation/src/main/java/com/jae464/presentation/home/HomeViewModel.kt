@@ -41,6 +41,14 @@ sealed interface HomeUiEffect {
 
 }
 
+sealed interface ProgressTaskState {
+    data object Loading : ProgressTaskState
+    data class Success(val progressTasks: List<ProgressTask>, val progressingTaskId: String) :
+        ProgressTaskState
+
+    data object Empty : ProgressTaskState
+}
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -165,10 +173,3 @@ class HomeViewModel @Inject constructor(
 
 }
 
-sealed interface ProgressTaskState {
-    object Loading : ProgressTaskState
-    data class Success(val progressTasks: List<ProgressTask>, val progressingTaskId: String) :
-        ProgressTaskState
-
-    object Empty : ProgressTaskState
-}

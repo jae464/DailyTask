@@ -21,17 +21,16 @@ import javax.inject.Inject
 
 data class CategorySettingUiState(
     val categoryUiState: CategoryUiState = CategoryUiState.Loading,
-    val testCounter: Int = 0
 )
 
 sealed interface CategoryUiState {
-    object Loading : CategoryUiState
+    data object Loading : CategoryUiState
     data class Success(val categories: List<Category>) : CategoryUiState
-    object Failure : CategoryUiState
+    data object Failure : CategoryUiState
 }
 
 sealed interface CategorySettingEvent {
-    object DuplicateCategoryName : CategorySettingEvent
+    data object DuplicateCategoryName : CategorySettingEvent
 }
 
 @HiltViewModel

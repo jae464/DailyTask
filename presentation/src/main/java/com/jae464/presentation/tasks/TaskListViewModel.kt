@@ -41,11 +41,6 @@ import javax.inject.Inject
 data class TaskListUiState(
     val categories: List<Category> = emptyList(),
     val tasks: TasksState = TasksState.Loading,
-    val selectedCategories: List<Category> = emptyList(),
-    val searchText: String = "",
-    val sortBy: SortBy = SortBy.DESC,
-    val selectedTaskType: TaskType = TaskType.All,
-    val selectedDayOfWeeks: List<DayOfWeek> = emptyList(),
     val showBottomSheetDialog: Boolean = false
 )
 
@@ -58,23 +53,23 @@ data class TaskFilterOption(
 )
 
 sealed interface TaskListUiEvent {
-    data class UpdateSearchText(val text: String): TaskListUiEvent
-    data class UpdateSelectedCategories(val categories: List<Category>): TaskListUiEvent
+    data class SetSearchText(val text: String): TaskListUiEvent
+    data class SetSelectedCategories(val categories: List<Category>): TaskListUiEvent
     data class InsertProgressTask(val task: Task): TaskListUiEvent
     data class DeleteTask(val task: Task): TaskListUiEvent
-    data class UpdateFilterOptions(val sortBy: SortBy, val taskType: TaskType, val dayOfWeeks: List<DayOfWeek>): TaskListUiEvent
+    data class SetFilterOptions(val sortBy: SortBy, val taskType: TaskType, val dayOfWeeks: List<DayOfWeek>): TaskListUiEvent
     data class ToggleBottomSheetDialog(val isShow: Boolean): TaskListUiEvent
 }
 
 sealed interface TaskListUiEffect {
-    object InsertProgressTaskCompleted : TaskListUiEffect
-    object DeleteTaskCompleted : TaskListUiEffect
+    data object InsertProgressTaskCompleted : TaskListUiEffect
+    data object DeleteTaskCompleted : TaskListUiEffect
 }
 
 sealed interface TasksState {
-    object Loading: TasksState
+    data object Loading: TasksState
     data class Success(val tasks: List<Task>): TasksState
-    object Empty: TasksState
+    data object Empty: TasksState
 }
 
 @OptIn(FlowPreview::class)
@@ -115,13 +110,13 @@ class TaskListViewModel @Inject constructor(
             is TaskListUiEvent.InsertProgressTask -> {
                 insertProgressTaskToday(event.task)
             }
-            is TaskListUiEvent.UpdateSearchText -> {
+            is TaskListUiEvent.SetSearchText -> {
                 updateSearchText(event.text)
             }
-            is TaskListUiEvent.UpdateFilterOptions -> {
+            is TaskListUiEvent.SetFilterOptions -> {
                 updateFilterOptions(event.sortBy, event.taskType, event.dayOfWeeks)
             }
-            is TaskListUiEvent.UpdateSelectedCategories -> {
+            is TaskListUiEvent.SetSelectedCategories -> {
                 updateSelectedCategories(event.categories)
             }
             is TaskListUiEvent.ToggleBottomSheetDialog -> {

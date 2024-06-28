@@ -40,8 +40,8 @@ data class StatisticUiState(
 )
 
 sealed interface TotalProgressTasksUiState {
-    object Empty : TotalProgressTasksUiState
-    object Loading : TotalProgressTasksUiState
+    data object Empty : TotalProgressTasksUiState
+    data object Loading : TotalProgressTasksUiState
     data class Success(val totalProgressTasks: List<TotalProgressTaskUiModel>) :
         TotalProgressTasksUiState
 }

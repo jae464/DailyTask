@@ -35,18 +35,18 @@ data class DetailUiState(
 )
 
 sealed interface ProgressTaskState {
-    object Loading: ProgressTaskState
+    data object Loading: ProgressTaskState
     data class Success(val progressTask: ProgressTask, val isProgressing: Boolean): ProgressTaskState
 }
 
 sealed interface DetailUiEvent {
-    object StartProgressTask : DetailUiEvent
-    object StopProgressTask: DetailUiEvent
-    data class UpdateTodayMemo(val todayMemo: String): DetailUiEvent
+    data object StartProgressTask : DetailUiEvent
+    data object StopProgressTask: DetailUiEvent
+    data class SetTodayMemoCompleted(val todayMemo: String): DetailUiEvent
 }
 
 sealed interface DetailUiEffect {
-    object UpdateTodayMemoCompleted: DetailUiEffect
+    data object SetTodayMemoCompleted: DetailUiEffect
 }
 
 @HiltViewModel
@@ -83,7 +83,7 @@ class DetailViewModel @Inject constructor(
             is DetailUiEvent.StopProgressTask -> {
                 stopProgressTask()
             }
-            is DetailUiEvent.UpdateTodayMemo -> {
+            is DetailUiEvent.SetTodayMemoCompleted -> {
                 updateTodayMemo(event.todayMemo)
             }
         }
@@ -139,7 +139,7 @@ class DetailViewModel @Inject constructor(
         val progressTaskId = progressTask.id
         viewModelScope.launch {
             updateTodayMemoUseCase(progressTaskId, todayMemo)
-            _uiEffect.emit(DetailUiEffect.UpdateTodayMemoCompleted)
+            _uiEffect.emit(DetailUiEffect.SetTodayMemoCompleted)
         }
     }
 
