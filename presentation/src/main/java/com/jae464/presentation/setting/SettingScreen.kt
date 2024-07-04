@@ -7,22 +7,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.Divider
-import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -38,13 +33,21 @@ fun SettingScreen(
     onClickTestScreen: () -> Unit,
     onClickPreference: (String) -> Unit = {},
 ) {
-    val settingDestinations = SettingDestination.values().toList()
+    val settingDestinations = SettingDestination.entries
 
+    SettingScreen(
+        destinations = settingDestinations,
+        onClickPreference = onClickPreference
+    )
+}
+
+@Composable
+fun SettingScreen(
+    destinations: List<SettingDestination>,
+    onClickPreference: (String) -> Unit
+) {
     Surface(
         modifier = Modifier
-            .windowInsetsPadding(
-                WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-            )
             .fillMaxSize(),
         color = MaterialTheme.colorScheme.surface
     ) {
@@ -53,8 +56,8 @@ fun SettingScreen(
         ) {
             Column {
                 SettingList(
-                    destinations = settingDestinations,
-                    onClickItem = onClickPreference
+                    destinations = destinations,
+                    onClickPreference = onClickPreference
                 )
             }
         }
@@ -64,7 +67,7 @@ fun SettingScreen(
 @Composable
 fun SettingList(
     destinations: List<SettingDestination>,
-    onClickItem: (String) -> Unit
+    onClickPreference: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -73,7 +76,7 @@ fun SettingList(
             .fillMaxWidth()
     ) {
         destinations.map {
-            SettingItem(destination = it, onClickItem = onClickItem)
+            SettingItem(destination = it, onClickPreference = onClickPreference)
         }
     }
 }
@@ -81,13 +84,13 @@ fun SettingList(
 @Composable
 fun SettingItem(
     destination: SettingDestination,
-    onClickItem: (String) -> Unit = {}
+    onClickPreference: (String) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .clickable { onClickItem(destination.route) },
+            .clickable { onClickPreference(destination.route) },
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         Row(
@@ -101,7 +104,7 @@ fun SettingItem(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            IconButton(onClick = { onClickItem(destination.route) }) {
+            IconButton(onClick = { onClickPreference(destination.route) }) {
                 Icon(
                     imageVector = Icons.Default.ArrowForwardIos,
                     contentDescription = "navigate_icon",
@@ -111,9 +114,9 @@ fun SettingItem(
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Divider(
-            color = MaterialTheme.colorScheme.surface,
-            thickness = 1.dp
+        HorizontalDivider(
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.surface
         )
     }
 }

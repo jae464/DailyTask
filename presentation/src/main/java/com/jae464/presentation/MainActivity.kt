@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
                 val appState = rememberDailyTaskAppState()
                 val navController = appState.navController
                 val currentDest = appState.currentDestination
-                val isShowBottomNavigation = TopLevelDestination.values().map { it.route }.contains(
+                val isShowBottomNavigation = TopLevelDestination.entries.map { it.route }.contains(
                     appState.currentDestination?.route
                 )
                 val snackbarHostState = remember {

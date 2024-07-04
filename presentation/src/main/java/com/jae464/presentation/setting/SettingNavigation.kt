@@ -86,7 +86,7 @@ fun NavGraphBuilder.themeSettingScreen(
             getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
         }
     ) {
-        ThemeSettingScreen(onBackClick = onBackClick)
+        ThemePreferenceScreen(onBackClick = onBackClick)
     }
 }
 
@@ -105,6 +105,6 @@ fun NavGraphBuilder.categorySettingScreen(
             getSlideExitTransition(AnimatedContentTransitionScope.SlideDirection.End)
         }
     ) {
-        CategorySettingScreen(onBackClick = onBackClick)
+        CategoryPreferenceScreen(onBackClick = onBackClick)
     }
 }

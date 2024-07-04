@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 sealed interface ProgressingState {
-    object Ready : ProgressingState
+    data object Ready : ProgressingState
     data class Progressing(val progressTask: ProgressTask): ProgressingState
 }
 

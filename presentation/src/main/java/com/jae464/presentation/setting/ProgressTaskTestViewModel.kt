@@ -29,7 +29,7 @@ import kotlin.random.Random
 
 sealed interface DialogUiState {
     data class ShowDialog(val task: Task): DialogUiState
-    object HideDialog : DialogUiState
+    data object HideDialog : DialogUiState
 }
 
 sealed interface TestEvent {

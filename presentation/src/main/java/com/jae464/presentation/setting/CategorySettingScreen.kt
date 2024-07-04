@@ -54,32 +54,43 @@ import com.jae464.presentation.tasks.AddCategoryDialog
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun CategorySettingScreen(
+fun CategoryPreferenceScreen(
     onBackClick: () -> Unit,
-    viewModel: CategorySettingViewModel = hiltViewModel()
+    viewModel: CategoryPreferenceViewModel = hiltViewModel()
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiEffect = viewModel.uiEffect
 
-    var showCategoryAddDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val event = viewModel.event
 
-    LaunchedEffect(event) {
-        event.collectLatest {
+    LaunchedEffect(uiEffect) {
+        uiEffect.collectLatest {
             when (it) {
-                CategorySettingEvent.DuplicateCategoryName -> {
+                CategoryPreferenceUiEffect.DuplicateCategoryName -> {
                     Toast.makeText(context, "중복된 이름입니다.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
+    CategoryPreferenceScreen(
+        uiState = uiState,
+        event = viewModel::handleEvent,
+        onBackClick = onBackClick
+    )
+
+}
+
+@Composable
+fun CategoryPreferenceScreen(
+    uiState: CategoryPreferenceUiState,
+    event: (CategoryPreferenceUiEvent) -> Unit,
+    onBackClick: () -> Unit,
+) {
+    var showCategoryAddDialog by remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier
-            .windowInsetsPadding(
-                WindowInsets.navigationBars.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-            )
             .fillMaxSize(),
         containerColor = Color.White,
         topBar = {
@@ -94,15 +105,21 @@ fun CategorySettingScreen(
                 .fillMaxSize()
         ) {
             CategoryList(
-                categoryUiState = uiState,
-                onClickDeleteButton = viewModel::deleteCategory,
-                onClickChangeDefaultCategory = viewModel::changeDefaultCategory
+                categories = uiState.categories,
+                onClickDeleteButton = {
+                    event(CategoryPreferenceUiEvent.DeleteCategoryEvent(it))
+                },
+                onClickChangeDefaultCategory = {
+                    event(CategoryPreferenceUiEvent.ChangeDefaultCategoryEvent(it))
+                }
             )
 
             if (showCategoryAddDialog) {
                 // AddTaskScreen에 있는 AddCategoryDialog
                 AddCategoryDialog(
-                    onSaveCategory = viewModel::addCategory,
+                    onSaveCategory = {
+                        event(CategoryPreferenceUiEvent.AddCategoryEvent(it))
+                    },
                     onChangedShowDialog = {
                         showCategoryAddDialog = it
                     }
@@ -110,37 +127,26 @@ fun CategorySettingScreen(
             }
         }
     }
+
 }
 
 @Composable
 fun CategoryList(
-    categoryUiState: CategoryUiState,
+    categories: List<Category>,
     onClickDeleteButton: (Long) -> Unit,
     onClickChangeDefaultCategory: (Long) -> Unit
 ) {
     Log.d("CategorySettingScreen", "CategoryList Rendered")
-    when (categoryUiState) {
-        is CategoryUiState.Loading -> {
-
-        }
-
-        is CategoryUiState.Failure -> {
-
-        }
-
-        is CategoryUiState.Success -> {
-            LazyColumn {
-                items(
-                    categoryUiState.categories,
-                    key = { it.id }
-                ) {
-                    CategoryItem(
-                        category = it,
-                        onClickDeleteButton = onClickDeleteButton,
-                        onClickChangeDefaultCategory = onClickChangeDefaultCategory
-                    )
-                }
-            }
+    LazyColumn {
+        items(
+            categories,
+            key = { it.id }
+        ) {
+            CategoryItem(
+                category = it,
+                onClickDeleteButton = onClickDeleteButton,
+                onClickChangeDefaultCategory = onClickChangeDefaultCategory
+            )
         }
     }
 }

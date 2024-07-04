@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun ThemeSettingScreen(onBackClick: () -> Unit) {
+fun ThemePreferenceScreen(onBackClick: () -> Unit) {
     Scaffold(
         modifier = Modifier
             .windowInsetsPadding(

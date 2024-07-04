@@ -1,5 +1,6 @@
 package com.jae464.presentation.setting
 
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jae464.domain.model.Category
@@ -16,25 +17,29 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class CategorySettingUiState(
-    val categoryUiState: CategoryUiState = CategoryUiState.Loading,
+data class CategoryPreferenceUiState(
+    val categories: List<Category> = emptyList()
 )
 
-sealed interface CategoryUiState {
-    data object Loading : CategoryUiState
-    data class Success(val categories: List<Category>) : CategoryUiState
-    data object Failure : CategoryUiState
+sealed interface CategoryPreferenceUiEvent {
+    data class AddCategoryEvent(val categoryName: String) : CategoryPreferenceUiEvent
+    data class EditCategoryEvent(val categoryId: Long, val categoryName: String) : CategoryPreferenceUiEvent
+    data class DeleteCategoryEvent(val categoryId: Long) : CategoryPreferenceUiEvent
+    data class ChangeDefaultCategoryEvent(val categoryId: Long) : CategoryPreferenceUiEvent
 }
 
-sealed interface CategorySettingEvent {
-    data object DuplicateCategoryName : CategorySettingEvent
+sealed interface CategoryPreferenceUiEffect {
+    data object DuplicateCategoryName : CategoryPreferenceUiEffect
 }
 
 @HiltViewModel
-class CategorySettingViewModel @Inject constructor(
+class CategoryPreferenceViewModel @Inject constructor(
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
     private val addCategoryUseCase: AddCategoryUseCase,
     private val editCategoryNameUseCase: EditCategoryNameUseCase,
@@ -42,14 +47,11 @@ class CategorySettingViewModel @Inject constructor(
     private val changeDefaultCategoryUseCase: ChangeDefaultCategoryUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<CategoryUiState>(CategoryUiState.Loading)
-    val uiState: StateFlow<CategoryUiState> get() = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(CategoryPreferenceUiState())
+    val uiState: StateFlow<CategoryPreferenceUiState> = _uiState.asStateFlow()
 
-    private val _counter = MutableStateFlow(0)
-    val counter: StateFlow<Int> get() = _counter.asStateFlow()
-
-    private val _event = MutableSharedFlow<CategorySettingEvent>()
-    val event: SharedFlow<CategorySettingEvent> get() = _event.asSharedFlow()
+    private val _uiEffect = MutableSharedFlow<CategoryPreferenceUiEffect>()
+    val uiEffect: SharedFlow<CategoryPreferenceUiEffect> = _uiEffect.asSharedFlow()
 
     private val categoryList = mutableListOf<Category>() // 카테고리 이름 중복 체크용
 
@@ -57,23 +59,44 @@ class CategorySettingViewModel @Inject constructor(
         getCategories()
     }
 
-    private fun getCategories() {
-        viewModelScope.launch {
-            getAllCategoriesUseCase().collectLatest { categories ->
-                _uiState.value = CategoryUiState.Success(categories)
-                categoryList.addAll(categories)
+    fun handleEvent(event: CategoryPreferenceUiEvent) {
+        when (event) {
+            is CategoryPreferenceUiEvent.AddCategoryEvent -> {
+                addCategory(event.categoryName)
+            }
+            is CategoryPreferenceUiEvent.ChangeDefaultCategoryEvent -> {
+                changeDefaultCategory(event.categoryId)
+            }
+            is CategoryPreferenceUiEvent.DeleteCategoryEvent -> {
+                deleteCategory(event.categoryId)
+            }
+            is CategoryPreferenceUiEvent.EditCategoryEvent -> {
+                editCategoryName(event.categoryId, event.categoryName)
             }
         }
     }
 
-    fun addCategory(categoryName: String) {
+    private fun getCategories() {
+        getAllCategoriesUseCase().onEach { categories ->
+            _uiState.update { state -> state.copy(categories = categories) }
+        }.launchIn(viewModelScope)
+
+//        viewModelScope.launch {
+//            getAllCategoriesUseCase().collectLatest { categories ->
+//                _uiState.value = CategoryUiState.Success(categories)
+//                categoryList.addAll(categories)
+//            }
+//        }
+    }
+
+    private fun addCategory(categoryName: String) {
         val available = isAvailableName(categoryName)
         viewModelScope.launch {
             if (available) {
                 addCategoryUseCase(Category(0L, categoryName, false))
             }
             else {
-                _event.emit(CategorySettingEvent.DuplicateCategoryName)
+                _uiEffect.emit(CategoryPreferenceUiEffect.DuplicateCategoryName)
             }
         }
     }
@@ -82,23 +105,20 @@ class CategorySettingViewModel @Inject constructor(
         return categoryList.any { it.name == categoryName }.not()
     }
 
-    fun updateCounter(counter: Int) {
-        _counter.value = counter
-    }
 
-    fun editCategoryName(categoryId: Long, categoryName: String) {
+    private fun editCategoryName(categoryId: Long, categoryName: String) {
         viewModelScope.launch {
             editCategoryNameUseCase(categoryId, categoryName)
         }
     }
 
-    fun deleteCategory(categoryId: Long) {
+    private fun deleteCategory(categoryId: Long) {
         viewModelScope.launch {
             deleteCategoryUseCase(categoryId)
         }
     }
 
-    fun changeDefaultCategory(categoryId: Long) {
+    private fun changeDefaultCategory(categoryId: Long) {
         viewModelScope.launch {
             changeDefaultCategoryUseCase(categoryId)
         }
